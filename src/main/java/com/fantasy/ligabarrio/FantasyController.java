@@ -163,4 +163,41 @@ public class FantasyController {
         noticiaRepository.save(new Noticia("🏁 JORNADA CERRADA: La clasificación ha sido actualizada."));
         return "✅ Jornada cerrada.";
     }
+
+    // --- GESTIÓN DE USUARIOS (ADMIN) ---
+
+    // 1. Obtener lista de usuarios (Ya tenías /usuarios, usaremos ese)
+
+    // 2. Eliminar usuario y liberar fichas
+    @DeleteMapping("/admin/eliminar-usuario/{idUsuario}")
+    public String eliminarUsuario(@PathVariable Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.isEsAdmin()) {
+            return "❌ No puedes eliminar al Administrador.";
+        }
+
+        // 1. Liberar a sus jugadores (Vuelven al mercado)
+        List<Jugador> susJugadores = jugadorRepository.findAll().stream()
+                .filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(idUsuario))
+                .collect(Collectors.toList());
+
+        for (Jugador j : susJugadores) {
+            j.setPropietario(null); // Se queda libre
+            j.setClausula(j.getValor()); // Reseteamos cláusula a valor original (opcional)
+            jugadorRepository.save(j);
+        }
+
+        // 2. Borrar sus equipos (Alineaciones guardadas)
+        List<Equipo> susEquipos = equipoRepository.findByUsuario(usuario);
+        equipoRepository.deleteAll(susEquipos);
+
+        // 3. Borrar al usuario
+        usuarioRepository.delete(usuario);
+
+        // 4. Noticia pública
+        noticiaRepository.save(new Noticia("👮 ADMIN: El manager " + usuario.getNombre() + " ha sido expulsado de la liga. Sus jugadores están libres."));
+
+        return "✅ Usuario " + usuario.getNombre() + " eliminado y jugadores liberados.";
+    }
 }
