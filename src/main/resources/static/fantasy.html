@@ -134,6 +134,7 @@
 
     <div id="sec-admin" class="seccion oculto">
         <h3 style="color:#c62828">Panel Admin</h3>
+        
         <div style="background:white; padding:15px; border-radius:10px; border:1px solid #ffcdd2; margin-bottom: 20px;">
             <h4>📝 Gestionar Partidos</h4>
             <select id="admin-jugador" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;"><option>Cargando...</option></select>
@@ -146,11 +147,18 @@
                 <input type="number" id="input-encajados" placeholder="Encajados" style="padding:8px; flex:1;">
             </div>
             <button onclick="registrarActa()" style="background:#c62828; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; margin-bottom:10px;">Registrar Puntos</button>
-            <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA Y REPARTIR PRIMAS</button>
+            <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA Y REPARTIR</button>
         </div>
-        <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9;">
+
+        <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
             <h4>👮 Gestión Usuarios</h4>
             <div id="admin-lista-usuarios">Cargando...</div>
+        </div>
+
+        <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
+            <h4 style="color:#b71c1c; margin-top:0;">☢️ ZONA DE PELIGRO</h4>
+            <p style="font-size:0.9em; color:#d32f2f;">Esto borrará equipos, puntos y reiniciará el dinero de todos a 100M.</p>
+            <button onclick="resetearLiga()" style="background:#d32f2f; color:white; width:100%; padding:15px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">⚠️ RESETEAR LIGA COMPLETA</button>
         </div>
     </div>
 
@@ -224,11 +232,10 @@
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio}€)</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}€</button>`;
             else if (tipo === 'gestion') {
-                // PLANTILLA PROPIA: VENDER Y BLINDAR
                 contenido = `
                     <div class="card-clausula">🔒 ${clausula}€</div>
                     <div style="display:flex; gap:5px;">
-                        <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender (${precio}€)</button>
+                        <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender</button>
                         <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button>
                     </div>`;
             }
@@ -283,7 +290,6 @@
         
         function vender(id, p) {
             if(!confirm("¿Vender al mercado? Perderás al jugador y recibirás " + p + "€.")) return;
-            // Vender devuelve dinero, así que pasamos coste negativo para sumar
             post(`/mercado/vender/${id}/${usuarioId}`, {}, -p); 
         }
 
@@ -303,6 +309,15 @@
         function expulsarUsuario(id, nombre) {
             if(!confirm(`⚠️ ¿ECHAR A ${nombre}?`)) return;
             fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { alert(msg); cargarUsuariosAdmin(); cargarTodo(); });
+        }
+
+        function resetearLiga() {
+            let confirmacion = prompt("⚠️ ¡PELIGRO!\nVas a borrar TODA la liga (equipos, puntos, dinero).\nLos usuarios tendrán que fichar de cero y el saldo será 100M.\n\nEscribe 'RESET' para confirmar:");
+            if (confirmacion === "RESET") {
+                post('/admin/reset-liga', {});
+            } else {
+                alert("Operación cancelada.");
+            }
         }
 
         function post(url, data, coste = 0) {
