@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Liga Barrio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 10px; width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        h1 { color: #333; margin-bottom: 30px; margin-top: 0; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; font-weight: bold; }
+        button:hover { background: #219150; }
+        .toggle { margin-top: 20px; font-size: 0.9em; color: #666; cursor: pointer; text-decoration: underline; }
+        .toggle:hover { color: #27ae60; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1 id="titulo">Iniciar Sesión</h1>
+
+    <input type="text" id="nombre" placeholder="Nombre de Usuario">
+    <input type="password" id="pass" placeholder="Contraseña">
+
+    <button onclick="accionPrincipal()" id="btn-accion">Entrar</button>
+
+    <p class="toggle" onclick="cambiarModo()">¿No tienes cuenta? Regístrate</p>
+</div>
+
+<script>
+    let esRegistro = false;
+
+    function cambiarModo() {
+        esRegistro = !esRegistro;
+        document.getElementById('titulo').innerText = esRegistro ? "Crear Cuenta" : "Iniciar Sesión";
+        document.getElementById('btn-accion').innerText = esRegistro ? "Registrarse" : "Entrar";
+        document.querySelector('.toggle').innerText = esRegistro ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate";
+    }
+
+    function accionPrincipal() {
+        const nombre = document.getElementById('nombre').value;
+        const pass = document.getElementById('pass').value;
+
+        if(!nombre || !pass) { alert("Por favor, rellena nombre y contraseña"); return; }
+
+        // CAMBIO CLAVE: Usamos rutas relativas (empiezan por /) para que funcione en la nube
+        const url = esRegistro ? '/auth/registro' : '/auth/login';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ nombre: nombre, password: pass })
+        })
+        .then(async response => {
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || "Error de conexión");
+            }
+            return response.json();
+        })
+        .then(usuario => {
+            // Guardamos datos
+            localStorage.setItem('usuarioId', usuario.id);
+            localStorage.setItem('usuarioNombre', usuario.nombre);
+            localStorage.setItem('presupuesto', usuario.presupuesto);
+            // Convertimos el boolean a string para guardarlo
+            localStorage.setItem('esAdmin', usuario.esAdmin);
+
+            alert("¡Bienvenido/a " + usuario.nombre + "!");
+            window.location.href = 'fantasy.html';
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error: " + err.message);
+        });
+    }
+</script>
+</body>
+</html>
