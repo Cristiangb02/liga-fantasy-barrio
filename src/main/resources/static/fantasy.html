@@ -7,7 +7,6 @@
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #e3e8ee; padding: 10px; margin: 0 auto; color: #333; max-width: 1000px; }
         
-        /* HEADER */
         header { 
             display: flex; justify-content: space-between; align-items: center; 
             background: linear-gradient(135deg, #1565c0, #0d47a1); color: white;
@@ -16,47 +15,40 @@
         }
         .jornada-badge { background: #ffd600; color: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-left: 10px; }
         .presupuesto-box { font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; white-space: nowrap;}
+        .presupuesto-negativo { background: #e53935; color: white; }
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
-        /* NAV SCROLLABLE */
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { 
             flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; 
             border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em;
         }
         nav button.active { background: #1565c0; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3); }
-        
-        /* ADMIN TAB */
         nav button.admin-tab { background: #ffcdd2 !important; color: #b71c1c !important; }
         nav button.admin-tab.active { background: #d32f2f !important; color: white !important; }
 
-        /* NOTICIAS */
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1976d2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .noticia-fecha { font-size: 0.8em; color: #888; display: block; margin-bottom: 4px; }
         .noticia-robo { border-left-color: #d32f2f; background: #fffde7; }
 
-        /* CARTAS */
-        .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         .card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; border: 1px solid #eee; display: flex; flex-direction: column; }
         
         .puntos-corner { position: absolute; top: 5px; right: 5px; background: #43a047; color: white; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75em; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        
         .card-img-container { height: 120px; background: #f5f5f5; display: flex; justify-content: center; align-items: flex-end; overflow: hidden; }
         .card-img { width: 100%; height: 100%; object-fit: cover; }
-        
         .card-body { padding: 8px; text-align: center; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; }
         .card-name { font-weight: 700; font-size: 0.85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-pos { font-size: 0.65em; text-transform: uppercase; font-weight: 800; color: #90a4ae; letter-spacing: 0.5px; }
-        .card-precio { font-size: 0.8em; color: #555; background: #eceff1; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px;}
+        .card-clausula { font-size: 0.75em; color: #d32f2f; font-weight: bold; }
 
-        /* BOTONES */
-        .btn-card { width: 100%; padding: 6px; border: none; border-radius: 4px; font-weight: 700; font-size: 0.8em; cursor: pointer; margin-top: auto; }
+        .btn-card { width: 100%; padding: 6px; border: none; border-radius: 4px; font-weight: 700; font-size: 0.8em; cursor: pointer; margin-top: 2px; }
         .btn-fichar { background: #039be5; color: white; }
         .btn-robar { background: #e53935; color: white; }
+        .btn-vender { background: #ff9800; color: white; }
+        .btn-blindar { background: #4caf50; color: white; }
         .btn-action-big { background: #43a047; color: white; margin-top: 15px; padding: 12px; width: 100%; border-radius: 8px; border:none; font-size: 1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #2e7d32; }
-        .btn-action-big:active { transform: translateY(4px); box-shadow: none; }
-
-        /* CHECKBOX ALINEACION */
+        
         .alineacion-overlay { position: absolute; top: 5px; left: 5px; z-index: 10; }
         .check-alinear { transform: scale(1.3); cursor: pointer; }
         .card.alineado { border: 2px solid #43a047; background: #e8f5e9; }
@@ -64,11 +56,7 @@
         .oculto { display: none !important; }
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
-        /* CLASIF */
         .fila-clasif { background: white; padding: 10px; margin-bottom: 5px; border-radius: 6px; display: flex; justify-content: space-between; font-weight: 600; border-left: 4px solid gold; font-size: 0.9em; }
-        
-        /* GESTIÓN USUARIOS (ADMIN) */
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
     </style>
@@ -101,6 +89,7 @@
 
     <div id="sec-plantilla" class="seccion">
         <h3>Tu Plantilla</h3>
+        <p style="color:#666; font-size:0.9em;">Gestiona tu equipo: vende o blinda jugadores.</p>
         <div id="grid-mi-plantilla" class="grid-jugadores">Cargando...</div>
     </div>
 
@@ -111,6 +100,7 @@
                 <span id="contador-alineados">0</span>/7
             </span>
         </div>
+        <p style="font-size:0.8em; color:#d32f2f;" id="aviso-saldo">⚠️ Si tu saldo es negativo, harás 0 puntos.</p>
         <div id="grid-alineacion" class="grid-jugadores">Cargando...</div>
         <button class="btn-action-big" onclick="guardarAlineacion()">💾 GUARDAR</button>
     </div>
@@ -137,14 +127,13 @@
     <div id="sec-noticias" class="seccion oculto">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h3>Noticias</h3>
-            <small style="color:#666">Actualización automática</small>
+            <small style="color:#666">En vivo 🔴</small>
         </div>
         <div id="lista-noticias">Cargando...</div>
     </div>
 
     <div id="sec-admin" class="seccion oculto">
         <h3 style="color:#c62828">Panel Admin</h3>
-        
         <div style="background:white; padding:15px; border-radius:10px; border:1px solid #ffcdd2; margin-bottom: 20px;">
             <h4>📝 Gestionar Partidos</h4>
             <select id="admin-jugador" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;"><option>Cargando...</option></select>
@@ -153,17 +142,15 @@
                 <label><input type="checkbox" id="check-derrota"> Perdió</label>
             </div>
             <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <input type="number" id="input-goles" placeholder="Goles" style="padding:8px; flex:1; border-radius:5px; border:1px solid #ccc;">
-                <input type="number" id="input-encajados" placeholder="Encajados" style="padding:8px; flex:1; border-radius:5px; border:1px solid #ccc;">
+                <input type="number" id="input-goles" placeholder="Goles" style="padding:8px; flex:1;">
+                <input type="number" id="input-encajados" placeholder="Encajados" style="padding:8px; flex:1;">
             </div>
             <button onclick="registrarActa()" style="background:#c62828; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; margin-bottom:10px;">Registrar Puntos</button>
-            <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA</button>
+            <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA Y REPARTIR PRIMAS</button>
         </div>
-
         <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9;">
-            <h4>👮 Gestión de Usuarios</h4>
-            <p style="font-size:0.8em; color:#666">Cuidado: Expulsar borra al usuario y libera sus jugadores.</p>
-            <div id="admin-lista-usuarios">Cargando usuarios...</div>
+            <h4>👮 Gestión Usuarios</h4>
+            <div id="admin-lista-usuarios">Cargando...</div>
         </div>
     </div>
 
@@ -180,16 +167,12 @@
 
             if (esAdmin) {
                 document.getElementById('tab-admin').classList.remove('oculto');
-                cargarUsuariosAdmin(); // Cargar lista para expulsar
+                cargarUsuariosAdmin();
             }
-
             cargarTodo();
-            
-            // --- AUTO-REFRESCO DE NOTICIAS (CADA 5 SEGUNDOS) ---
             setInterval(cargarNoticias, 5000); 
         };
 
-        // --- CARGA DE DATOS ---
         function cargarTodo() {
             fetch('/jornada/actual').then(r=>r.json()).then(n => document.getElementById('badge-jornada').innerText = "J-" + n);
 
@@ -198,7 +181,6 @@
                 pintarPlantilla(jugadores);
                 pintarMercado(jugadores);
                 if(esAdmin) pintarSelectAdmin(jugadores);
-                
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
                     pintarAlineacion(jugadores, idsAlineados);
@@ -206,50 +188,29 @@
             });
             
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
-
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 document.getElementById('lista-clasificacion').innerHTML = data.map((t,i) => `<div class="fila-clasif"><span class="pos-num">${i+1}º</span> ${t}</div>`).join('');
             });
-
-            cargarNoticias(); // Primera carga de noticias
+            cargarNoticias();
         }
 
-        // --- FUNCIÓN SEPARADA PARA PODER REFRESCARLA ---
         function cargarNoticias() {
             fetch('/noticias').then(r=>r.json()).then(noticias => {
                 let html = noticias.map(n => `<div class="noticia-item ${n.mensaje.includes("CLÁUSULAZO") || n.mensaje.includes("ADMIN") ? 'noticia-robo':''}"><span class="noticia-fecha">${n.fechaBonita}</span><span class="noticia-texto">${n.mensaje}</span></div>`).join('');
-                // Solo actualizamos si hay cambios para no parpadear
                 const container = document.getElementById('lista-noticias');
                 if (container.innerHTML !== html) container.innerHTML = html || '<p>No hay noticias.</p>';
             });
         }
 
-        // --- GESTIÓN USUARIOS ADMIN ---
         function cargarUsuariosAdmin() {
             fetch('/usuarios').then(r => r.json()).then(usuarios => {
-                let html = usuarios.map(u => `
-                    <div class="user-row">
-                        <span>${u.nombre} ${u.esAdmin ? '(ADMIN)' : ''}</span>
-                        ${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}
-                    </div>
+                document.getElementById('admin-lista-usuarios').innerHTML = usuarios.map(u => `
+                    <div class="user-row"><span>${u.nombre} ${u.esAdmin ? '(ADMIN)' : ''}</span>${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}</div>
                 `).join('');
-                document.getElementById('admin-lista-usuarios').innerHTML = html;
             });
         }
 
-        function expulsarUsuario(id, nombre) {
-            if(!confirm(`⚠️ ¿ESTÁS SEGURO?\nVas a expulsar a ${nombre} y sus jugadores quedarán libres.`)) return;
-            
-            fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' })
-            .then(r => r.text())
-            .then(msg => {
-                alert(msg);
-                cargarUsuariosAdmin(); // Refrescar lista admin
-                cargarTodo(); // Refrescar mercado por si liberó jugadores
-            });
-        }
-
-        // --- RENDERIZADO (IGUAL QUE ANTES) ---
+        // --- RENDER ---
         function crearCarta(j, tipo, alineado = false) {
             let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
             let precio = new Intl.NumberFormat('es-ES').format(j.valor);
@@ -262,7 +223,15 @@
             if (tipo === 'alinear') contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio}€)</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}€</button>`;
-            else contenido = `<div class="card-precio">${precio}€</div>`;
+            else if (tipo === 'gestion') {
+                // PLANTILLA PROPIA: VENDER Y BLINDAR
+                contenido = `
+                    <div class="card-clausula">🔒 ${clausula}€</div>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender (${precio}€)</button>
+                        <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button>
+                    </div>`;
+            }
 
             return `
                 <div class="card ${extraClass}" id="card-${j.id}">
@@ -278,27 +247,20 @@
 
         function pintarPlantilla(jugadores) {
             const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId);
-            document.getElementById('grid-mi-plantilla').innerHTML = misJugadores.map(j => crearCarta(j, 'ver')).join('') || '<p>Sin jugadores.</p>';
+            document.getElementById('grid-mi-plantilla').innerHTML = misJugadores.map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>';
         }
-
         function pintarAlineacion(jugadores, idsAlineados) {
             const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId);
             document.getElementById('grid-alineacion').innerHTML = misJugadores.map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>';
             actualizarContador();
         }
-
         function pintarMercado(jugadores) {
             const libres = jugadores.filter(j => !j.propietario);
             document.getElementById('grid-mercado').innerHTML = libres.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado vacío.</p>';
         }
-
         function pintarRivales(usuarios) {
-            document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => 
-                `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')">
-                    <span>⚽ ${u.nombre}</span> <span>🔍</span>
-                 </div>`).join('');
+            document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join('');
         }
-
         function espiar(id, nombre) {
             document.getElementById('zona-espia').classList.remove('oculto');
             document.getElementById('titulo-espia').innerText = "Equipo de " + nombre;
@@ -313,46 +275,57 @@
                 if(checkbox.checked) card.classList.add('alineado'); else card.classList.remove('alineado');
             }
             const count = document.querySelectorAll('.check-alinear:checked').length;
-            const badge = document.getElementById('contador-alineados');
-            badge.innerText = count;
-            badge.style.color = count === 7 ? 'green' : 'red';
+            document.getElementById('contador-alineados').innerText = count;
         }
 
         function fichar(id, p) { post(`/mercado/comprar/${id}/${usuarioId}`, {}, p); }
         function robar(id, p) { post(`/mercado/robar/${id}/${usuarioId}`, {}, p); }
+        
+        function vender(id, p) {
+            if(!confirm("¿Vender al mercado? Perderás al jugador y recibirás " + p + "€.")) return;
+            // Vender devuelve dinero, así que pasamos coste negativo para sumar
+            post(`/mercado/vender/${id}/${usuarioId}`, {}, -p); 
+        }
+
+        function blindar(id) {
+            let cantidad = prompt("¿Cuánto quieres invertir para subir la cláusula?\n(La cláusula subirá el DOBLE de lo que inviertas)");
+            if (cantidad && !isNaN(cantidad) && cantidad > 0) {
+                post(`/jugador/subir-clausula/${id}/${cantidad}`, {}, cantidad);
+            }
+        }
+
         function guardarAlineacion() {
             const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
             if(ids.length > 7) { alert("Máximo 7"); return; }
             post(`/alinear/${usuarioId}`, ids);
         }
         
+        function expulsarUsuario(id, nombre) {
+            if(!confirm(`⚠️ ¿ECHAR A ${nombre}?`)) return;
+            fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { alert(msg); cargarUsuariosAdmin(); cargarTodo(); });
+        }
+
         function post(url, data, coste = 0) {
-            if(coste > presupuesto) { alert("Falta dinero"); return; }
+            if(coste > 0 && coste > presupuesto) { alert("Falta dinero"); return; }
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
                 alert(msg);
                 if(!msg.includes("❌")) {
-                    if(coste > 0) { presupuesto -= coste; localStorage.setItem('presupuesto', presupuesto); actualizarPresupuestoUI(); }
+                    presupuesto -= coste; 
+                    localStorage.setItem('presupuesto', presupuesto); 
+                    actualizarPresupuestoUI(); 
                     cargarTodo();
                 }
             });
         }
 
         // --- ADMIN ---
-        function pintarSelectAdmin(jugadores) {
-            document.getElementById('admin-jugador').innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre}</option>`).join('');
-        }
+        function pintarSelectAdmin(jugadores) { document.getElementById('admin-jugador').innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre}</option>`).join(''); }
         function registrarActa() {
-            const datos = {
-                idJugador: parseInt(document.getElementById('admin-jugador').value), idJornada: 1,
-                victoria: document.getElementById('check-victoria').checked,
-                derrota: document.getElementById('check-derrota').checked,
-                goles: parseInt(document.getElementById('input-goles').value) || 0,
-                golesEncajados: parseInt(document.getElementById('input-encajados').value) || 0, autogoles: 0
-            };
+            const datos = { idJugador: parseInt(document.getElementById('admin-jugador').value), idJornada: 1, victoria: document.getElementById('check-victoria').checked, derrota: document.getElementById('check-derrota').checked, goles: parseInt(document.getElementById('input-goles').value)||0, golesEncajados: parseInt(document.getElementById('input-encajados').value)||0, autogoles: 0 };
             post('/admin/registrar', datos);
         }
-        function cerrarJornada() { if(confirm("¿Cerrar?")) post('/admin/cerrar-jornada', {}); }
+        function cerrarJornada() { if(confirm("¿Cerrar jornada y repartir dinero?")) post('/admin/cerrar-jornada', {}); }
 
         function cambiarPestaña(tab) {
             document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
@@ -360,7 +333,12 @@
             document.getElementById('sec-' + tab).classList.remove('oculto');
             document.getElementById('tab-' + tab).classList.add('active');
         }
-        function actualizarPresupuestoUI() { document.getElementById('presupuesto-display').innerText = new Intl.NumberFormat('es-ES').format(presupuesto) + ' €'; }
+        function actualizarPresupuestoUI() { 
+            const el = document.getElementById('presupuesto-display');
+            el.innerText = new Intl.NumberFormat('es-ES').format(presupuesto) + ' €';
+            if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); }
+            else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); }
+        }
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
     </script>
 </body>
