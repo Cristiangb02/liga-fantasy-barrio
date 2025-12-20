@@ -49,7 +49,7 @@
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         
-        /* 🔴 ESTILO NUEVO TABLA CLASIFICACIÓN (PUNTO 4) */
+        /* 🔴 ESTILO CLASIFICACIÓN CORREGIDO (PUNTO 4) */
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1565c0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1565c0; min-width: 30px; }
         
@@ -255,7 +255,7 @@
             });
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
             
-            // 🔴 CLASIFICACIÓN CON NUEVO FORMATO
+            // 🔴 AQUÍ ESTABA EL ERROR CORREGIDO:
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 let html = data.map((fila, i) => `
                     <div class="fila-clasif">
