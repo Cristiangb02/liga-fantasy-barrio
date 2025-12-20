@@ -4,6 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import java.util.List;
 
 @SpringBootApplication
 public class LigaFantasyVeteranosApplication {
@@ -15,31 +16,37 @@ public class LigaFantasyVeteranosApplication {
     @Bean
     public CommandLineRunner initData(UsuarioRepository usuarioRepository, JornadaRepository jornadaRepository) {
         return args -> {
-            // 1. INICIALIZAR JORNADA SI NO EXISTE
+            // 1. INICIALIZAR JORNADA
             if (jornadaRepository.count() == 0) {
                 jornadaRepository.save(new Jornada());
-                System.out.println(">>> ✅ Jornada 1 creada automáticamente.");
+                System.out.println(">>> ✅ Jornada 1 creada.");
             }
 
-            // 2. BUSCAR SI YA EXISTE EL ADMIN
-            // CORRECCIÓN: Tu repositorio devuelve un objeto Usuario único, no una lista.
-            Usuario existingAdmin = usuarioRepository.findByNombre("Cristian");
-            
-            if (existingAdmin == null) {
-                Usuario admin = new Usuario();
-                admin.setNombre("Cristian");
-                
-                // CORRECCIÓN: Probamos con el estándar 'setPassword'.
-                // Si esto fallara, tendrías que mirar tu archivo Usuario.java para ver cómo se llama el campo.
-                admin.setPassword("1234"); 
-                
-                admin.setPresupuesto(100_000_000); 
-                admin.setEsAdmin(true);
-                usuarioRepository.save(admin);
-                System.out.println(">>> 👑 ADMIN 'Cristian' creado con éxito.");
-            } else {
-                System.out.println(">>> ℹ️ El Admin 'Cristian' ya existe. No se crea de nuevo.");
+            // 2. DIAGNÓSTICO: ¿QUIÉN ESTÁ EN LA BASE DE DATOS?
+            List<Usuario> todos = usuarioRepository.findAll();
+            System.out.println(">>> 📊 REPORTE DE USUARIOS EN DB (" + todos.size() + "):");
+            for (Usuario u : todos) {
+                System.out.println("   👤 Usuario: " + u.getNombre() + " | Pass: " + u.getPassword());
             }
+
+            // 3. ASEGURAR ADMIN CRISTIAN
+            Usuario admin = usuarioRepository.findByNombre("Cristian");
+            
+            if (admin == null) {
+                admin = new Usuario();
+                admin.setNombre("Cristian");
+                admin.setPresupuesto(100_000_000);
+                admin.setEsAdmin(true);
+                System.out.println(">>> 🆕 Creando usuario 'Cristian' desde cero...");
+            } else {
+                System.out.println(">>> ♻️ Usuario 'Cristian' encontrado. Actualizando contraseña...");
+            }
+
+            // 4. FORZAR LA CONTRASEÑA CORRECTA SIEMPRE
+            admin.setPassword("1234");
+            usuarioRepository.save(admin);
+            
+            System.out.println(">>> 👑 ADMIN 'Cristian' LISTO con contraseña '1234'. ¡Prueba a entrar ahora!");
         };
     }
 }
