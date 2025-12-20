@@ -62,7 +62,7 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
-    // 🔴 ASEGÚRATE DE QUE ESTE MÉTODO ES EXACTAMENTE ASÍ
+    // CLASIFICACIÓN (LIMPIA, SIN FOTOS)
     @GetMapping("/clasificacion")
     public List<Map<String, Object>> verClasificacion() {
         List<Usuario> usuarios = usuarioRepository.findAll();
@@ -80,25 +80,14 @@ public class FantasyController {
                     .mapToInt(Jugador::getValor)
                     .sum();
 
-            // AQUÍ ESTÁ LA CLAVE: ENVIAMOS "avatar"
             return Map.<String, Object>of(
                     "nombre", u.getNombre(),
                     "puntos", puntosTotales,
-                    "valorPlantilla", valorPlantilla,
-                    "avatar", (u.getAvatarUrl() != null ? u.getAvatarUrl() : "")
+                    "valorPlantilla", valorPlantilla
             );
         })
         .sorted((m1, m2) -> Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos")))
         .collect(Collectors.toList());
-    }
-
-    @PostMapping("/usuario/cambiar-foto/{idUsuario}")
-    public String cambiarFoto(@PathVariable Long idUsuario, @RequestBody String urlFoto) {
-        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
-        String urlLimpia = urlFoto.replace("\"", ""); 
-        usuario.setAvatarUrl(urlLimpia);
-        usuarioRepository.save(usuario);
-        return "✅ Foto actualizada correctamente.";
     }
 
     // --- MERCADO ---
@@ -135,6 +124,7 @@ public class FantasyController {
         ladron.setPresupuesto(ladron.getPresupuesto() - jugador.getClausula());
         victima.setPresupuesto(victima.getPresupuesto() + jugador.getClausula());
         jugador.setPropietario(ladron);
+        
         jugador.setClausula((int)(jugador.getClausula() * 1.5));
 
         usuarioRepository.save(ladron);
