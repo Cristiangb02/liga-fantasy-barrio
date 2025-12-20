@@ -13,9 +13,6 @@ public class Usuario {
     private String password;
     private int presupuesto;
     private boolean esAdmin;
-    
-    // 🔴 NUEVO CAMPO: FOTO DE PERFIL
-    private String avatarUrl;
 
     public Usuario() {
     }
@@ -36,8 +33,4 @@ public class Usuario {
     public void setPresupuesto(int presupuesto) { this.presupuesto = presupuesto; }
     public boolean isEsAdmin() { return esAdmin; }
     public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
-
-    // 🔴 GETTER Y SETTER DE FOTO
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 }
