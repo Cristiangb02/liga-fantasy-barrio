@@ -49,14 +49,13 @@
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         
-        /* 🔴 ESTILO CLASIFICACIÓN CORREGIDO (PUNTO 4) */
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1565c0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1565c0; min-width: 30px; }
         
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
-        /* ESTILOS MODAL */
+        /* MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
@@ -103,9 +102,9 @@
 
     <div id="sec-alineacion" class="seccion oculto">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3>Alineación</h3>
+            <h3>Alineación <span style="font-size:0.7em; color:#1565c0;">(Jornada <span id="num-jornada-alineacion"></span>)</span></h3>
             <span style="background:#e3f2fd; padding:3px 10px; border-radius:15px; color:#0d47a1; font-weight:bold; font-size:0.9em;">
-                <span id="contador-alineados">0</span>/7
+                <span id="contador-alineados">0</span>/8
             </span>
         </div>
         <p style="font-size:0.8em; color:#d32f2f;" id="aviso-saldo">⚠️ Si tu saldo es negativo, harás 0 puntos.</p>
@@ -242,20 +241,25 @@
         };
 
         function cargarTodo() {
-            fetch('/jornada/actual').then(r=>r.json()).then(n => document.getElementById('badge-jornada').innerText = "J-" + n);
+            fetch('/jornada/actual').then(r=>r.json()).then(n => {
+                document.getElementById('badge-jornada').innerText = "J-" + n;
+                // 🔴 Actualizamos el número de jornada en la sección Alineación
+                document.getElementById('num-jornada-alineacion').innerText = n;
+            });
+
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
                 pintarMercado(jugadores);
                 if(esAdmin) pintarSelectAdmin(jugadores);
+                
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
+                    // 🔴 PINTAMOS ALINEACIÓN ORDENADA
                     pintarAlineacion(jugadores, idsAlineados);
                 });
             });
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
-            
-            // 🔴 AQUÍ ESTABA EL ERROR CORREGIDO:
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 let html = data.map((fila, i) => `
                     <div class="fila-clasif">
@@ -271,7 +275,6 @@
                 `).join('');
                 document.getElementById('lista-clasificacion').innerHTML = html;
             });
-
             cargarNoticias();
         }
 
@@ -309,7 +312,22 @@
         }
 
         function pintarPlantilla(jugadores) { document.getElementById('grid-mi-plantilla').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>'; }
-        function pintarAlineacion(jugadores, idsAlineados) { document.getElementById('grid-alineacion').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>'; actualizarContador(); }
+        
+        // 🔴 CAMBIO PUNTO 6: ORDENAR ALINEACIÓN (ALINEADOS PRIMERO)
+        function pintarAlineacion(jugadores, idsAlineados) { 
+            const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId);
+            
+            // Ordenamos: Primero los que tengan ID en idsAlineados
+            misJugadores.sort((a, b) => {
+                const aAlineado = idsAlineados.has(a.id) ? 1 : 0;
+                const bAlineado = idsAlineados.has(b.id) ? 1 : 0;
+                return bAlineado - aAlineado; // Mayor (1) primero
+            });
+
+            document.getElementById('grid-alineacion').innerHTML = misJugadores.map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>'; 
+            actualizarContador(); 
+        }
+
         function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.filter(j => !j.propietario).map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado vacío.</p>'; }
         function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
         
@@ -324,7 +342,11 @@
                 const card = document.getElementById('card-' + checkbox.value);
                 if(checkbox.checked) card.classList.add('alineado'); else card.classList.remove('alineado');
             }
-            document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
+            // Actualizar conteo visual
+            const count = document.querySelectorAll('.check-alinear:checked').length;
+            const badge = document.getElementById('contador-alineados');
+            badge.innerText = count;
+            badge.style.color = count > 8 ? 'red' : 'white'; // Aviso visual simple
         }
 
         function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
@@ -334,9 +356,10 @@
         function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
         function resetearLiga() { mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => { if(t==="RESET") post('/admin/reset-liga', {}); else mostrarModal("Error","Código mal.",'confirm',()=>{}); }); }
         
+        // 🔴 CAMBIO PUNTO 6: LIMITE 8
         function guardarAlineacion() {
             const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
-            if(ids.length > 7) { mostrarModal("Alineación", "Máximo 7 jugadores.", 'confirm', ()=>{}); return; }
+            if(ids.length > 8) { mostrarModal("Alineación", "Máximo 8 jugadores.", 'confirm', ()=>{}); return; }
             post(`/alinear/${usuarioId}`, ids);
         }
 
