@@ -79,14 +79,27 @@ public class FantasyController {
                     .mapToInt(Jugador::getValor)
                     .sum();
 
+            // 🔴 AÑADIMOS EL AVATAR A LA RESPUESTA
             return Map.<String, Object>of(
                     "nombre", u.getNombre(),
                     "puntos", puntosTotales,
-                    "valorPlantilla", valorPlantilla
+                    "valorPlantilla", valorPlantilla,
+                    "avatar", (u.getAvatarUrl() != null ? u.getAvatarUrl() : "")
             );
         })
         .sorted((m1, m2) -> Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos")))
         .collect(Collectors.toList());
+    }
+
+    // 🔴 NUEVO: CAMBIAR FOTO DE PERFIL
+    @PostMapping("/usuario/cambiar-foto/{idUsuario}")
+    public String cambiarFoto(@PathVariable Long idUsuario, @RequestBody String urlFoto) {
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
+        // Quitamos comillas si vienen por el JSON
+        String urlLimpia = urlFoto.replace("\"", ""); 
+        usuario.setAvatarUrl(urlLimpia);
+        usuarioRepository.save(usuario);
+        return "✅ Foto actualizada correctamente.";
     }
 
     // --- MERCADO ---
@@ -101,8 +114,6 @@ public class FantasyController {
 
         comprador.setPresupuesto(comprador.getPresupuesto() - jugador.getValor());
         jugador.setPropietario(comprador);
-        
-        // 🔴 CORRECCIÓN: Al fichar, la cláusula es IGUAL al Valor (no el doble)
         jugador.setClausula(jugador.getValor());
 
         usuarioRepository.save(comprador);
@@ -126,7 +137,6 @@ public class FantasyController {
         victima.setPresupuesto(victima.getPresupuesto() + jugador.getClausula());
         jugador.setPropietario(ladron);
         
-        // Al robar, subimos cláusula un 50% para protegerlo un poco
         jugador.setClausula((int)(jugador.getClausula() * 1.5));
 
         usuarioRepository.save(ladron);
@@ -137,7 +147,6 @@ public class FantasyController {
         return "✅ ¡Robo completado!";
     }
 
-    // 🔴 CORRECCIÓN PUNTO 7: VENDER (RECUPERAR INVERSIÓN)
     @PostMapping("/mercado/vender/{idJugador}/{idUsuario}")
     public String venderJugador(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
@@ -145,18 +154,13 @@ public class FantasyController {
 
         if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(idUsuario)) return "❌ No es tuyo.";
 
-        // FÓRMULA: Valor + (Lo que has subido de cláusula / 2)
-        // Ejemplo: Valor 10, Cláusula 14. Diferencia 4. Mitad 2. Total 12.
         int beneficioClausula = (jugador.getClausula() - jugador.getValor()) / 2;
         int ingreso = jugador.getValor() + beneficioClausula;
 
         vendedor.setPresupuesto(vendedor.getPresupuesto() + ingreso);
         jugador.setPropietario(null);
-        
-        // Al volver al mercado, la cláusula vuelve a ser su Valor base
         jugador.setClausula(jugador.getValor()); 
 
-        // Limpiar alineaciones
         Jornada jornadaActual = getJornadaActiva();
         List<Equipo> equipos = equipoRepository.findByUsuario(vendedor);
         for(Equipo e : equipos) {
@@ -282,8 +286,6 @@ public class FantasyController {
         for (Jugador j : jugadores) {
             j.setPropietario(null);
             j.setPuntosAcumulados(0);
-            
-            // 🔴 RESET: La cláusula vuelve al valor de mercado (no x2)
             j.setClausula(j.getValor()); 
         }
         jugadorRepository.saveAll(jugadores);
@@ -305,3 +307,4 @@ public class FantasyController {
         return "✅ Liga reseteada a 100M. Jornada 1 lista.";
     }
 }
+
