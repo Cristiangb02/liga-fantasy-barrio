@@ -22,16 +22,14 @@ public class LigaFantasyVeteranosApplication {
                 System.out.println(">>> ✅ Jornada 1 creada automáticamente.");
             }
 
-            // 2. BUSCAR SI YA EXISTE EL ADMIN (Para evitar duplicados al reiniciar)
-            // Buscamos por nombre, si devuelve una lista vacía o null, lo creamos.
-            // Usamos una lista para evitar errores si ya hubiera duplicados previos.
+            // 2. BUSCAR SI YA EXISTE EL ADMIN
             List<Usuario> admins = usuarioRepository.findByNombre("Cristian");
             
             if (admins.isEmpty()) {
                 Usuario admin = new Usuario();
                 admin.setNombre("Cristian");
                 admin.setContrasena("1234");
-                admin.setPresupuesto(100_000_000); // 100M Iniciales
+                admin.setPresupuesto(100_000_000); 
                 admin.setEsAdmin(true);
                 usuarioRepository.save(admin);
                 System.out.println(">>> 👑 ADMIN 'Cristian' creado con éxito.");
@@ -40,3 +38,4 @@ public class LigaFantasyVeteranosApplication {
             }
         };
     }
+}
