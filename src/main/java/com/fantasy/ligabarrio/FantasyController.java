@@ -2,6 +2,7 @@ package com.fantasy.ligabarrio;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
@@ -55,12 +56,36 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
+    // --- 🔴 PUNTO 4: CLASIFICACIÓN REAL (PUNTOS Y VALOR DE PLANTILLA) ---
     @GetMapping("/clasificacion")
-    public List<String> verClasificacion() {
-        return usuarioRepository.findAll().stream()
-                .sorted((u1, u2) -> Integer.compare(u2.getPresupuesto(), u1.getPresupuesto())) 
-                .map(u -> "Manager: " + u.getNombre() + " | 💰 " + (u.getPresupuesto()/1_000_000) + "M")
-                .collect(Collectors.toList());
+    public List<Map<String, Object>> verClasificacion() {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<Jugador> todosJugadores = jugadorRepository.findAll();
+        List<Equipo> todosEquipos = equipoRepository.findAll();
+
+        return usuarios.stream().map(u -> {
+            // 1. Calcular Puntos Totales (Suma de todas las jornadas)
+            int puntosTotales = todosEquipos.stream()
+                    .filter(e -> e.getUsuario().getId().equals(u.getId()))
+                    .mapToInt(Equipo::getPuntosTotalesJornada)
+                    .sum();
+            
+            // 2. Calcular Valor de Plantilla (Suma del valor de sus jugadores)
+            int valorPlantilla = todosJugadores.stream()
+                    .filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId()))
+                    .mapToInt(Jugador::getValor)
+                    .sum();
+
+            // Devolvemos un mapa estructurado (JSON)
+            return Map.<String, Object>of(
+                    "nombre", u.getNombre(),
+                    "puntos", puntosTotales,
+                    "valorPlantilla", valorPlantilla
+            );
+        })
+        // 3. ORDENAR POR PUNTOS (De mayor a menor)
+        .sorted((m1, m2) -> Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos")))
+        .collect(Collectors.toList());
     }
 
     // --- MERCADO ---
@@ -239,7 +264,6 @@ public class FantasyController {
         return "✅ Usuario eliminado.";
     }
 
-    // --- ☢️ RESETEAR LIGA (100 MILLONES) ---
     @PostMapping("/admin/reset-liga")
     public String resetearLiga() {
         List<Jugador> jugadores = jugadorRepository.findAll();
@@ -252,7 +276,6 @@ public class FantasyController {
 
         List<Usuario> usuarios = usuarioRepository.findAll();
         for (Usuario u : usuarios) {
-            // AHORA SON 100 MILLONES
             u.setPresupuesto(100_000_000); 
         }
         usuarioRepository.saveAll(usuarios);
