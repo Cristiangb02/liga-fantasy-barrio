@@ -4,7 +4,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import java.util.List;
 
 @SpringBootApplication
 public class LigaFantasyVeteranosApplication {
@@ -23,12 +22,17 @@ public class LigaFantasyVeteranosApplication {
             }
 
             // 2. BUSCAR SI YA EXISTE EL ADMIN
-            List<Usuario> admins = usuarioRepository.findByNombre("Cristian");
+            // CORRECCIÓN: Tu repositorio devuelve un objeto Usuario único, no una lista.
+            Usuario existingAdmin = usuarioRepository.findByNombre("Cristian");
             
-            if (admins.isEmpty()) {
+            if (existingAdmin == null) {
                 Usuario admin = new Usuario();
                 admin.setNombre("Cristian");
-                admin.setContrasena("1234");
+                
+                // CORRECCIÓN: Probamos con el estándar 'setPassword'.
+                // Si esto fallara, tendrías que mirar tu archivo Usuario.java para ver cómo se llama el campo.
+                admin.setPassword("1234"); 
+                
                 admin.setPresupuesto(100_000_000); 
                 admin.setEsAdmin(true);
                 usuarioRepository.save(admin);
