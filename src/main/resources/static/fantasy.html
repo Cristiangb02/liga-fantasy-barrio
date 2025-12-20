@@ -13,10 +13,10 @@
         .presupuesto-negativo { background: #d32f2f; color: white; }
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
-        /* 🔴 ESTILOS AVATAR CABECERA (PUNTO 9) */
+        /* ESTILOS AVATAR */
         .user-info { display: flex; align-items: center; gap: 10px; }
         .avatar-header { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white; cursor: pointer; background: #ddd; transition: transform 0.2s; }
-        .avatar-header:hover { transform: scale(1.1); }
+        .avatar-header:hover { transform: scale(1.1); filter: brightness(1.1); }
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
@@ -24,20 +24,10 @@
         nav button.admin-tab { background: #ffebee !important; color: #b71c1c !important; }
         nav button.admin-tab.active { background: #d32f2f !important; color: white !important; }
 
+        /* CARTAS Y GRID */
         .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         
-        .card { 
-            background: white; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            position: relative; 
-            display: flex; 
-            flex-direction: column;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(0,0,0,0.05); }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
         .card.alineado { border: 3px solid #2e7d32; box-shadow: 0 0 10px rgba(46, 125, 50, 0.3); }
 
@@ -68,7 +58,7 @@
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         
-        /* 🔴 ESTILOS CLASIFICACIÓN CON AVATAR (PUNTO 9) */
+        /* TABLA CLASIFICACION */
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
         .avatar-small { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
@@ -78,6 +68,7 @@
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
+        /* MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
@@ -93,9 +84,11 @@
 </head>
 <body>
 
+    <input type="file" id="input-foto-perfil" accept="image/*" style="display:none" onchange="procesarSubidaFoto(this)">
+
     <header>
         <div class="user-info">
-            <img id="mi-avatar" src="https://via.placeholder.com/50?text=👤" class="avatar-header" onclick="cambiarAvatar()" title="Cambiar foto">
+            <img id="mi-avatar" src="https://via.placeholder.com/50?text=👤" class="avatar-header" onclick="abrirGaleria()" title="Toca para cambiar foto">
             <div style="display:flex; flex-direction:column;">
                 <div style="display:flex; align-items:center;">
                     <h1 id="titulo-web" style="margin:0; font-size:1.4rem;">Fantasy</h1>
@@ -227,7 +220,7 @@
 
             if (tipo === 'input' || tipo === 'blindar') {
                 inputContainer.classList.remove('oculto');
-                input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe URL de imagen...";
+                input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe...";
                 
                 if(tipo === 'blindar') {
                     input.onkeyup = function() {
@@ -259,7 +252,7 @@
             document.getElementById('titulo-web').innerText = localStorage.getItem('usuarioNombre');
             // Cargar avatar local si existe o placeholder
             let avatarLocal = localStorage.getItem('avatarUrl');
-            if(avatarLocal && avatarLocal !== "null") document.getElementById('mi-avatar').src = avatarLocal;
+            if(avatarLocal && avatarLocal !== "null" && avatarLocal.length > 10) document.getElementById('mi-avatar').src = avatarLocal;
 
             actualizarPresupuestoUI();
             if (esAdmin) {
@@ -288,14 +281,13 @@
             });
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
             
-            // 🔴 CLASIFICACIÓN CON AVATAR (PUNTO 9)
+            // CLASIFICACIÓN CON AVATAR
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 let html = data.map((fila, i) => {
-                    let avatarHtml = fila.avatar ? `<img src="${fila.avatar}" class="avatar-small">` : `<div class="avatar-small" style="background:#eee; display:flex; align-items:center; justify-content:center;">👤</div>`;
+                    let avatarHtml = fila.avatar && fila.avatar.length > 10 ? `<img src="${fila.avatar}" class="avatar-small">` : `<div class="avatar-small" style="background:#eee; display:flex; align-items:center; justify-content:center;">👤</div>`;
                     
-                    // Si soy yo, actualizo mi avatar en cabecera por si acaso ha cambiado
                     if(fila.nombre === localStorage.getItem('usuarioNombre')) {
-                        if(fila.avatar) { 
+                        if(fila.avatar && fila.avatar.length > 10) { 
                             document.getElementById('mi-avatar').src = fila.avatar; 
                             localStorage.setItem('avatarUrl', fila.avatar);
                         }
@@ -319,20 +311,33 @@
             cargarNoticias();
         }
 
-        // 🔴 FUNCION CAMBIAR AVATAR
-        function cambiarAvatar() {
-            mostrarModal("Foto de Perfil", "Pega la URL de tu imagen (jpg/png):", 'input', (url) => {
-                if(url) {
-                    fetch(`/usuario/cambiar-foto/${usuarioId}`, { method: 'POST', body: url })
+        // 🔴 FUNCIONES NUEVAS: SUBIDA DE FOTO DESDE GALERÍA
+        function abrirGaleria() {
+            document.getElementById('input-foto-perfil').click();
+        }
+
+        function procesarSubidaFoto(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                
+                // Límite de seguridad: 1MB
+                if(input.files[0].size > 1000000) {
+                    mostrarModal("Error", "La imagen es demasiado grande. Máximo 1MB.", 'confirm', ()=>{});
+                    return;
+                }
+
+                reader.onload = function(e) {
+                    let imagenBase64 = e.target.result;
+                    // Enviar al backend
+                    fetch(`/usuario/cambiar-foto/${usuarioId}`, { method: 'POST', body: imagenBase64 })
                     .then(r => r.text()).then(msg => {
-                        mostrarModal("Info", msg, 'confirm', () => { 
-                            document.getElementById('mi-avatar').src = url;
-                            localStorage.setItem('avatarUrl', url);
-                            cargarTodo(); // Recargar tabla
-                        });
+                        document.getElementById('mi-avatar').src = imagenBase64;
+                        localStorage.setItem('avatarUrl', imagenBase64);
+                        cargarTodo(); // Recargar para que salga en la tabla
                     });
                 }
-            });
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
         function cargarNoticias() {
