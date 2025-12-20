@@ -12,7 +12,10 @@ public class Usuario {
     private String nombre;
     private String password;
     private int presupuesto;
-    private boolean esAdmin; // <--- ESTO ES LO QUE NECESITAMOS
+    private boolean esAdmin;
+    
+    // 🔴 NUEVO CAMPO: FOTO DE PERFIL
+    private String avatarUrl;
 
     public Usuario() {
     }
@@ -31,8 +34,10 @@ public class Usuario {
     public void setPassword(String password) { this.password = password; }
     public int getPresupuesto() { return presupuesto; }
     public void setPresupuesto(int presupuesto) { this.presupuesto = presupuesto; }
-
-    // IMPORTANTE: Java necesita esto para saber si eres admin
     public boolean isEsAdmin() { return esAdmin; }
     public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
+
+    // 🔴 GETTER Y SETTER DE FOTO
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 }
