@@ -83,7 +83,7 @@
         <button onclick="cambiarPestaña('mercado')" id="tab-mercado">🛒 Mercado</button>
         <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Rivales</button>
         <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Tabla</button>
-        <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Feed</button>
+        <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
         <button onclick="cambiarPestaña('admin')" id="tab-admin" class="admin-tab oculto">ADMIN</button>
     </nav>
 
@@ -167,6 +167,14 @@
         const esAdmin = (localStorage.getItem('esAdmin') === 'true');
         let presupuesto = parseInt(localStorage.getItem('presupuesto') || 0);
 
+        // --- PUNTO 2: FORMATEADOR DE DINERO CENTRALIZADO ---
+        // Usamos esto en todas partes para evitar el "1000000" confuso.
+        const formatoDinero = new Intl.NumberFormat('es-ES', {
+            style: 'currency',
+            currency: 'EUR',
+            maximumFractionDigits: 0 // Sin decimales para que quede limpio
+        });
+
         if (!usuarioId) window.location.href = 'login.html';
 
         window.onload = function() {
@@ -218,22 +226,24 @@
             });
         }
 
-        // --- RENDER ---
+        // --- RENDERIZADO CON FORMATO DE DINERO ---
         function crearCarta(j, tipo, alineado = false) {
             let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
-            let precio = new Intl.NumberFormat('es-ES').format(j.valor);
-            let clausula = new Intl.NumberFormat('es-ES').format(j.clausula);
+            
+            // USAMOS EL FORMATEADOR AQUÍ
+            let precio = formatoDinero.format(j.valor);
+            let clausula = formatoDinero.format(j.clausula);
             
             let contenido = '';
             let extraClass = alineado ? 'alineado' : '';
             let checked = alineado ? 'checked' : '';
 
             if (tipo === 'alinear') contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
-            else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio}€)</button>`;
-            else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}€</button>`;
+            else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
+            else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
             else if (tipo === 'gestion') {
                 contenido = `
-                    <div class="card-clausula">🔒 ${clausula}€</div>
+                    <div class="card-clausula">🔒 ${clausula}</div>
                     <div style="display:flex; gap:5px;">
                         <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender</button>
                         <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button>
@@ -275,7 +285,7 @@
             document.getElementById('grid-rival').innerHTML = html || '<p>Sin jugadores.</p>';
         }
 
-        // --- ACCIONES ---
+        // --- ACCIONES CON CONFIRMACIÓN DE DINERO (SOLUCIÓN A LA CONFUSIÓN) ---
         function actualizarContador(checkbox) {
             if(checkbox) {
                 const card = document.getElementById('card-' + checkbox.value);
@@ -285,18 +295,33 @@
             document.getElementById('contador-alineados').innerText = count;
         }
 
-        function fichar(id, p) { post(`/mercado/comprar/${id}/${usuarioId}`, {}, p); }
-        function robar(id, p) { post(`/mercado/robar/${id}/${usuarioId}`, {}, p); }
+        function fichar(id, p) { 
+            if(!confirm(`¿Fichar por ${formatoDinero.format(p)}?`)) return;
+            post(`/mercado/comprar/${id}/${usuarioId}`, {}, p); 
+        }
+        
+        function robar(id, p) { 
+            if(!confirm(`¿PAGAR CLÁUSULA DE ${formatoDinero.format(p)}?\nEl dinero irá al otro manager.`)) return;
+            post(`/mercado/robar/${id}/${usuarioId}`, {}, p); 
+        }
         
         function vender(id, p) {
-            if(!confirm("¿Vender al mercado? Perderás al jugador y recibirás " + p + "€.")) return;
+            if(!confirm(`¿Vender al mercado por ${formatoDinero.format(p)}?\nPerderás al jugador.`)) return;
             post(`/mercado/vender/${id}/${usuarioId}`, {}, -p); 
         }
 
         function blindar(id) {
-            let cantidad = prompt("¿Cuánto quieres invertir para subir la cláusula?\n(La cláusula subirá el DOBLE de lo que inviertas)");
+            // Aquí pedimos el número "en crudo" (sin puntos) pero explicamos lo que pasará
+            let cantidad = prompt("¿Cuánto quieres invertir para subir la cláusula?\n(Escribe el número SIN puntos, ej: 1000000)");
+            
             if (cantidad && !isNaN(cantidad) && cantidad > 0) {
-                post(`/jugador/subir-clausula/${id}/${cantidad}`, {}, cantidad);
+                // AQUÍ ESTÁ LA MAGIA: Le mostramos al usuario cuánto es en formato bonito antes de enviar
+                let dineroBonito = formatoDinero.format(cantidad);
+                let subidaBonita = formatoDinero.format(cantidad * 2); // La cláusula sube el doble
+                
+                if(confirm(`Resumen de la operación:\n\n- Vas a gastar: ${dineroBonito}\n- La cláusula subirá: ${subidaBonita}\n\n¿Confirmar inversión?`)) {
+                    post(`/jugador/subir-clausula/${id}/${cantidad}`, {}, cantidad);
+                }
             }
         }
 
@@ -350,7 +375,9 @@
         }
         function actualizarPresupuestoUI() { 
             const el = document.getElementById('presupuesto-display');
-            el.innerText = new Intl.NumberFormat('es-ES').format(presupuesto) + ' €';
+            // USAMOS EL FORMATEADOR TAMBIÉN AQUÍ
+            el.innerText = formatoDinero.format(presupuesto);
+            
             if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); }
             else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); }
         }
