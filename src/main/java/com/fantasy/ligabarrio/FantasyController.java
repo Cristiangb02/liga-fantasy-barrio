@@ -307,4 +307,3 @@ public class FantasyController {
         return "✅ Liga reseteada a 100M. Jornada 1 lista.";
     }
 }
-
