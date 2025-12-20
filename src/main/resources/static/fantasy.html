@@ -243,7 +243,6 @@
         function cargarTodo() {
             fetch('/jornada/actual').then(r=>r.json()).then(n => {
                 document.getElementById('badge-jornada').innerText = "J-" + n;
-                // 🔴 Actualizamos el número de jornada en la sección Alineación
                 document.getElementById('num-jornada-alineacion').innerText = n;
             });
 
@@ -252,10 +251,8 @@
                 pintarPlantilla(jugadores);
                 pintarMercado(jugadores);
                 if(esAdmin) pintarSelectAdmin(jugadores);
-                
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
-                    // 🔴 PINTAMOS ALINEACIÓN ORDENADA
                     pintarAlineacion(jugadores, idsAlineados);
                 });
             });
@@ -306,28 +303,23 @@
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
             else if (tipo === 'gestion') {
-                contenido = `<div class="card-clausula">🔒 ${clausula}</div><div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
+                // 🔴 CAMBIO: Pasamos VALOR y CLÁUSULA
+                contenido = `<div class="card-clausula">🔒 ${clausula}</div><div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
             }
             return `<div class="card ${extraClass}" id="card-${j.id}"><div class="puntos-corner">${j.puntosAcumulados}</div>${tipo === 'alinear' ? contenido : ''}<div class="card-img-container"><img src="${img}" class="card-img"></div><div class="card-body"><div><div class="card-name">${j.nombre}</div><div class="card-pos">${j.posicion}</div></div>${tipo !== 'alinear' ? contenido : ''}</div></div>`;
         }
 
         function pintarPlantilla(jugadores) { document.getElementById('grid-mi-plantilla').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>'; }
-        
-        // 🔴 CAMBIO PUNTO 6: ORDENAR ALINEACIÓN (ALINEADOS PRIMERO)
         function pintarAlineacion(jugadores, idsAlineados) { 
             const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId);
-            
-            // Ordenamos: Primero los que tengan ID en idsAlineados
             misJugadores.sort((a, b) => {
                 const aAlineado = idsAlineados.has(a.id) ? 1 : 0;
                 const bAlineado = idsAlineados.has(b.id) ? 1 : 0;
-                return bAlineado - aAlineado; // Mayor (1) primero
+                return bAlineado - aAlineado;
             });
-
             document.getElementById('grid-alineacion').innerHTML = misJugadores.map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>'; 
             actualizarContador(); 
         }
-
         function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.filter(j => !j.propietario).map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado vacío.</p>'; }
         function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
         
@@ -342,21 +334,22 @@
                 const card = document.getElementById('card-' + checkbox.value);
                 if(checkbox.checked) card.classList.add('alineado'); else card.classList.remove('alineado');
             }
-            // Actualizar conteo visual
-            const count = document.querySelectorAll('.check-alinear:checked').length;
-            const badge = document.getElementById('contador-alineados');
-            badge.innerText = count;
-            badge.style.color = count > 8 ? 'red' : 'white'; // Aviso visual simple
+            document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
         }
 
         function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
         function robar(id, p) { mostrarModal("Clausulazo 🔥", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
-        function vender(id, p) { mostrarModal("Vender al Mercado", `Recibirás ${formatoDinero.format(p)}.`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -p)); }
+        
+        // 🔴 CORRECCIÓN PUNTO 7 (JS): CÁLCULO VISUAL EXACTO
+        function vender(id, valor, clausula) {
+            let ingreso = valor + (clausula - valor) / 2;
+            mostrarModal("Vender al Mercado", `Recuperarás Coste + Inversión.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso));
+        }
+
         function blindar(id) { mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => { if (cant && !isNaN(cant) && cant > 0) post(`/jugador/subir-clausula/${id}/${cant}`, {}, cant); }); }
         function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
         function resetearLiga() { mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => { if(t==="RESET") post('/admin/reset-liga', {}); else mostrarModal("Error","Código mal.",'confirm',()=>{}); }); }
         
-        // 🔴 CAMBIO PUNTO 6: LIMITE 8
         function guardarAlineacion() {
             const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
             if(ids.length > 8) { mostrarModal("Alineación", "Máximo 8 jugadores.", 'confirm', ()=>{}); return; }
