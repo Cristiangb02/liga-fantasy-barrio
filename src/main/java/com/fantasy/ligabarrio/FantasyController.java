@@ -62,6 +62,7 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
+    // 🔴 ASEGÚRATE DE QUE ESTE MÉTODO ES EXACTAMENTE ASÍ
     @GetMapping("/clasificacion")
     public List<Map<String, Object>> verClasificacion() {
         List<Usuario> usuarios = usuarioRepository.findAll();
@@ -79,7 +80,7 @@ public class FantasyController {
                     .mapToInt(Jugador::getValor)
                     .sum();
 
-            // 🔴 AÑADIMOS EL AVATAR A LA RESPUESTA
+            // AQUÍ ESTÁ LA CLAVE: ENVIAMOS "avatar"
             return Map.<String, Object>of(
                     "nombre", u.getNombre(),
                     "puntos", puntosTotales,
@@ -91,11 +92,9 @@ public class FantasyController {
         .collect(Collectors.toList());
     }
 
-    // 🔴 NUEVO: CAMBIAR FOTO DE PERFIL
     @PostMapping("/usuario/cambiar-foto/{idUsuario}")
     public String cambiarFoto(@PathVariable Long idUsuario, @RequestBody String urlFoto) {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
-        // Quitamos comillas si vienen por el JSON
         String urlLimpia = urlFoto.replace("\"", ""); 
         usuario.setAvatarUrl(urlLimpia);
         usuarioRepository.save(usuario);
@@ -136,7 +135,6 @@ public class FantasyController {
         ladron.setPresupuesto(ladron.getPresupuesto() - jugador.getClausula());
         victima.setPresupuesto(victima.getPresupuesto() + jugador.getClausula());
         jugador.setPropietario(ladron);
-        
         jugador.setClausula((int)(jugador.getClausula() * 1.5));
 
         usuarioRepository.save(ladron);
@@ -154,8 +152,7 @@ public class FantasyController {
 
         if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(idUsuario)) return "❌ No es tuyo.";
 
-        int beneficioClausula = (jugador.getClausula() - jugador.getValor()) / 2;
-        int ingreso = jugador.getValor() + beneficioClausula;
+        int ingreso = jugador.getValor() + (jugador.getClausula() - jugador.getValor()) / 2;
 
         vendedor.setPresupuesto(vendedor.getPresupuesto() + ingreso);
         jugador.setPropietario(null);
