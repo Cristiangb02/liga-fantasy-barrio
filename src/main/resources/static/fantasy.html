@@ -13,7 +13,6 @@
         .presupuesto-negativo { background: #d32f2f; color: white; }
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
-        /* ESTILOS AVATAR */
         .user-info { display: flex; align-items: center; gap: 10px; }
         .avatar-header { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white; cursor: pointer; background: #ddd; transition: transform 0.2s; }
         .avatar-header:hover { transform: scale(1.1); filter: brightness(1.1); }
@@ -24,7 +23,6 @@
         nav button.admin-tab { background: #ffebee !important; color: #b71c1c !important; }
         nav button.admin-tab.active { background: #d32f2f !important; color: white !important; }
 
-        /* CARTAS Y GRID */
         .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         
         .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(0,0,0,0.05); }
@@ -61,8 +59,10 @@
         /* TABLA CLASIFICACION */
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
-        .avatar-small { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
-        .clasif-user { display: flex; align-items: center; gap: 10px; }
+        
+        /* 🔴 MEJORA CSS: Asegurar que la foto se vea bien en la tabla */
+        .avatar-small { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #e3e8ee; background-color: #ddd; }
+        .clasif-user { display: flex; align-items: center; gap: 12px; }
 
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
@@ -221,7 +221,6 @@
             if (tipo === 'input' || tipo === 'blindar') {
                 inputContainer.classList.remove('oculto');
                 input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe...";
-                
                 if(tipo === 'blindar') {
                     input.onkeyup = function() {
                         let val = parseInt(this.value);
@@ -250,7 +249,7 @@
 
         window.onload = function() {
             document.getElementById('titulo-web').innerText = localStorage.getItem('usuarioNombre');
-            // Cargar avatar local si existe o placeholder
+            // Cargar avatar local si existe
             let avatarLocal = localStorage.getItem('avatarUrl');
             if(avatarLocal && avatarLocal !== "null" && avatarLocal.length > 10) document.getElementById('mi-avatar').src = avatarLocal;
 
@@ -281,11 +280,14 @@
             });
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
             
-            // CLASIFICACIÓN CON AVATAR
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 let html = data.map((fila, i) => {
-                    let avatarHtml = fila.avatar && fila.avatar.length > 10 ? `<img src="${fila.avatar}" class="avatar-small">` : `<div class="avatar-small" style="background:#eee; display:flex; align-items:center; justify-content:center;">👤</div>`;
+                    // Checkeamos si hay avatar válido (largo > 10 por si acaso es una cadena vacía)
+                    let avatarHtml = fila.avatar && fila.avatar.length > 10 ? 
+                        `<img src="${fila.avatar}" class="avatar-small">` : 
+                        `<div class="avatar-small" style="background:#eee; display:flex; align-items:center; justify-content:center;">👤</div>`;
                     
+                    // Si soy yo, refresco el avatar del header
                     if(fila.nombre === localStorage.getItem('usuarioNombre')) {
                         if(fila.avatar && fila.avatar.length > 10) { 
                             document.getElementById('mi-avatar').src = fila.avatar; 
@@ -311,29 +313,24 @@
             cargarNoticias();
         }
 
-        // 🔴 FUNCIONES NUEVAS: SUBIDA DE FOTO DESDE GALERÍA
-        function abrirGaleria() {
-            document.getElementById('input-foto-perfil').click();
-        }
+        // FUNCIONES FOTO
+        function abrirGaleria() { document.getElementById('input-foto-perfil').click(); }
 
         function procesarSubidaFoto(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
-                
-                // Límite de seguridad: 1MB
-                if(input.files[0].size > 1000000) {
-                    mostrarModal("Error", "La imagen es demasiado grande. Máximo 1MB.", 'confirm', ()=>{});
+                // Limite 1MB
+                if(input.files[0].size > 2000000) {
+                    mostrarModal("Error", "La imagen es demasiado grande. Máximo 2MB.", 'confirm', ()=>{});
                     return;
                 }
-
                 reader.onload = function(e) {
                     let imagenBase64 = e.target.result;
-                    // Enviar al backend
                     fetch(`/usuario/cambiar-foto/${usuarioId}`, { method: 'POST', body: imagenBase64 })
                     .then(r => r.text()).then(msg => {
                         document.getElementById('mi-avatar').src = imagenBase64;
                         localStorage.setItem('avatarUrl', imagenBase64);
-                        cargarTodo(); // Recargar para que salga en la tabla
+                        cargarTodo();
                     });
                 }
                 reader.readAsDataURL(input.files[0]);
