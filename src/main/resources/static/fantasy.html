@@ -14,8 +14,8 @@
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
         .user-info { display: flex; align-items: center; gap: 10px; }
-        .avatar-header { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white; cursor: pointer; background: #ddd; transition: transform 0.2s; }
-        .avatar-header:hover { transform: scale(1.1); filter: brightness(1.1); }
+        /* Avatar estático, sin efecto click */
+        .avatar-header { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white; background: #ddd; }
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
@@ -56,12 +56,9 @@
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         
-        /* TABLA CLASIFICACION */
+        /* TABLA CLASIFICACION LIMPIA */
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
-        
-        /* 🔴 MEJORA CSS: Asegurar que la foto se vea bien en la tabla */
-        .avatar-small { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #e3e8ee; background-color: #ddd; }
         .clasif-user { display: flex; align-items: center; gap: 12px; }
 
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
@@ -84,11 +81,9 @@
 </head>
 <body>
 
-    <input type="file" id="input-foto-perfil" accept="image/*" style="display:none" onchange="procesarSubidaFoto(this)">
-
     <header>
         <div class="user-info">
-            <img id="mi-avatar" src="https://via.placeholder.com/50?text=👤" class="avatar-header" onclick="abrirGaleria()" title="Toca para cambiar foto">
+            <img src="https://via.placeholder.com/50?text=👤" class="avatar-header">
             <div style="display:flex; flex-direction:column;">
                 <div style="display:flex; align-items:center;">
                     <h1 id="titulo-web" style="margin:0; font-size:1.4rem;">Fantasy</h1>
@@ -249,10 +244,6 @@
 
         window.onload = function() {
             document.getElementById('titulo-web').innerText = localStorage.getItem('usuarioNombre');
-            // Cargar avatar local si existe
-            let avatarLocal = localStorage.getItem('avatarUrl');
-            if(avatarLocal && avatarLocal !== "null" && avatarLocal.length > 10) document.getElementById('mi-avatar').src = avatarLocal;
-
             actualizarPresupuestoUI();
             if (esAdmin) {
                 document.getElementById('tab-admin').classList.remove('oculto');
@@ -280,61 +271,22 @@
             });
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
             
+            // CLASIFICACION NORMAL (SIN FOTO)
             fetch('/clasificacion').then(r=>r.json()).then(data => {
-                let html = data.map((fila, i) => {
-                    // Checkeamos si hay avatar válido (largo > 10 por si acaso es una cadena vacía)
-                    let avatarHtml = fila.avatar && fila.avatar.length > 10 ? 
-                        `<img src="${fila.avatar}" class="avatar-small">` : 
-                        `<div class="avatar-small" style="background:#eee; display:flex; align-items:center; justify-content:center;">👤</div>`;
-                    
-                    // Si soy yo, refresco el avatar del header
-                    if(fila.nombre === localStorage.getItem('usuarioNombre')) {
-                        if(fila.avatar && fila.avatar.length > 10) { 
-                            document.getElementById('mi-avatar').src = fila.avatar; 
-                            localStorage.setItem('avatarUrl', fila.avatar);
-                        }
-                    }
-
-                    return `
+                let html = data.map((fila, i) => `
                     <div class="fila-clasif">
                         <div class="clasif-user">
                             <span class="pos-num">${i+1}º</span>
-                            ${avatarHtml}
                             <strong>${fila.nombre}</strong>
                         </div>
                         <div style="text-align:right;">
                             <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
                             <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
                         </div>
-                    </div>`;
-                }).join('');
+                    </div>`).join('');
                 document.getElementById('lista-clasificacion').innerHTML = html;
             });
             cargarNoticias();
-        }
-
-        // FUNCIONES FOTO
-        function abrirGaleria() { document.getElementById('input-foto-perfil').click(); }
-
-        function procesarSubidaFoto(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                // Limite 1MB
-                if(input.files[0].size > 2000000) {
-                    mostrarModal("Error", "La imagen es demasiado grande. Máximo 2MB.", 'confirm', ()=>{});
-                    return;
-                }
-                reader.onload = function(e) {
-                    let imagenBase64 = e.target.result;
-                    fetch(`/usuario/cambiar-foto/${usuarioId}`, { method: 'POST', body: imagenBase64 })
-                    .then(r => r.text()).then(msg => {
-                        document.getElementById('mi-avatar').src = imagenBase64;
-                        localStorage.setItem('avatarUrl', imagenBase64);
-                        cargarTodo();
-                    });
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
         }
 
         function cargarNoticias() {
