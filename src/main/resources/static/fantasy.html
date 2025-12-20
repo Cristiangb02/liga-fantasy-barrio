@@ -5,54 +5,119 @@
     <title>Liga Barrio Fantasy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #e3e8ee; padding: 10px; margin: 0 auto; color: #333; max-width: 1000px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0 auto; color: #333; max-width: 1000px; }
         
-        header { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        header { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .jornada-badge { background: #ffd600; color: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-left: 10px; }
         .presupuesto-box { font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; white-space: nowrap;}
-        .presupuesto-negativo { background: #e53935; color: white; }
+        .presupuesto-negativo { background: #d32f2f; color: white; }
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
-        nav button.active { background: #1565c0; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3); }
-        nav button.admin-tab { background: #ffcdd2 !important; color: #b71c1c !important; }
+        nav button.active { background: #1a237e; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(26, 35, 126, 0.3); }
+        nav button.admin-tab { background: #ffebee !important; color: #b71c1c !important; }
         nav button.admin-tab.active { background: #d32f2f !important; color: white !important; }
 
-        .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1976d2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
-        .noticia-fecha { font-size: 0.8em; color: #888; display: block; margin-bottom: 4px; }
-        .noticia-robo { border-left-color: #d32f2f; background: #fffde7; }
-
-        .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; border: 1px solid #eee; display: flex; flex-direction: column; }
+        /* --- 🔴 NUEVO DISEÑO DE CARTAS (PUNTO 8) --- */
+        .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         
-        .puntos-corner { position: absolute; top: 5px; right: 5px; background: #43a047; color: white; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75em; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .card-img-container { height: 120px; background: #f5f5f5; display: flex; justify-content: center; align-items: flex-end; overflow: hidden; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
-        .card-body { padding: 8px; text-align: center; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; }
-        .card-name { font-weight: 700; font-size: 0.85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-pos { font-size: 0.65em; text-transform: uppercase; font-weight: 800; color: #90a4ae; letter-spacing: 0.5px; }
-        .card-clausula { font-size: 0.75em; color: #d32f2f; font-weight: bold; }
-
-        .btn-card { width: 100%; padding: 6px; border: none; border-radius: 4px; font-weight: 700; font-size: 0.8em; cursor: pointer; margin-top: 2px; }
-        .btn-fichar { background: #039be5; color: white; }
-        .btn-robar { background: #e53935; color: white; }
-        .btn-vender { background: #ff9800; color: white; }
-        .btn-blindar { background: #4caf50; color: white; }
-        .btn-action-big { background: #43a047; color: white; margin-top: 15px; padding: 12px; width: 100%; border-radius: 8px; border:none; font-size: 1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #2e7d32; }
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            position: relative; 
+            display: flex; 
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
         
-        .alineacion-overlay { position: absolute; top: 5px; left: 5px; z-index: 10; }
-        .check-alinear { transform: scale(1.3); cursor: pointer; }
-        .card.alineado { border: 2px solid #43a047; background: #e8f5e9; }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
 
+        /* Alineado: Borde verde brillante */
+        .card.alineado { 
+            border: 3px solid #2e7d32; 
+            box-shadow: 0 0 10px rgba(46, 125, 50, 0.3);
+        }
+
+        /* 🔴 TRIÁNGULO DE PUNTOS (PUNTO 8) */
+        .puntos-triangle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 55px 55px 0;
+            border-color: transparent #2e7d32 transparent transparent; /* Triángulo verde */
+            z-index: 2;
+        }
+        .puntos-val {
+            position: absolute;
+            top: 6px;
+            right: 7px;
+            color: white;
+            font-weight: 800;
+            font-size: 0.9rem;
+            z-index: 3;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* IMAGEN Y CONTENIDO */
+        .card-img-container { 
+            height: 140px; 
+            background: linear-gradient(to top, #cfd8dc, #eceff1); /* Degradado suave fondo */
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-end; 
+            overflow: hidden;
+            position: relative;
+        }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+        .card:hover .card-img { transform: scale(1.05); }
+
+        .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
+        .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-pos-badge { 
+            display: inline-block; 
+            background: #eceff1; 
+            color: #546e7a; 
+            font-size: 0.7em; 
+            font-weight: 800; 
+            padding: 2px 8px; 
+            border-radius: 10px; 
+            text-transform: uppercase;
+            align-self: center;
+        }
+        .card-clausula { font-size: 0.8em; color: #d32f2f; font-weight: bold; }
+
+        /* BOTONES */
+        .btn-card { width: 100%; padding: 8px; border: none; border-radius: 6px; font-weight: 700; font-size: 0.85em; cursor: pointer; margin-top: auto; transition: 0.2s; }
+        .btn-card:active { transform: scale(0.95); }
+        .btn-fichar { background: #0288d1; color: white; }
+        .btn-robar { background: #d32f2f; color: white; }
+        .btn-vender { background: #ff8f00; color: white; }
+        .btn-blindar { background: #388e3c; color: white; }
+        
+        .alineacion-overlay { position: absolute; top: 8px; left: 8px; z-index: 10; }
+        .check-alinear { transform: scale(1.5); cursor: pointer; accent-color: #2e7d32; }
+
+        .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
+        
+        /* UTILIDADES */
         .oculto { display: none !important; }
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         
-        .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1565c0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .pos-num { font-size: 1.2em; font-weight: 900; color: #1565c0; min-width: 30px; }
-        
+        .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
+        .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
         /* MODAL */
@@ -291,22 +356,43 @@
             });
         }
 
+        // --- 🔴 RENDERIZADO DE CARTAS (NUEVO DISEÑO) ---
         function crearCarta(j, tipo, alineado = false) {
             let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
             let precio = formatoDinero.format(j.valor);
             let clausula = formatoDinero.format(j.clausula);
+            
             let contenido = '';
             let extraClass = alineado ? 'alineado' : '';
             let checked = alineado ? 'checked' : '';
 
+            // Lógica de botones
             if (tipo === 'alinear') contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
             else if (tipo === 'gestion') {
-                // 🔴 CAMBIO: Pasamos VALOR y CLÁUSULA
-                contenido = `<div class="card-clausula">🔒 ${clausula}</div><div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
+                contenido = `
+                    <div style="display:flex; gap:5px; margin-top:auto;">
+                        <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button>
+                        <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">🔒 Subir</button>
+                    </div>`;
             }
-            return `<div class="card ${extraClass}" id="card-${j.id}"><div class="puntos-corner">${j.puntosAcumulados}</div>${tipo === 'alinear' ? contenido : ''}<div class="card-img-container"><img src="${img}" class="card-img"></div><div class="card-body"><div><div class="card-name">${j.nombre}</div><div class="card-pos">${j.posicion}</div></div>${tipo !== 'alinear' ? contenido : ''}</div></div>`;
+
+            // HTML Estructura Nueva
+            return `
+                <div class="card ${extraClass}" id="card-${j.id}">
+                    <div class="puntos-triangle"></div>
+                    <div class="puntos-val">${j.puntosAcumulados}</div>
+                    
+                    ${tipo === 'alinear' ? contenido : ''} <div class="card-img-container"><img src="${img}" class="card-img"></div>
+                    
+                    <div class="card-body">
+                        <div class="card-name">${j.nombre}</div>
+                        <div class="card-pos-badge">${j.posicion}</div>
+                        ${tipo === 'gestion' ? `<div class="card-clausula">Cláusula: ${clausula}</div>` : ''}
+                        ${tipo !== 'alinear' ? contenido : ''}
+                    </div>
+                </div>`;
         }
 
         function pintarPlantilla(jugadores) { document.getElementById('grid-mi-plantilla').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>'; }
@@ -334,18 +420,18 @@
                 const card = document.getElementById('card-' + checkbox.value);
                 if(checkbox.checked) card.classList.add('alineado'); else card.classList.remove('alineado');
             }
-            document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
+            const count = document.querySelectorAll('.check-alinear:checked').length;
+            const badge = document.getElementById('contador-alineados');
+            badge.innerText = count;
+            badge.style.color = count > 8 ? 'red' : 'white';
         }
 
         function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
         function robar(id, p) { mostrarModal("Clausulazo 🔥", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
-        
-        // 🔴 CORRECCIÓN PUNTO 7 (JS): CÁLCULO VISUAL EXACTO
         function vender(id, valor, clausula) {
             let ingreso = valor + (clausula - valor) / 2;
             mostrarModal("Vender al Mercado", `Recuperarás Coste + Inversión.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso));
         }
-
         function blindar(id) { mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => { if (cant && !isNaN(cant) && cant > 0) post(`/jugador/subir-clausula/${id}/${cant}`, {}, cant); }); }
         function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
         function resetearLiga() { mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => { if(t==="RESET") post('/admin/reset-liga', {}); else mostrarModal("Error","Código mal.",'confirm',()=>{}); }); }
