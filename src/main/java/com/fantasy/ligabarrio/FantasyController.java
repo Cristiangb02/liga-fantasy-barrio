@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -26,6 +28,11 @@ public class FantasyController {
         this.actuacionRepository = actuacionRepository;
         this.noticiaRepository = noticiaRepository;
         this.calculadora = calculadora;
+    }
+
+    // Ayudante para formatear dinero en Java (Ej: 10.000.000 €)
+    private String fmtDinero(int cantidad) {
+    return NumberFormat.getCurrencyInstance(Locale.of("es", "ES")).format(cantidad);
     }
 
     private Jornada getJornadaActiva() {
@@ -105,7 +112,7 @@ public class FantasyController {
         usuarioRepository.save(comprador);
         jugadorRepository.save(jugador);
         
-        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre()));
+        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));    
         return "✅ Fichaje realizado.";
     }
 
@@ -128,7 +135,7 @@ public class FantasyController {
         usuarioRepository.save(victima);
         jugadorRepository.save(jugador);
 
-        noticiaRepository.save(new Noticia("🔥 CLÁUSULAZO: " + ladron.getNombre() + " roba a " + jugador.getNombre()));
+        noticiaRepository.save(new Noticia("🔥 CLÁUSULAZO: " + ladron.getNombre() + " roba a " + jugador.getNombre() + " por " + fmtDinero(jugador.getClausula())));
         return "✅ ¡Robo completado!";
     }
 
@@ -155,7 +162,7 @@ public class FantasyController {
         usuarioRepository.save(vendedor);
         jugadorRepository.save(jugador);
         
-        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " vende a " + jugador.getNombre()));
+        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " vende a " + jugador.getNombre() + " y recibe " + fmtDinero(jugador.getValor())));
         return "✅ Jugador vendido por " + jugador.getValor() + "€";
     }
 
@@ -240,7 +247,7 @@ public class FantasyController {
             usuarioRepository.save(manager);
             equipoRepository.save(equipo);
             if (puntos > 0) {
-                resumenPremios.append("💰 ").append(manager.getNombre()).append(": ").append(puntos).append("p -> ").append(premioEconomico/1000).append("k\n");
+            resumenPremios.append("💰 ").append(manager.getNombre()).append(": ").append(puntos).append("p -> ").append(fmtDinero(premioEconomico)).append("\n");
             }
         }
         
@@ -291,3 +298,4 @@ public class FantasyController {
         return "✅ Liga reseteada a 100M. Jornada 1 lista.";
     }
 }
+
