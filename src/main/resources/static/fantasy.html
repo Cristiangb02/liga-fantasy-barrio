@@ -7,22 +7,14 @@
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #e3e8ee; padding: 10px; margin: 0 auto; color: #333; max-width: 1000px; }
         
-        header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: linear-gradient(135deg, #1565c0, #0d47a1); color: white;
-            padding: 15px; border-radius: 12px; margin-bottom: 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
+        header { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .jornada-badge { background: #ffd600; color: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-left: 10px; }
         .presupuesto-box { font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; white-space: nowrap;}
         .presupuesto-negativo { background: #e53935; color: white; }
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        nav button { 
-            flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; 
-            border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em;
-        }
+        nav button { flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
         nav button.active { background: #1565c0; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3); }
         nav button.admin-tab { background: #ffcdd2 !important; color: #b71c1c !important; }
         nav button.admin-tab.active { background: #d32f2f !important; color: white !important; }
@@ -56,11 +48,15 @@
         .oculto { display: none !important; }
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-        .fila-clasif { background: white; padding: 10px; margin-bottom: 5px; border-radius: 6px; display: flex; justify-content: space-between; font-weight: 600; border-left: 4px solid gold; font-size: 0.9em; }
+        
+        /* 🔴 ESTILO NUEVO TABLA CLASIFICACIÓN (PUNTO 4) */
+        .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1565c0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .pos-num { font-size: 1.2em; font-weight: 900; color: #1565c0; min-width: 30px; }
+        
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
-        /* --- ESTILOS MODAL (PUNTO 3) --- */
+        /* ESTILOS MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
@@ -174,12 +170,10 @@
         <div class="modal-box">
             <h3 id="modal-titulo" class="modal-titulo">Título</h3>
             <p id="modal-mensaje" class="modal-mensaje">Mensaje...</p>
-            
             <div id="modal-input-container" class="oculto">
                 <input type="text" id="modal-input" class="modal-input" placeholder="Escribe aquí...">
                 <div id="modal-info-extra" class="modal-info-extra oculto"></div>
             </div>
-
             <div class="modal-buttons">
                 <button id="btn-modal-cancel" class="btn-modal btn-modal-cancel">Cancelar</button>
                 <button id="btn-modal-ok" class="btn-modal btn-modal-ok">Confirmar</button>
@@ -193,67 +187,46 @@
         let presupuesto = parseInt(localStorage.getItem('presupuesto') || 0);
         const formatoDinero = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
-        // --- SISTEMA DE MODAL (NUEVO) ---
         let modalCallback = null;
-
         function mostrarModal(titulo, mensaje, tipo, callback) {
             document.getElementById('modal-titulo').innerText = titulo;
             document.getElementById('modal-mensaje').innerText = mensaje;
             document.getElementById('modal-overlay').classList.remove('oculto');
-            
             const btnOk = document.getElementById('btn-modal-ok');
             const inputContainer = document.getElementById('modal-input-container');
             const input = document.getElementById('modal-input');
             const infoExtra = document.getElementById('modal-info-extra');
-
-            // Resetear estado
             input.value = '';
             inputContainer.classList.add('oculto');
             infoExtra.classList.add('oculto');
-            btnOk.className = 'btn-modal btn-modal-ok'; // Reset color
+            btnOk.className = 'btn-modal btn-modal-ok'; 
 
-            if (tipo === 'confirm') {
-                inputContainer.classList.add('oculto');
-            } else if (tipo === 'input' || tipo === 'blindar') {
+            if (tipo === 'input' || tipo === 'blindar') {
                 inputContainer.classList.remove('oculto');
                 input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe...";
-                
-                // Lógica especial para BLINDAR (Cálculo en vivo)
                 if(tipo === 'blindar') {
                     input.onkeyup = function() {
                         let val = parseInt(this.value);
                         if(!isNaN(val) && val > 0) {
                             infoExtra.classList.remove('oculto');
                             infoExtra.innerHTML = `<strong>Coste:</strong> ${formatoDinero.format(val)}<br><strong>Subida Cláusula:</strong> ${formatoDinero.format(val*2)}`;
-                        } else {
-                            infoExtra.classList.add('oculto');
-                        }
+                        } else { infoExtra.classList.add('oculto'); }
                     }
-                } else {
-                    input.onkeyup = null;
-                }
+                } else { input.onkeyup = null; }
             } else if (tipo === 'danger') {
                 inputContainer.classList.remove('oculto');
                 input.placeholder = "Escribe RESET para confirmar";
                 btnOk.className = 'btn-modal btn-modal-danger';
             }
-
-            // Asignar acción al botón
             modalCallback = () => {
                 if (tipo === 'confirm') callback();
                 else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
                 cerrarModal();
             };
         }
-
-        function cerrarModal() {
-            document.getElementById('modal-overlay').classList.add('oculto');
-            modalCallback = null;
-        }
-
+        function cerrarModal() { document.getElementById('modal-overlay').classList.add('oculto'); modalCallback = null; }
         document.getElementById('btn-modal-ok').onclick = () => { if(modalCallback) modalCallback(); };
         document.getElementById('btn-modal-cancel').onclick = cerrarModal;
-
 
         if (!usuarioId) window.location.href = 'login.html';
 
@@ -281,9 +254,24 @@
                 });
             });
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
+            
+            // 🔴 CLASIFICACIÓN CON NUEVO FORMATO
             fetch('/clasificacion').then(r=>r.json()).then(data => {
-                document.getElementById('lista-clasificacion').innerHTML = data.map((t,i) => `<div class="fila-clasif"><span class="pos-num">${i+1}º</span> ${t}</div>`).join('');
+                let html = data.map((fila, i) => `
+                    <div class="fila-clasif">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="pos-num">${i+1}º</span>
+                            <strong>${fila.nombre}</strong>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:bold; color:#1565c0;">${fila.puntos} pts</div>
+                            <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('lista-clasificacion').innerHTML = html;
             });
+
             cargarNoticias();
         }
 
@@ -307,7 +295,6 @@
             let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
             let precio = formatoDinero.format(j.valor);
             let clausula = formatoDinero.format(j.clausula);
-            
             let contenido = '';
             let extraClass = alineado ? 'alineado' : '';
             let checked = alineado ? 'checked' : '';
@@ -316,13 +303,8 @@
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
             else if (tipo === 'gestion') {
-                contenido = `<div class="card-clausula">🔒 ${clausula}</div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender</button>
-                        <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button>
-                    </div>`;
+                contenido = `<div class="card-clausula">🔒 ${clausula}</div><div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
             }
-
             return `<div class="card ${extraClass}" id="card-${j.id}"><div class="puntos-corner">${j.puntosAcumulados}</div>${tipo === 'alinear' ? contenido : ''}<div class="card-img-container"><img src="${img}" class="card-img"></div><div class="card-body"><div><div class="card-name">${j.nombre}</div><div class="card-pos">${j.posicion}</div></div>${tipo !== 'alinear' ? contenido : ''}</div></div>`;
         }
 
@@ -345,40 +327,13 @@
             document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
         }
 
-        // --- ACCIONES CON NUEVOS MODALES ---
-        function fichar(id, p) { 
-            mostrarModal("Fichar Jugador", `¿Quieres fichar a este jugador por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p));
-        }
+        function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
+        function robar(id, p) { mostrarModal("Clausulazo 🔥", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
+        function vender(id, p) { mostrarModal("Vender al Mercado", `Recibirás ${formatoDinero.format(p)}.`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -p)); }
+        function blindar(id) { mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => { if (cant && !isNaN(cant) && cant > 0) post(`/jugador/subir-clausula/${id}/${cant}`, {}, cant); }); }
+        function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
+        function resetearLiga() { mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => { if(t==="RESET") post('/admin/reset-liga', {}); else mostrarModal("Error","Código mal.",'confirm',()=>{}); }); }
         
-        function robar(id, p) { 
-            mostrarModal("Clausulazo 🔥", `¿Pagar la cláusula de ${formatoDinero.format(p)}?\nEl dinero irá al manager rival.`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p));
-        }
-        
-        function vender(id, p) {
-            mostrarModal("Vender al Mercado", `Recibirás ${formatoDinero.format(p)}.\nEsta acción es irreversible.`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -p));
-        }
-
-        function blindar(id) {
-            mostrarModal("Subir Cláusula 🔒", "Introduce la cantidad a invertir.\nLa cláusula subirá el DOBLE de lo que inviertas.", 'blindar', (cantidad) => {
-                if (cantidad && !isNaN(cantidad) && cantidad > 0) {
-                    post(`/jugador/subir-clausula/${id}/${cantidad}`, {}, cantidad);
-                }
-            });
-        }
-
-        function expulsarUsuario(id, nombre) {
-            mostrarModal("Expulsar Manager 👮", `¿Estás seguro de expulsar a ${nombre}?\nSus jugadores quedarán libres.`, 'confirm', () => {
-                fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { alert(msg); cargarUsuariosAdmin(); cargarTodo(); });
-            });
-        }
-
-        function resetearLiga() {
-            mostrarModal("⚠️ PELIGRO: RESET TOTAL", "Vas a borrar TODA la liga (equipos, dinero, puntos).\nEscribe 'RESET' para confirmar:", 'danger', (texto) => {
-                if(texto === "RESET") post('/admin/reset-liga', {});
-                else alert("Código incorrecto. Operación cancelada.");
-            });
-        }
-
         function guardarAlineacion() {
             const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
             if(ids.length > 7) { mostrarModal("Alineación", "Máximo 7 jugadores.", 'confirm', ()=>{}); return; }
@@ -386,10 +341,9 @@
         }
 
         function post(url, data, coste = 0) {
-            if(coste > 0 && coste > presupuesto) { mostrarModal("Error", "No tienes suficiente dinero.", 'confirm', ()=>{}); return; }
+            if(coste > 0 && coste > presupuesto) { mostrarModal("Error", "No tienes dinero.", 'confirm', ()=>{}); return; }
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
-                // Si es un mensaje simple, usamos modal, si es confirmación ok recargamos
                 mostrarModal("Información", msg, 'confirm', () => {
                     if(!msg.includes("❌")) {
                         if(coste !== 0) { presupuesto -= coste; localStorage.setItem('presupuesto', presupuesto); actualizarPresupuestoUI(); }
@@ -399,26 +353,12 @@
             });
         }
 
-        // --- ADMIN ---
         function pintarSelectAdmin(jugadores) { document.getElementById('admin-jugador').innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre}</option>`).join(''); }
-        function registrarActa() {
-            const datos = { idJugador: parseInt(document.getElementById('admin-jugador').value), idJornada: 1, victoria: document.getElementById('check-victoria').checked, derrota: document.getElementById('check-derrota').checked, goles: parseInt(document.getElementById('input-goles').value)||0, golesEncajados: parseInt(document.getElementById('input-encajados').value)||0, autogoles: 0 };
-            post('/admin/registrar', datos);
-        }
-        function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Seguro que quieres cerrar la jornada y repartir primas?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
+        function registrarActa() { const datos = { idJugador: parseInt(document.getElementById('admin-jugador').value), idJornada: 1, victoria: document.getElementById('check-victoria').checked, derrota: document.getElementById('check-derrota').checked, goles: parseInt(document.getElementById('input-goles').value)||0, golesEncajados: parseInt(document.getElementById('input-encajados').value)||0, autogoles: 0 }; post('/admin/registrar', datos); }
+        function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Repartir puntos y dinero?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
 
-        function cambiarPestaña(tab) {
-            document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById('sec-' + tab).classList.remove('oculto');
-            document.getElementById('tab-' + tab).classList.add('active');
-        }
-        function actualizarPresupuestoUI() { 
-            const el = document.getElementById('presupuesto-display');
-            el.innerText = formatoDinero.format(presupuesto);
-            if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); }
-            else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); }
-        }
+        function cambiarPestaña(tab) { document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto')); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active')); document.getElementById('sec-' + tab).classList.remove('oculto'); document.getElementById('tab-' + tab).classList.add('active'); }
+        function actualizarPresupuestoUI() { const el = document.getElementById('presupuesto-display'); el.innerText = formatoDinero.format(presupuesto); if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); } else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); } }
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
     </script>
 </body>
