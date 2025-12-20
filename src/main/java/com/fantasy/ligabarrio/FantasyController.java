@@ -30,9 +30,8 @@ public class FantasyController {
         this.calculadora = calculadora;
     }
 
-    // Ayudante para formatear dinero en Java (Ej: 10.000.000 €)
     private String fmtDinero(int cantidad) {
-    return NumberFormat.getCurrencyInstance(Locale.of("es", "ES")).format(cantidad);
+        return NumberFormat.getCurrencyInstance(Locale.of("es", "ES")).format(cantidad);
     }
 
     private Jornada getJornadaActiva() {
@@ -63,7 +62,6 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
-    // --- 🔴 PUNTO 4: CLASIFICACIÓN REAL (PUNTOS Y VALOR DE PLANTILLA) ---
     @GetMapping("/clasificacion")
     public List<Map<String, Object>> verClasificacion() {
         List<Usuario> usuarios = usuarioRepository.findAll();
@@ -71,26 +69,22 @@ public class FantasyController {
         List<Equipo> todosEquipos = equipoRepository.findAll();
 
         return usuarios.stream().map(u -> {
-            // 1. Calcular Puntos Totales (Suma de todas las jornadas)
             int puntosTotales = todosEquipos.stream()
                     .filter(e -> e.getUsuario().getId().equals(u.getId()))
                     .mapToInt(Equipo::getPuntosTotalesJornada)
                     .sum();
             
-            // 2. Calcular Valor de Plantilla (Suma del valor de sus jugadores)
             int valorPlantilla = todosJugadores.stream()
                     .filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId()))
                     .mapToInt(Jugador::getValor)
                     .sum();
 
-            // Devolvemos un mapa estructurado (JSON)
             return Map.<String, Object>of(
                     "nombre", u.getNombre(),
                     "puntos", puntosTotales,
                     "valorPlantilla", valorPlantilla
             );
         })
-        // 3. ORDENAR POR PUNTOS (De mayor a menor)
         .sorted((m1, m2) -> Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos")))
         .collect(Collectors.toList());
     }
@@ -107,12 +101,14 @@ public class FantasyController {
 
         comprador.setPresupuesto(comprador.getPresupuesto() - jugador.getValor());
         jugador.setPropietario(comprador);
-        jugador.setClausula(jugador.getValor() * 2);
+        
+        // 🔴 CORRECCIÓN: Al fichar, la cláusula es IGUAL al Valor (no el doble)
+        jugador.setClausula(jugador.getValor());
 
         usuarioRepository.save(comprador);
         jugadorRepository.save(jugador);
         
-        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));    
+        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));
         return "✅ Fichaje realizado.";
     }
 
@@ -129,6 +125,8 @@ public class FantasyController {
         ladron.setPresupuesto(ladron.getPresupuesto() - jugador.getClausula());
         victima.setPresupuesto(victima.getPresupuesto() + jugador.getClausula());
         jugador.setPropietario(ladron);
+        
+        // Al robar, subimos cláusula un 50% para protegerlo un poco
         jugador.setClausula((int)(jugador.getClausula() * 1.5));
 
         usuarioRepository.save(ladron);
@@ -139,6 +137,7 @@ public class FantasyController {
         return "✅ ¡Robo completado!";
     }
 
+    // 🔴 CORRECCIÓN PUNTO 7: VENDER (RECUPERAR INVERSIÓN)
     @PostMapping("/mercado/vender/{idJugador}/{idUsuario}")
     public String venderJugador(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
@@ -146,10 +145,18 @@ public class FantasyController {
 
         if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(idUsuario)) return "❌ No es tuyo.";
 
-        vendedor.setPresupuesto(vendedor.getPresupuesto() + jugador.getValor());
-        jugador.setPropietario(null);
-        jugador.setClausula(jugador.getValor() * 2);
+        // FÓRMULA: Valor + (Lo que has subido de cláusula / 2)
+        // Ejemplo: Valor 10, Cláusula 14. Diferencia 4. Mitad 2. Total 12.
+        int beneficioClausula = (jugador.getClausula() - jugador.getValor()) / 2;
+        int ingreso = jugador.getValor() + beneficioClausula;
 
+        vendedor.setPresupuesto(vendedor.getPresupuesto() + ingreso);
+        jugador.setPropietario(null);
+        
+        // Al volver al mercado, la cláusula vuelve a ser su Valor base
+        jugador.setClausula(jugador.getValor()); 
+
+        // Limpiar alineaciones
         Jornada jornadaActual = getJornadaActiva();
         List<Equipo> equipos = equipoRepository.findByUsuario(vendedor);
         for(Equipo e : equipos) {
@@ -162,8 +169,8 @@ public class FantasyController {
         usuarioRepository.save(vendedor);
         jugadorRepository.save(jugador);
         
-        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " vende a " + jugador.getNombre() + " y recibe " + fmtDinero(jugador.getValor())));
-        return "✅ Jugador vendido por " + jugador.getValor() + "€";
+        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " vende a " + jugador.getNombre() + " y recibe " + fmtDinero(ingreso)));
+        return "✅ Jugador vendido. Recibes " + fmtDinero(ingreso);
     }
 
     @PostMapping("/jugador/subir-clausula/{idJugador}/{cantidad}")
@@ -180,10 +187,8 @@ public class FantasyController {
         usuarioRepository.save(propietario);
         jugadorRepository.save(jugador);
 
-        return "✅ Blindado. Nueva cláusula: " + jugador.getClausula() + "€";
+        return "✅ Blindado. Nueva cláusula: " + fmtDinero(jugador.getClausula());
     }
-
-    // --- ALINEAR Y ADMIN ---
 
     @PostMapping("/alinear/{usuarioId}")
     public String guardarAlineacion(@RequestBody List<Long> idsJugadores, @PathVariable Long usuarioId) {
@@ -247,7 +252,7 @@ public class FantasyController {
             usuarioRepository.save(manager);
             equipoRepository.save(equipo);
             if (puntos > 0) {
-            resumenPremios.append("💰 ").append(manager.getNombre()).append(": ").append(puntos).append("p -> ").append(fmtDinero(premioEconomico)).append("\n");
+                resumenPremios.append("💰 ").append(manager.getNombre()).append(": ").append(puntos).append("p -> ").append(fmtDinero(premioEconomico)).append("\n");
             }
         }
         
@@ -277,7 +282,9 @@ public class FantasyController {
         for (Jugador j : jugadores) {
             j.setPropietario(null);
             j.setPuntosAcumulados(0);
-            j.setClausula(j.getValor() * 2); 
+            
+            // 🔴 RESET: La cláusula vuelve al valor de mercado (no x2)
+            j.setClausula(j.getValor()); 
         }
         jugadorRepository.saveAll(jugadores);
 
@@ -298,4 +305,3 @@ public class FantasyController {
         return "✅ Liga reseteada a 100M. Jornada 1 lista.";
     }
 }
-
