@@ -59,6 +59,19 @@
         .fila-clasif { background: white; padding: 10px; margin-bottom: 5px; border-radius: 6px; display: flex; justify-content: space-between; font-weight: 600; border-left: 4px solid gold; font-size: 0.9em; }
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
+
+        /* --- ESTILOS MODAL (PUNTO 3) --- */
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
+        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
+        .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
+        .modal-mensaje { color: #555; margin-bottom: 20px; font-size: 0.95em; line-height: 1.5; }
+        .modal-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 10px; box-sizing: border-box; }
+        .modal-info-extra { background: #f5f5f5; padding: 10px; border-radius: 6px; font-size: 0.85em; color: #333; margin-bottom: 20px; text-align: left; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-modal { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-modal-cancel { background: #cfd8dc; color: #455a64; }
+        .btn-modal-ok { background: #1565c0; color: white; }
+        .btn-modal-danger { background: #d32f2f; color: white; }
     </style>
 </head>
 <body>
@@ -89,7 +102,6 @@
 
     <div id="sec-plantilla" class="seccion">
         <h3>Tu Plantilla</h3>
-        <p style="color:#666; font-size:0.9em;">Gestiona tu equipo: vende o blinda jugadores.</p>
         <div id="grid-mi-plantilla" class="grid-jugadores">Cargando...</div>
     </div>
 
@@ -134,7 +146,6 @@
 
     <div id="sec-admin" class="seccion oculto">
         <h3 style="color:#c62828">Panel Admin</h3>
-        
         <div style="background:white; padding:15px; border-radius:10px; border:1px solid #ffcdd2; margin-bottom: 20px;">
             <h4>📝 Gestionar Partidos</h4>
             <select id="admin-jugador" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;"><option>Cargando...</option></select>
@@ -147,18 +158,32 @@
                 <input type="number" id="input-encajados" placeholder="Encajados" style="padding:8px; flex:1;">
             </div>
             <button onclick="registrarActa()" style="background:#c62828; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; margin-bottom:10px;">Registrar Puntos</button>
-            <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA Y REPARTIR</button>
+            <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA</button>
         </div>
-
         <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
             <h4>👮 Gestión Usuarios</h4>
             <div id="admin-lista-usuarios">Cargando...</div>
         </div>
-
         <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
             <h4 style="color:#b71c1c; margin-top:0;">☢️ ZONA DE PELIGRO</h4>
-            <p style="font-size:0.9em; color:#d32f2f;">Esto borrará equipos, puntos y reiniciará el dinero de todos a 100M.</p>
             <button onclick="resetearLiga()" style="background:#d32f2f; color:white; width:100%; padding:15px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">⚠️ RESETEAR LIGA COMPLETA</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="oculto">
+        <div class="modal-box">
+            <h3 id="modal-titulo" class="modal-titulo">Título</h3>
+            <p id="modal-mensaje" class="modal-mensaje">Mensaje...</p>
+            
+            <div id="modal-input-container" class="oculto">
+                <input type="text" id="modal-input" class="modal-input" placeholder="Escribe aquí...">
+                <div id="modal-info-extra" class="modal-info-extra oculto"></div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="btn-modal-cancel" class="btn-modal btn-modal-cancel">Cancelar</button>
+                <button id="btn-modal-ok" class="btn-modal btn-modal-ok">Confirmar</button>
+            </div>
         </div>
     </div>
 
@@ -166,21 +191,75 @@
         const usuarioId = localStorage.getItem('usuarioId');
         const esAdmin = (localStorage.getItem('esAdmin') === 'true');
         let presupuesto = parseInt(localStorage.getItem('presupuesto') || 0);
+        const formatoDinero = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
-        // --- PUNTO 2: FORMATEADOR DE DINERO CENTRALIZADO ---
-        // Usamos esto en todas partes para evitar el "1000000" confuso.
-        const formatoDinero = new Intl.NumberFormat('es-ES', {
-            style: 'currency',
-            currency: 'EUR',
-            maximumFractionDigits: 0 // Sin decimales para que quede limpio
-        });
+        // --- SISTEMA DE MODAL (NUEVO) ---
+        let modalCallback = null;
+
+        function mostrarModal(titulo, mensaje, tipo, callback) {
+            document.getElementById('modal-titulo').innerText = titulo;
+            document.getElementById('modal-mensaje').innerText = mensaje;
+            document.getElementById('modal-overlay').classList.remove('oculto');
+            
+            const btnOk = document.getElementById('btn-modal-ok');
+            const inputContainer = document.getElementById('modal-input-container');
+            const input = document.getElementById('modal-input');
+            const infoExtra = document.getElementById('modal-info-extra');
+
+            // Resetear estado
+            input.value = '';
+            inputContainer.classList.add('oculto');
+            infoExtra.classList.add('oculto');
+            btnOk.className = 'btn-modal btn-modal-ok'; // Reset color
+
+            if (tipo === 'confirm') {
+                inputContainer.classList.add('oculto');
+            } else if (tipo === 'input' || tipo === 'blindar') {
+                inputContainer.classList.remove('oculto');
+                input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe...";
+                
+                // Lógica especial para BLINDAR (Cálculo en vivo)
+                if(tipo === 'blindar') {
+                    input.onkeyup = function() {
+                        let val = parseInt(this.value);
+                        if(!isNaN(val) && val > 0) {
+                            infoExtra.classList.remove('oculto');
+                            infoExtra.innerHTML = `<strong>Coste:</strong> ${formatoDinero.format(val)}<br><strong>Subida Cláusula:</strong> ${formatoDinero.format(val*2)}`;
+                        } else {
+                            infoExtra.classList.add('oculto');
+                        }
+                    }
+                } else {
+                    input.onkeyup = null;
+                }
+            } else if (tipo === 'danger') {
+                inputContainer.classList.remove('oculto');
+                input.placeholder = "Escribe RESET para confirmar";
+                btnOk.className = 'btn-modal btn-modal-danger';
+            }
+
+            // Asignar acción al botón
+            modalCallback = () => {
+                if (tipo === 'confirm') callback();
+                else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
+                cerrarModal();
+            };
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-overlay').classList.add('oculto');
+            modalCallback = null;
+        }
+
+        document.getElementById('btn-modal-ok').onclick = () => { if(modalCallback) modalCallback(); };
+        document.getElementById('btn-modal-cancel').onclick = cerrarModal;
+
 
         if (!usuarioId) window.location.href = 'login.html';
 
         window.onload = function() {
             document.getElementById('titulo-web').innerText = localStorage.getItem('usuarioNombre');
             actualizarPresupuestoUI();
-
             if (esAdmin) {
                 document.getElementById('tab-admin').classList.remove('oculto');
                 cargarUsuariosAdmin();
@@ -191,7 +270,6 @@
 
         function cargarTodo() {
             fetch('/jornada/actual').then(r=>r.json()).then(n => document.getElementById('badge-jornada').innerText = "J-" + n);
-
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
@@ -202,7 +280,6 @@
                     pintarAlineacion(jugadores, idsAlineados);
                 });
             });
-            
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 document.getElementById('lista-clasificacion').innerHTML = data.map((t,i) => `<div class="fila-clasif"><span class="pos-num">${i+1}º</span> ${t}</div>`).join('');
@@ -226,11 +303,8 @@
             });
         }
 
-        // --- RENDERIZADO CON FORMATO DE DINERO ---
         function crearCarta(j, tipo, alineado = false) {
             let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
-            
-            // USAMOS EL FORMATEADOR AQUÍ
             let precio = formatoDinero.format(j.valor);
             let clausula = formatoDinero.format(j.clausula);
             
@@ -242,120 +316,86 @@
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
             else if (tipo === 'gestion') {
-                contenido = `
-                    <div class="card-clausula">🔒 ${clausula}</div>
+                contenido = `<div class="card-clausula">🔒 ${clausula}</div>
                     <div style="display:flex; gap:5px;">
                         <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor})">Vender</button>
                         <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button>
                     </div>`;
             }
 
-            return `
-                <div class="card ${extraClass}" id="card-${j.id}">
-                    <div class="puntos-corner">${j.puntosAcumulados}</div>
-                    ${tipo === 'alinear' ? contenido : ''} 
-                    <div class="card-img-container"><img src="${img}" class="card-img"></div>
-                    <div class="card-body">
-                        <div><div class="card-name">${j.nombre}</div><div class="card-pos">${j.posicion}</div></div>
-                        ${tipo !== 'alinear' ? contenido : ''}
-                    </div>
-                </div>`;
+            return `<div class="card ${extraClass}" id="card-${j.id}"><div class="puntos-corner">${j.puntosAcumulados}</div>${tipo === 'alinear' ? contenido : ''}<div class="card-img-container"><img src="${img}" class="card-img"></div><div class="card-body"><div><div class="card-name">${j.nombre}</div><div class="card-pos">${j.posicion}</div></div>${tipo !== 'alinear' ? contenido : ''}</div></div>`;
         }
 
-        function pintarPlantilla(jugadores) {
-            const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId);
-            document.getElementById('grid-mi-plantilla').innerHTML = misJugadores.map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>';
-        }
-        function pintarAlineacion(jugadores, idsAlineados) {
-            const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId);
-            document.getElementById('grid-alineacion').innerHTML = misJugadores.map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>';
-            actualizarContador();
-        }
-        function pintarMercado(jugadores) {
-            const libres = jugadores.filter(j => !j.propietario);
-            document.getElementById('grid-mercado').innerHTML = libres.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado vacío.</p>';
-        }
-        function pintarRivales(usuarios) {
-            document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join('');
-        }
+        function pintarPlantilla(jugadores) { document.getElementById('grid-mi-plantilla').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>'; }
+        function pintarAlineacion(jugadores, idsAlineados) { document.getElementById('grid-alineacion').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>'; actualizarContador(); }
+        function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.filter(j => !j.propietario).map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado vacío.</p>'; }
+        function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
+        
         function espiar(id, nombre) {
             document.getElementById('zona-espia').classList.remove('oculto');
             document.getElementById('titulo-espia').innerText = "Equipo de " + nombre;
-            let html = window.todosLosJugadores.filter(j => j.propietario && j.propietario.id == id).map(j => crearCarta(j, 'robar')).join('');
-            document.getElementById('grid-rival').innerHTML = html || '<p>Sin jugadores.</p>';
+            document.getElementById('grid-rival').innerHTML = window.todosLosJugadores.filter(j => j.propietario && j.propietario.id == id).map(j => crearCarta(j, 'robar')).join('') || '<p>Sin jugadores.</p>';
         }
 
-        // --- ACCIONES CON CONFIRMACIÓN DE DINERO (SOLUCIÓN A LA CONFUSIÓN) ---
         function actualizarContador(checkbox) {
             if(checkbox) {
                 const card = document.getElementById('card-' + checkbox.value);
                 if(checkbox.checked) card.classList.add('alineado'); else card.classList.remove('alineado');
             }
-            const count = document.querySelectorAll('.check-alinear:checked').length;
-            document.getElementById('contador-alineados').innerText = count;
+            document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
         }
 
+        // --- ACCIONES CON NUEVOS MODALES ---
         function fichar(id, p) { 
-            if(!confirm(`¿Fichar por ${formatoDinero.format(p)}?`)) return;
-            post(`/mercado/comprar/${id}/${usuarioId}`, {}, p); 
+            mostrarModal("Fichar Jugador", `¿Quieres fichar a este jugador por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p));
         }
         
         function robar(id, p) { 
-            if(!confirm(`¿PAGAR CLÁUSULA DE ${formatoDinero.format(p)}?\nEl dinero irá al otro manager.`)) return;
-            post(`/mercado/robar/${id}/${usuarioId}`, {}, p); 
+            mostrarModal("Clausulazo 🔥", `¿Pagar la cláusula de ${formatoDinero.format(p)}?\nEl dinero irá al manager rival.`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p));
         }
         
         function vender(id, p) {
-            if(!confirm(`¿Vender al mercado por ${formatoDinero.format(p)}?\nPerderás al jugador.`)) return;
-            post(`/mercado/vender/${id}/${usuarioId}`, {}, -p); 
+            mostrarModal("Vender al Mercado", `Recibirás ${formatoDinero.format(p)}.\nEsta acción es irreversible.`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -p));
         }
 
         function blindar(id) {
-            // Aquí pedimos el número "en crudo" (sin puntos) pero explicamos lo que pasará
-            let cantidad = prompt("¿Cuánto quieres invertir para subir la cláusula?\n(Escribe el número SIN puntos, ej: 1000000)");
-            
-            if (cantidad && !isNaN(cantidad) && cantidad > 0) {
-                // AQUÍ ESTÁ LA MAGIA: Le mostramos al usuario cuánto es en formato bonito antes de enviar
-                let dineroBonito = formatoDinero.format(cantidad);
-                let subidaBonita = formatoDinero.format(cantidad * 2); // La cláusula sube el doble
-                
-                if(confirm(`Resumen de la operación:\n\n- Vas a gastar: ${dineroBonito}\n- La cláusula subirá: ${subidaBonita}\n\n¿Confirmar inversión?`)) {
+            mostrarModal("Subir Cláusula 🔒", "Introduce la cantidad a invertir.\nLa cláusula subirá el DOBLE de lo que inviertas.", 'blindar', (cantidad) => {
+                if (cantidad && !isNaN(cantidad) && cantidad > 0) {
                     post(`/jugador/subir-clausula/${id}/${cantidad}`, {}, cantidad);
                 }
-            }
+            });
+        }
+
+        function expulsarUsuario(id, nombre) {
+            mostrarModal("Expulsar Manager 👮", `¿Estás seguro de expulsar a ${nombre}?\nSus jugadores quedarán libres.`, 'confirm', () => {
+                fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { alert(msg); cargarUsuariosAdmin(); cargarTodo(); });
+            });
+        }
+
+        function resetearLiga() {
+            mostrarModal("⚠️ PELIGRO: RESET TOTAL", "Vas a borrar TODA la liga (equipos, dinero, puntos).\nEscribe 'RESET' para confirmar:", 'danger', (texto) => {
+                if(texto === "RESET") post('/admin/reset-liga', {});
+                else alert("Código incorrecto. Operación cancelada.");
+            });
         }
 
         function guardarAlineacion() {
             const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
-            if(ids.length > 7) { alert("Máximo 7"); return; }
+            if(ids.length > 7) { mostrarModal("Alineación", "Máximo 7 jugadores.", 'confirm', ()=>{}); return; }
             post(`/alinear/${usuarioId}`, ids);
-        }
-        
-        function expulsarUsuario(id, nombre) {
-            if(!confirm(`⚠️ ¿ECHAR A ${nombre}?`)) return;
-            fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { alert(msg); cargarUsuariosAdmin(); cargarTodo(); });
-        }
-
-        function resetearLiga() {
-            let confirmacion = prompt("⚠️ ¡PELIGRO!\nVas a borrar TODA la liga (equipos, puntos, dinero).\nLos usuarios tendrán que fichar de cero y el saldo será 100M.\n\nEscribe 'RESET' para confirmar:");
-            if (confirmacion === "RESET") {
-                post('/admin/reset-liga', {});
-            } else {
-                alert("Operación cancelada.");
-            }
         }
 
         function post(url, data, coste = 0) {
-            if(coste > 0 && coste > presupuesto) { alert("Falta dinero"); return; }
+            if(coste > 0 && coste > presupuesto) { mostrarModal("Error", "No tienes suficiente dinero.", 'confirm', ()=>{}); return; }
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
-                alert(msg);
-                if(!msg.includes("❌")) {
-                    presupuesto -= coste; 
-                    localStorage.setItem('presupuesto', presupuesto); 
-                    actualizarPresupuestoUI(); 
-                    cargarTodo();
-                }
+                // Si es un mensaje simple, usamos modal, si es confirmación ok recargamos
+                mostrarModal("Información", msg, 'confirm', () => {
+                    if(!msg.includes("❌")) {
+                        if(coste !== 0) { presupuesto -= coste; localStorage.setItem('presupuesto', presupuesto); actualizarPresupuestoUI(); }
+                        cargarTodo();
+                    }
+                });
             });
         }
 
@@ -365,7 +405,7 @@
             const datos = { idJugador: parseInt(document.getElementById('admin-jugador').value), idJornada: 1, victoria: document.getElementById('check-victoria').checked, derrota: document.getElementById('check-derrota').checked, goles: parseInt(document.getElementById('input-goles').value)||0, golesEncajados: parseInt(document.getElementById('input-encajados').value)||0, autogoles: 0 };
             post('/admin/registrar', datos);
         }
-        function cerrarJornada() { if(confirm("¿Cerrar jornada y repartir dinero?")) post('/admin/cerrar-jornada', {}); }
+        function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Seguro que quieres cerrar la jornada y repartir primas?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
 
         function cambiarPestaña(tab) {
             document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
@@ -375,9 +415,7 @@
         }
         function actualizarPresupuestoUI() { 
             const el = document.getElementById('presupuesto-display');
-            // USAMOS EL FORMATEADOR TAMBIÉN AQUÍ
             el.innerText = formatoDinero.format(presupuesto);
-            
             if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); }
             else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); }
         }
