@@ -38,17 +38,25 @@ public class InicializadorDatos implements CommandLineRunner {
             t2025 = temporadaRepository.findAll().get(0);
         }
 
-        // 2. JUGADORES (TUS JUGADORES PRESERVADOS)
+        // 2. JUGADORES (MÁS JUGADORES AÑADIDOS
         if (jugadorRepository.count() == 0) {
             jugadorRepository.saveAll(List.of(
-                    new Jugador("Cristian", Posicion.DEFENSA, 20_000_000, "/cristian.png"),
-                    new Jugador("Pepe", Posicion.DELANTERO, 15_000_000, "/pepe.png"),
-                    new Jugador("Cárdenas", Posicion.MEDIO, 5_000_000, "/cardenas.png"),
-                    new Jugador("Sergio", Posicion.MEDIO, 5_000_000, "/sergio.png"),
-                    new Jugador("Jose", Posicion.DEFENSA, 5_000_000, "/jose.png"),
-                    new Jugador("Luis", Posicion.MEDIO, 5_000_000, "/luis.png"),
-                    new Jugador("Juanlu", Posicion.DEFENSA, 5_000_000, "/juanlu.png"),
-                    new Jugador("Jesús", Posicion.DELANTERO, 30_000_000, "/jesus.png")
+                    new Jugador("Cristian", Posicion.DEFENSA, 60_000_000, "/cristian.png"),
+                    new Jugador("Pepe", Posicion.DELANTERO, 9_450_000, "/pepe.png"),
+                    new Jugador("Cárdenas", Posicion.MEDIO, 14_500_000, "/cardenas.png"),
+                    new Jugador("Sergio", Posicion.MEDIO, 86_210_000, "/sergio.png"),
+                    new Jugador("Jose", Posicion.DEFENSA, 45_000_000, "/jose.png"),
+                    new Jugador("Luis", Posicion.MEDIO, 21_550_000, "/luis.png"),
+                    new Jugador("Juanlu", Posicion.DEFENSA, 17_000_000, "/juanlu.png"),
+                    new Jugador("Jhona", Posicion.PORTERO, 10_000_000, "/jhona.png")
+                    new Jugador("Carlos", Posicion.PORTERO, 950_000, "/carlos.png")
+                    new Jugador("Diego", Posicion.DEFENSA, 67_450_000, "/diego.png")
+                    new Jugador("Andrés", Posicion.DEFENSA, 1_000_000, "/andres.png")
+                    new Jugador("Felipe", Posicion.MEDIO, 92_000_000, "/felipe.png")
+                    new Jugador("Cristian", Posicion.DELANTERO, 32_100_000, "/cristian.png")
+                    new Jugador("Fran", Posicion.PORTERO, 12_500_000, "/franportero.png")
+
+
             ));
         }
 
@@ -63,7 +71,7 @@ public class InicializadorDatos implements CommandLineRunner {
         // 4. CREAR USUARIO ADMIN
         if (usuarioRepository.count() == 0) {
             // Creamos al Admin. IMPORTANTE: el 'true' al final.
-            Usuario admin = new Usuario("Cristian", "1234", 100_000_000, true);
+            Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
             usuarioRepository.save(admin);
 
             // Asignamos 2 jugadores a Cristian para empezar (opcional)
@@ -86,4 +94,5 @@ public class InicializadorDatos implements CommandLineRunner {
             System.out.println(">>> Inicialización completada. Usuario 'Cristian' es ADMIN.");
         }
     }
+
 }
