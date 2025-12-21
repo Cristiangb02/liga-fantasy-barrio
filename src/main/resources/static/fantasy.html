@@ -39,6 +39,9 @@
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-pos-badge { display: inline-block; background: #eceff1; color: #546e7a; font-size: 0.7em; font-weight: 800; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; align-self: center; }
         .card-clausula { font-size: 0.8em; color: #d32f2f; font-weight: bold; }
+        
+        /* 🔴 NUEVO ESTILO: Coste en Azul */
+        .card-coste { font-size: 0.85em; color: #1565c0; font-weight: 800; }
 
         .btn-card { width: 100%; padding: 8px; border: none; border-radius: 6px; font-weight: 700; font-size: 0.85em; cursor: pointer; margin-top: auto; transition: 0.2s; }
         .btn-card:active { transform: scale(0.95); }
@@ -355,7 +358,11 @@
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
             else if (tipo === 'gestion') {
-                contenido = `<div class="card-clausula">🔒 ${clausula}</div><div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
+                // 🔴 CAMBIO: COSTE EN AZUL ENCIMA DE LA CLAUSULA
+                contenido = `
+                    <div class="card-coste">Coste: ${precio}</div>
+                    <div class="card-clausula">🔒 ${clausula}</div>
+                    <div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
             }
             return `<div class="card ${extraClass}" id="card-${j.id}"><div class="puntos-triangle"></div><div class="puntos-val">${j.puntosAcumulados}</div>${tipo === 'alinear' ? contenido : ''}<div class="card-img-container"><img src="${img}" class="card-img"></div><div class="card-body"><div><div class="card-name">${j.nombre}</div><div class="card-pos-badge">${j.posicion}</div></div>${tipo !== 'alinear' ? contenido : ''}</div></div>`;
         }
@@ -388,7 +395,7 @@
             document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
         }
 
-        // 🔴 CORRECCIÓN PUNTO 1: Mensajes de error claros y validación estricta
+        // 🔴 CORRECCIÓN LÓGICA DE ERRORES Y VALIDACIÓN
         function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
         function robar(id, p) { mostrarModal("Clausulazo 🔥", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
         function vender(id, valor, clausula) {
@@ -397,11 +404,11 @@
         }
         function blindar(id) { 
             mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => { 
-                let valor = parseInt(cant); // Asegurar que es número
+                let valor = parseInt(cant); // Parseamos a número
                 if (!isNaN(valor) && valor > 0) {
                     post(`/jugador/subir-clausula/${id}/${valor}`, {}, valor); 
                 } else {
-                    mostrarModal("⛔ Error", "Cantidad inválida.", 'confirm', ()=>{});
+                    mostrarModal("⛔ Error", "Debes introducir un número válido.", 'confirm', ()=>{});
                 }
             }); 
         }
@@ -430,18 +437,17 @@
             post(`/alinear/${usuarioId}`, ids);
         }
 
-        // 🔴 CORRECCIÓN PUNTO 1: Lógica de POST mejorada para errores
+        // 🔴 MEJORA DE FUNCIÓN POST PARA ERRORES
         function post(url, data, coste = 0) {
-            // 1. Chequeo visual inmediato (Frontend)
+            // 1. Check visual previo
             if(coste > 0 && coste > presupuesto) { 
-                mostrarModal("⛔ FONDOS INSUFICIENTES", `No tienes dinero suficiente.\n\nFaltan: ${formatoDinero.format(coste - presupuesto)}`, 'confirm', ()=>{}); 
+                mostrarModal("⛔ FONDOS INSUFICIENTES", `No tienes dinero suficiente.\nTe faltan ${formatoDinero.format(coste - presupuesto)}`, 'confirm', ()=>{}); 
                 return; 
             }
 
-            // 2. Petición al servidor
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
-                // 3. Si el servidor devuelve error (empieza por ❌), ponemos título de Error
+                // 2. Si el servidor dice "❌", mostramos error
                 let titulo = msg.includes("❌") ? "⛔ ERROR" : "✅ Éxito";
                 
                 mostrarModal(titulo, msg, 'confirm', () => {
