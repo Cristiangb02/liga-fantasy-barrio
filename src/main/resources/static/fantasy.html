@@ -68,6 +68,11 @@
         .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .timer-badge { background: #1a237e; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em; letter-spacing: 1px; }
 
+        /* 🔴 ESTILOS BLOQUE PREMIOS */
+        .bloque-premios { background: #e8f5e9; border: 1px solid #43a047; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
+
         /* MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
@@ -154,6 +159,8 @@
     </div>
 
     <div id="sec-noticias" class="seccion oculto">
+        <div id="zona-premios"></div>
+        
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h3>Noticias</h3>
             <small style="color:#666">En vivo 🔴</small>
@@ -328,12 +335,38 @@
             cargarNoticias();
         }
 
+        // 🔴 CAMBIO PUNTO 2: Cargar premios pendientes y botón RECLAMAR
         function cargarNoticias() {
+            // 1. Cargar Noticias Texto
             fetch('/noticias').then(r=>r.json()).then(noticias => {
                 let html = noticias.map(n => `<div class="noticia-item ${n.mensaje.includes("CLÁUSULAZO") || n.mensaje.includes("ADMIN") ? 'noticia-robo':''}"><span class="noticia-fecha">${n.fechaBonita}</span><span class="noticia-texto">${n.mensaje}</span></div>`).join('');
                 const container = document.getElementById('lista-noticias');
                 if (container.innerHTML !== html) container.innerHTML = html || '<p>No hay noticias.</p>';
             });
+
+            // 2. Cargar Premios Pendientes
+            fetch('/premios-pendientes/' + usuarioId).then(r=>r.json()).then(premios => {
+                const zonaPremios = document.getElementById('zona-premios');
+                if (premios.length > 0) {
+                    let htmlPremios = premios.map(p => `
+                        <div class="bloque-premios">
+                            <div>
+                                <strong>🏆 JORNADA FINALIZADA</strong><br>
+                                Has ganado: ${p.puntos} pts
+                            </div>
+                            <button class="btn-reclamar" onclick="reclamar(${p.idEquipo})">Reclamar ${p.dineroFmt}</button>
+                        </div>
+                    `).join('');
+                    zonaPremios.innerHTML = htmlPremios;
+                } else {
+                    zonaPremios.innerHTML = '';
+                }
+            });
+        }
+
+        // 🔴 FUNCIÓN RECLAMAR
+        function reclamar(idEquipo) {
+            post(`/reclamar-premio/${idEquipo}`, {});
         }
 
         function cargarUsuariosAdmin() {
@@ -356,7 +389,6 @@
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
             else if (tipo === 'gestion') {
-                // 🔴 CAMBIO: COSTE EN AZUL ENCIMA DE LA CLAUSULA
                 contenido = `
                     <div class="card-coste">Coste: ${precio}</div>
                     <div class="card-clausula">🔒 ${clausula}</div>
@@ -401,7 +433,7 @@
         }
         function blindar(id) { 
             mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => { 
-                let valor = parseInt(cant); // Parseamos a número
+                let valor = parseInt(cant); 
                 if (!isNaN(valor) && valor > 0) {
                     post(`/jugador/subir-clausula/${id}/${valor}`, {}, valor); 
                 } else {
@@ -434,24 +466,22 @@
             post(`/alinear/${usuarioId}`, ids);
         }
 
-        // 🔴 MEJORA DE FUNCIÓN POST: PERMITE DEUDA PERO AVISA
         function post(url, data, coste = 0) {
-            // Quitamos el bloqueo previo. Permitimos que se ejecute la acción.
-            
+            // Permitimos la acción siempre (deuda permitida)
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
                 let titulo = msg.includes("❌") ? "⛔ ERROR" : "✅ Éxito";
                 
                 mostrarModal(titulo, msg, 'confirm', () => {
                     if(!msg.includes("❌")) {
-                        // Actualizamos el presupuesto
+                        // Actualizamos presupuesto
                         if(coste !== 0) { 
                             presupuesto -= coste; 
                             localStorage.setItem('presupuesto', presupuesto); 
                             actualizarPresupuestoUI(); 
                         }
                         
-                        // 🔴 CHEQUEO DE NÚMEROS ROJOS (PUNTO 1 REVISADO)
+                        // AVISO DE NÚMEROS ROJOS
                         if (presupuesto < 0) {
                             mostrarModal("⚠️ AVISO DE SALDO", "¡Estás en números rojos!\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
                         }
