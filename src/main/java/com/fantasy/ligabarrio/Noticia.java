@@ -28,13 +28,9 @@ public class Noticia {
     public LocalDateTime getFecha() { return fecha; }
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
 
-    // 🔴 CAMBIO PUNTO 11: Añadimos la hora (HH:mm) al formato
     public String getFechaBonita() {
         if (fecha == null) return "";
-        // Formato: Día/Mes/Año - Hora:Minutos
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm");
         return fecha.format(formatter);
     }
 }
-}
-
