@@ -43,8 +43,12 @@ public class FantasyController {
         return jornadas.get(jornadas.size() - 1);
     }
 
+    // 🔴 CAMBIO PUNTO 12: Usamos .count() en vez de .getId() para que el reset vuelva a "1"
     @GetMapping("/jornada/actual")
-    public long getNumeroJornadaActual() { return getJornadaActiva().getId(); }
+    public long getNumeroJornadaActual() { 
+        long cantidad = jornadaRepository.count();
+        return cantidad == 0 ? 1 : cantidad;
+    }
 
     @GetMapping("/usuarios")
     public List<Usuario> verRivales() { return usuarioRepository.findAll(); }
@@ -52,20 +56,13 @@ public class FantasyController {
     @GetMapping("/jugadores")
     public List<Jugador> verTodosLosJugadores() { return jugadorRepository.findAll(); }
 
-    // 🔴 PUNTO 10: MERCADO DIARIO ROTATORIO (MÁXIMO 12)
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
-        // 1. Cogemos todos los libres
         List<Jugador> libres = jugadorRepository.findAll().stream()
                 .filter(j -> j.getPropietario() == null)
                 .collect(Collectors.toList());
-        
-        // 2. Usamos la FECHA DE HOY como semilla aleatoria.
-        // Esto hace que el orden sea aleatorio, pero EL MISMO para todo el mundo durante 24h.
         long seed = LocalDate.now().toEpochDay();
         Collections.shuffle(libres, new Random(seed));
-        
-        // 3. Devolvemos solo los 12 primeros
         return libres.stream().limit(12).collect(Collectors.toList());
     }
 
@@ -286,8 +283,10 @@ public class FantasyController {
         return "✅ Usuario eliminado.";
     }
 
+    // 🔴 PUNTO 12: RESET COMPLETO Y SEGURO
     @PostMapping("/admin/reset-liga")
     public String resetearLiga() {
+        // 1. Limpiar Jugadores
         List<Jugador> jugadores = jugadorRepository.findAll();
         for (Jugador j : jugadores) {
             j.setPropietario(null);
@@ -296,20 +295,25 @@ public class FantasyController {
         }
         jugadorRepository.saveAll(jugadores);
 
+        // 2. Resetear Dinero Usuarios (100M)
         List<Usuario> usuarios = usuarioRepository.findAll();
         for (Usuario u : usuarios) {
             u.setPresupuesto(100_000_000); 
         }
         usuarioRepository.saveAll(usuarios);
 
+        // 3. Borrar historial
         equipoRepository.deleteAll();
         actuacionRepository.deleteAll();
         noticiaRepository.deleteAll();
+        
+        // 4. Resetear Jornadas (Borrar todas y crear 1 nueva)
         jornadaRepository.deleteAll();
-        jornadaRepository.save(new Jornada()); 
+        Jornada j1 = new Jornada(); // ID será nuevo, pero .count() será 1
+        jornadaRepository.save(j1); 
 
         noticiaRepository.save(new Noticia("☢️ LIGA RESETEADA: ¡Todos empiezan de cero con 100M! ¡A fichar!"));
 
-        return "✅ Liga reseteada a 100M. Jornada 1 lista.";
+        return "✅ Liga reseteada. Recarga la página.";
     }
 }
