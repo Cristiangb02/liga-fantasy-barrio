@@ -5,11 +5,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import java.util.List;
+import java.util.TimeZone; // 🔴 IMPORTANTE
 
 @SpringBootApplication
 public class LigaFantasyVeteranosApplication {
 
     public static void main(String[] args) {
+        // 🔴 FORZAR HORA ESPAÑOLA (EUROPE/MADRID)
+        // Esto arregla el desfase de 1 hora en las noticias y el mercado
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Madrid"));
+        
         SpringApplication.run(LigaFantasyVeteranosApplication.class, args);
     }
 
@@ -22,14 +27,7 @@ public class LigaFantasyVeteranosApplication {
                 System.out.println(">>> ✅ Jornada 1 creada.");
             }
 
-            // 2. DIAGNÓSTICO: ¿QUIÉN ESTÁ EN LA BASE DE DATOS?
-            List<Usuario> todos = usuarioRepository.findAll();
-            System.out.println(">>> 📊 REPORTE DE USUARIOS EN DB (" + todos.size() + "):");
-            for (Usuario u : todos) {
-                System.out.println("   👤 Usuario: " + u.getNombre() + " | Pass: " + u.getPassword());
-            }
-
-            // 3. ASEGURAR ADMIN CRISTIAN
+            // 2. ASEGURAR ADMIN CRISTIAN
             Usuario admin = usuarioRepository.findByNombre("Cristian");
             
             if (admin == null) {
@@ -37,16 +35,14 @@ public class LigaFantasyVeteranosApplication {
                 admin.setNombre("Cristian");
                 admin.setPresupuesto(100_000_000);
                 admin.setEsAdmin(true);
-                System.out.println(">>> 🆕 Creando usuario 'Cristian' desde cero...");
-            } else {
-                System.out.println(">>> ♻️ Usuario 'Cristian' encontrado. Actualizando contraseña...");
-            }
+                System.out.println(">>> 🆕 Creando usuario 'Cristian'...");
+            } 
 
-            // 4. FORZAR LA CONTRASEÑA CORRECTA SIEMPRE
+            // 3. ASEGURAR CONTRASEÑA
             admin.setPassword("1234");
             usuarioRepository.save(admin);
             
-            System.out.println(">>> 👑 ADMIN 'Cristian' LISTO con contraseña '1234'. ¡Prueba a entrar ahora!");
+            System.out.println(">>> 👑 ADMIN 'Cristian' asegurado.");
         };
     }
 }
