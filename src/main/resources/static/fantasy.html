@@ -65,7 +65,6 @@
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
-        /* 🔴 ESTILOS CONTADOR MERCADO */
         .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .timer-badge { background: #1a237e; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em; letter-spacing: 1px; }
 
@@ -226,7 +225,6 @@
             if (tipo === 'input' || tipo === 'blindar') {
                 inputContainer.classList.remove('oculto');
                 input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe...";
-                
                 if(tipo === 'blindar') {
                     input.onkeyup = function() {
                         let val = parseInt(this.value);
@@ -262,31 +260,25 @@
             }
             cargarTodo();
             setInterval(cargarNoticias, 5000);
-            
-            // 🔴 INICIAR EL CONTADOR DEL MERCADO
             iniciarContadorMercado();
         };
 
-        // 🔴 LÓGICA DEL CONTADOR (CUENTA ATRÁS A MEDIANOCHE UTC)
         function iniciarContadorMercado() {
             function actualizar() {
                 const ahora = new Date();
                 const manana = new Date(ahora);
-                manana.setUTCHours(24, 0, 0, 0); // La próxima medianoche UTC
-                
+                manana.setUTCHours(24, 0, 0, 0); 
                 const diferencia = manana - ahora;
                 
                 if (diferencia > 0) {
                     const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
                     const s = Math.floor((diferencia % (1000 * 60)) / 1000);
-                    
                     document.getElementById('market-countdown').innerText = 
                         `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                 }
             }
-            actualizar(); // Primera ejecución inmediata
-            setInterval(actualizar, 1000);
+            actualizar(); setInterval(actualizar, 1000);
         }
 
         function cargarTodo() {
@@ -305,7 +297,6 @@
                 });
             });
 
-            // CARGA MERCADO DIARIO
             fetch('/mercado-diario').then(r=>r.json()).then(mercado => {
                 pintarMercado(mercado);
             });
@@ -399,7 +390,23 @@
         }
         function blindar(id) { mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => { if (cant && !isNaN(cant) && cant > 0) post(`/jugador/subir-clausula/${id}/${cant}`, {}, cant); }); }
         function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
-        function resetearLiga() { mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => { if(t==="RESET") post('/admin/reset-liga', {}); else mostrarModal("Error","Código mal.",'confirm',()=>{}); }); }
+        
+        // 🔴 PUNTO 12: RESETEAR LIGA CON RECARGA DE PÁGINA OBLIGATORIA
+        function resetearLiga() { 
+            mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => { 
+                if(t==="RESET") {
+                    fetch('/admin/reset-liga', { method: 'POST' })
+                    .then(r => r.text())
+                    .then(msg => {
+                        mostrarModal("Info", msg, 'confirm', () => {
+                            location.reload(); // 🔴 OBLIGA A RECARGAR PARA VER EL DINERO NUEVO
+                        });
+                    });
+                } else {
+                    mostrarModal("Error","Código mal.",'confirm',()=>{}); 
+                }
+            }); 
+        }
         
         function guardarAlineacion() {
             const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
