@@ -14,8 +14,8 @@
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
         .user-info { display: flex; align-items: center; gap: 10px; }
-        /* Avatar estático, sin efecto click */
-        .avatar-header { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white; background: #ddd; }
+        /* 🔴 AVATAR GENÉRICO PERFECTO */
+        .avatar-header { width: 45px; height: 45px; border-radius: 50%; background: #e0e0e0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border: 2px solid white; }
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
@@ -56,16 +56,16 @@
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         
-        /* TABLA CLASIFICACION LIMPIA */
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
+        /* 🔴 AVATAR TABLA GENÉRICO */
+        .avatar-small { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background-color: #e0e0e0; border: 2px solid #e3e8ee; display:flex; align-items:center; justify-content:center; }
         .clasif-user { display: flex; align-items: center; gap: 12px; }
 
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
-        /* MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
@@ -83,7 +83,7 @@
 
     <header>
         <div class="user-info">
-            <img src="https://via.placeholder.com/50?text=👤" class="avatar-header">
+            <div class="avatar-header">👤</div>
             <div style="display:flex; flex-direction:column;">
                 <div style="display:flex; align-items:center;">
                     <h1 id="titulo-web" style="margin:0; font-size:1.4rem;">Fantasy</h1>
@@ -127,6 +127,7 @@
 
     <div id="sec-mercado" class="seccion oculto">
         <h3>Mercado Libre</h3>
+        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">🔄 Ofertas diarias (12 jugadores). Se renuevan cada 24h.</p>
         <div id="grid-mercado" class="grid-jugadores">Cargando...</div>
     </div>
 
@@ -259,24 +260,31 @@
                 document.getElementById('num-jornada-alineacion').innerText = n;
             });
 
+            // 1. CARGA PLANTILLA Y RIVALES (TODOS LOS JUGADORES)
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
-                pintarMercado(jugadores);
                 if(esAdmin) pintarSelectAdmin(jugadores);
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
                     pintarAlineacion(jugadores, idsAlineados);
                 });
             });
+
+            // 🔴 2. PUNTO 10: CARGA MERCADO DIARIO (SOLO 12)
+            fetch('/mercado-diario').then(r=>r.json()).then(mercado => {
+                pintarMercado(mercado);
+            });
+
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
             
-            // CLASIFICACION NORMAL (SIN FOTO)
+            // 🔴 CLASIFICACIÓN LIMPIA (SIN FOTO ROTA)
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 let html = data.map((fila, i) => `
                     <div class="fila-clasif">
                         <div class="clasif-user">
                             <span class="pos-num">${i+1}º</span>
+                            <div class="avatar-small">👤</div>
                             <strong>${fila.nombre}</strong>
                         </div>
                         <div style="text-align:right;">
@@ -333,7 +341,7 @@
             document.getElementById('grid-alineacion').innerHTML = misJugadores.map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>'; 
             actualizarContador(); 
         }
-        function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.filter(j => !j.propietario).map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado vacío.</p>'; }
+        function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado cerrado o vacío.</p>'; }
         function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
         
         function espiar(id, nombre) {
