@@ -107,7 +107,49 @@ public class FantasyController {
         .collect(Collectors.toList());
     }
 
-    // --- MERCADO (PERMITIMOS SALDO NEGATIVO) ---
+    // 🔴 PUNTO 2: LÓGICA DE RECLAMAR DINERO
+    
+    @GetMapping("/premios-pendientes/{idUsuario}")
+    public List<Map<String, Object>> verPremiosPendientes(@PathVariable Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
+        Jornada jornadaActual = getJornadaActiva(); // Solo se pueden cobrar jornadas ANTERIORES
+
+        return equipoRepository.findByUsuario(usuario).stream()
+                // Filtramos: Que no sea la jornada actual, que no esté cobrado ya, y que tenga puntos > 0
+                .filter(e -> !e.getJornada().getId().equals(jornadaActual.getId()))
+                .filter(e -> !e.isReclamado())
+                .filter(e -> e.getPuntosTotalesJornada() > 0)
+                .map(e -> {
+                    int dinero = e.getPuntosTotalesJornada() * 100_000;
+                    return Map.<String, Object>of(
+                        "idEquipo", e.getId(),
+                        "jornada", e.getJornada().getId(), // (Nota: ID interno, pero sirve para identificar)
+                        "puntos", e.getPuntosTotalesJornada(),
+                        "dinero", dinero,
+                        "dineroFmt", fmtDinero(dinero)
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    @PostMapping("/reclamar-premio/{idEquipo}")
+    public String reclamarPremio(@PathVariable Long idEquipo) {
+        Equipo equipo = equipoRepository.findById(idEquipo).orElseThrow();
+        if (equipo.isReclamado()) return "❌ Ya cobrado.";
+        
+        int dinero = equipo.getPuntosTotalesJornada() * 100_000;
+        Usuario usuario = equipo.getUsuario();
+        
+        usuario.setPresupuesto(usuario.getPresupuesto() + dinero);
+        equipo.setReclamado(true);
+        
+        usuarioRepository.save(usuario);
+        equipoRepository.save(equipo);
+        
+        return "💰 ¡Has cobrado " + fmtDinero(dinero) + "!";
+    }
+
+    // --- MERCADO ---
 
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
@@ -116,9 +158,7 @@ public class FantasyController {
 
         if (jugador.getPropietario() != null) return "❌ Error: Jugador ya tiene dueño.";
         
-        // 🔴 CAMBIO: Eliminada restricción de dinero. Se permite deuda.
         comprador.setPresupuesto(comprador.getPresupuesto() - jugador.getValor());
-        
         jugador.setPropietario(comprador);
         jugador.setClausula(jugador.getValor());
 
@@ -138,9 +178,7 @@ public class FantasyController {
         if (victima == null) return "❌ Es libre, fíchalo normal.";
         if (victima.getId().equals(ladron.getId())) return "❌ No te puedes robar a ti mismo.";
         
-        // 🔴 CAMBIO: Eliminada restricción de dinero. Se permite deuda.
         ladron.setPresupuesto(ladron.getPresupuesto() - jugador.getClausula());
-        
         victima.setPresupuesto(victima.getPresupuesto() + jugador.getClausula());
         jugador.setPropietario(ladron);
         
@@ -190,9 +228,7 @@ public class FantasyController {
 
         if (cantidad <= 0) return "❌ Cantidad inválida.";
         
-        // 🔴 CAMBIO: Eliminada restricción de dinero. Se permite deuda.
         propietario.setPresupuesto(propietario.getPresupuesto() - cantidad);
-        
         jugador.setClausula(jugador.getClausula() + (cantidad * 2));
 
         usuarioRepository.save(propietario);
@@ -251,30 +287,33 @@ public class FantasyController {
         for (Equipo equipo : equipos) {
             Usuario manager = equipo.getUsuario();
             
-            // 🔴 REGLA DE ORO: Si tienes saldo negativo, PUNTOS = 0.
             if (manager.getPresupuesto() < 0) {
                 equipo.setPuntosTotalesJornada(0);
                 equipoRepository.save(equipo);
-                resumenPremios.append("🚫 ").append(manager.getNombre()).append(" (Saldo Negativo -0 pts)\n");
+                resumenPremios.append("🚫 ").append(manager.getNombre()).append(" (Saldo Negativo - 0 pts)\n");
                 continue; 
             }
             
             int puntos = calculadora.calcularTotalEquipo(equipo);
             equipo.setPuntosTotalesJornada(puntos);
-            int premioEconomico = puntos * 100_000;
-            manager.setPresupuesto(manager.getPresupuesto() + premioEconomico);
             
-            usuarioRepository.save(manager);
-            equipoRepository.save(equipo);
+            // 🔴 CAMBIO: YA NO PAGAMOS AQUÍ. SOLO CALCULAMOS.
+            // int premioEconomico = puntos * 100_000;
+            // manager.setPresupuesto(manager.getPresupuesto() + premioEconomico);
+            // usuarioRepository.save(manager);
+            
+            equipoRepository.save(equipo); // Guardamos puntos y "reclamado=false" (default)
+            
             if (puntos > 0) {
-                resumenPremios.append("💰 ").append(manager.getNombre()).append(": ").append(puntos).append("p -> ").append(fmtDinero(premioEconomico)).append("\n");
+                resumenPremios.append("✅ ").append(manager.getNombre()).append(": ").append(puntos).append("p\n");
             }
         }
         
         Jornada nuevaJornada = new Jornada();
         jornadaRepository.save(nuevaJornada);
         
-        noticiaRepository.save(new Noticia("🏁 JORNADA " + numJornadaCerrada + " FINALIZADA.\n" + resumenPremios));
+        // Mensaje genérico de fin de jornada
+        noticiaRepository.save(new Noticia("🏁 FIN JORNADA " + numJornadaCerrada + ". ¡Ve a Noticias a reclamar tu dinero!"));
         return "✅ Jornada " + numJornadaCerrada + " cerrada. ¡Arranca la Jornada " + (numJornadaCerrada + 1) + "!";
     }
 
