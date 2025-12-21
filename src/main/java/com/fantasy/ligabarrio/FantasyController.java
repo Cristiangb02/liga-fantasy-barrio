@@ -191,19 +191,29 @@ public class FantasyController {
         if (victima == null) return "❌ Es libre, fíchalo normal.";
         if (victima.getId().equals(ladron.getId())) return "❌ No te puedes robar a ti mismo.";
         
-        ladron.setPresupuesto(ladron.getPresupuesto() - jugador.getClausula());
-        victima.setPresupuesto(victima.getPresupuesto() + jugador.getClausula());
+        // 1. Guardamos el precio ACTUAL de la cláusula (antes de que suba)
+        int precioRobo = jugador.getClausula();
+
+        // 2. Operación económica (Permitimos deuda)
+        ladron.setPresupuesto(ladron.getPresupuesto() - precioRobo);
+        victima.setPresupuesto(victima.getPresupuesto() + precioRobo);
+        
+        // 3. Transferencia
         jugador.setPropietario(ladron);
         
-        jugador.setClausula((int)(jugador.getClausula() * 1.5));
+        // 4. Subida automática de cláusula (50%)
+        jugador.setClausula((int)(precioRobo * 1.5));
 
         usuarioRepository.save(ladron);
         usuarioRepository.save(victima);
         jugadorRepository.save(jugador);
 
-        noticiaRepository.save(new Noticia("🔥 CLÁUSULAZO: " + ladron.getNombre() + " roba a " + jugador.getNombre() + " por " + fmtDinero(jugador.getClausula())));
+        // 🔴 CORRECCIÓN PUNTOS 4 y 11: Precio correcto y Mención a la víctima
+        noticiaRepository.save(new Noticia("🔥 CLÁUSULAZO: El mánager " + ladron.getNombre() + " robó el jugador " + jugador.getNombre() + " al mánager " + victima.getNombre() + " por " + fmtDinero(precioRobo)));
+        
         return "✅ ¡Robo completado!";
     }
+    
 
     @PostMapping("/mercado/vender/{idJugador}/{idUsuario}")
     public String venderJugador(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
@@ -365,4 +375,5 @@ public class FantasyController {
         return "✅ Liga reseteada. Recarga la página.";
     }
 }
+
 
