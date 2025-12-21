@@ -39,8 +39,6 @@
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-pos-badge { display: inline-block; background: #eceff1; color: #546e7a; font-size: 0.7em; font-weight: 800; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; align-self: center; }
         .card-clausula { font-size: 0.8em; color: #d32f2f; font-weight: bold; }
-        
-        /* 🔴 NUEVO ESTILO: Coste en Azul */
         .card-coste { font-size: 0.85em; color: #1565c0; font-weight: 800; }
 
         .btn-card { width: 100%; padding: 8px; border: none; border-radius: 6px; font-weight: 700; font-size: 0.85em; cursor: pointer; margin-top: auto; transition: 0.2s; }
@@ -395,7 +393,6 @@
             document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
         }
 
-        // 🔴 CORRECCIÓN LÓGICA DE ERRORES Y VALIDACIÓN
         function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
         function robar(id, p) { mostrarModal("Clausulazo 🔥", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
         function vender(id, valor, clausula) {
@@ -437,22 +434,28 @@
             post(`/alinear/${usuarioId}`, ids);
         }
 
-        // 🔴 MEJORA DE FUNCIÓN POST PARA ERRORES
+        // 🔴 MEJORA DE FUNCIÓN POST: PERMITE DEUDA PERO AVISA
         function post(url, data, coste = 0) {
-            // 1. Check visual previo
-            if(coste > 0 && coste > presupuesto) { 
-                mostrarModal("⛔ FONDOS INSUFICIENTES", `No tienes dinero suficiente.\nTe faltan ${formatoDinero.format(coste - presupuesto)}`, 'confirm', ()=>{}); 
-                return; 
-            }
-
+            // Quitamos el bloqueo previo. Permitimos que se ejecute la acción.
+            
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
-                // 2. Si el servidor dice "❌", mostramos error
                 let titulo = msg.includes("❌") ? "⛔ ERROR" : "✅ Éxito";
                 
                 mostrarModal(titulo, msg, 'confirm', () => {
                     if(!msg.includes("❌")) {
-                        if(coste !== 0) { presupuesto -= coste; localStorage.setItem('presupuesto', presupuesto); actualizarPresupuestoUI(); }
+                        // Actualizamos el presupuesto
+                        if(coste !== 0) { 
+                            presupuesto -= coste; 
+                            localStorage.setItem('presupuesto', presupuesto); 
+                            actualizarPresupuestoUI(); 
+                        }
+                        
+                        // 🔴 CHEQUEO DE NÚMEROS ROJOS (PUNTO 1 REVISADO)
+                        if (presupuesto < 0) {
+                            mostrarModal("⚠️ AVISO DE SALDO", "¡Estás en números rojos!\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
+                        }
+
                         cargarTodo();
                     }
                 });
