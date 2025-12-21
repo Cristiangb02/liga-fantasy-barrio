@@ -1,4 +1,4 @@
-package com.fantasy.ligabarrio;package com.fantasy.ligabarrio;
+package com.fantasy.ligabarrio;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -37,3 +37,4 @@ public class Noticia {
     }
 }
 }
+
