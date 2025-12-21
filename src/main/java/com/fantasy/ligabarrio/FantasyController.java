@@ -80,6 +80,22 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
+    // 🔴 PUNTO 3: HISTORIAL DE JORNADAS
+    @GetMapping("/historial/{usuarioId}")
+    public List<Map<String, Object>> getHistorialUsuario(@PathVariable Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+        
+        return equipoRepository.findByUsuario(usuario).stream()
+            // Ordenamos: Las jornadas más recientes primero
+            .sorted((e1, e2) -> Long.compare(e2.getJornada().getId(), e1.getJornada().getId()))
+            .map(e -> Map.<String, Object>of(
+                "jornadaId", e.getJornada().getId(), // Nota: Esto usará el ID interno (1, 2, 3...)
+                "puntos", e.getPuntosTotalesJornada(),
+                "jugadores", e.getJugadoresAlineados()
+            ))
+            .collect(Collectors.toList());
+    }
+
     @GetMapping("/clasificacion")
     public List<Map<String, Object>> verClasificacion() {
         List<Usuario> usuarios = usuarioRepository.findAll();
@@ -107,15 +123,12 @@ public class FantasyController {
         .collect(Collectors.toList());
     }
 
-    // 🔴 PUNTO 2: LÓGICA DE RECLAMAR DINERO
-    
     @GetMapping("/premios-pendientes/{idUsuario}")
     public List<Map<String, Object>> verPremiosPendientes(@PathVariable Long idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
-        Jornada jornadaActual = getJornadaActiva(); // Solo se pueden cobrar jornadas ANTERIORES
+        Jornada jornadaActual = getJornadaActiva(); 
 
         return equipoRepository.findByUsuario(usuario).stream()
-                // Filtramos: Que no sea la jornada actual, que no esté cobrado ya, y que tenga puntos > 0
                 .filter(e -> !e.getJornada().getId().equals(jornadaActual.getId()))
                 .filter(e -> !e.isReclamado())
                 .filter(e -> e.getPuntosTotalesJornada() > 0)
@@ -123,7 +136,7 @@ public class FantasyController {
                     int dinero = e.getPuntosTotalesJornada() * 100_000;
                     return Map.<String, Object>of(
                         "idEquipo", e.getId(),
-                        "jornada", e.getJornada().getId(), // (Nota: ID interno, pero sirve para identificar)
+                        "jornada", e.getJornada().getId(), 
                         "puntos", e.getPuntosTotalesJornada(),
                         "dinero", dinero,
                         "dineroFmt", fmtDinero(dinero)
@@ -297,12 +310,7 @@ public class FantasyController {
             int puntos = calculadora.calcularTotalEquipo(equipo);
             equipo.setPuntosTotalesJornada(puntos);
             
-            // 🔴 CAMBIO: YA NO PAGAMOS AQUÍ. SOLO CALCULAMOS.
-            // int premioEconomico = puntos * 100_000;
-            // manager.setPresupuesto(manager.getPresupuesto() + premioEconomico);
-            // usuarioRepository.save(manager);
-            
-            equipoRepository.save(equipo); // Guardamos puntos y "reclamado=false" (default)
+            equipoRepository.save(equipo);
             
             if (puntos > 0) {
                 resumenPremios.append("✅ ").append(manager.getNombre()).append(": ").append(puntos).append("p\n");
@@ -312,8 +320,7 @@ public class FantasyController {
         Jornada nuevaJornada = new Jornada();
         jornadaRepository.save(nuevaJornada);
         
-        // Mensaje genérico de fin de jornada
-        noticiaRepository.save(new Noticia("🏁 FIN JORNADA " + numJornadaCerrada + ". ¡Ve a Noticias a reclamar tu dinero!"));
+        noticiaRepository.save(new Noticia("🏁 JORNADA " + numJornadaCerrada + " FINALIZADA.\n" + resumenPremios));
         return "✅ Jornada " + numJornadaCerrada + " cerrada. ¡Arranca la Jornada " + (numJornadaCerrada + 1) + "!";
     }
 
@@ -358,3 +365,4 @@ public class FantasyController {
         return "✅ Liga reseteada. Recarga la página.";
     }
 }
+
