@@ -1,8 +1,6 @@
 package com.fantasy.ligabarrio;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 public class Equipo {
@@ -12,16 +10,18 @@ public class Equipo {
     private Long id;
 
     @ManyToOne
-    private Usuario usuario; // ¿De quién es este equipo?
+    private Usuario usuario;
 
     @ManyToOne
-    private Jornada jornada; // ¿Para qué jornada es?
+    private Jornada jornada;
 
-    // IMPORTANTE: Muchos equipos pueden tener al mismo jugador (ManyToMany)
     @ManyToMany
-    private List<Jugador> jugadoresAlineados = new ArrayList<>();
+    private java.util.List<Jugador> jugadoresAlineados;
 
-    private int puntosTotalesJornada; // La suma de los puntos de sus jugadores
+    private int puntosTotalesJornada;
+    
+    // 🔴 NUEVO CAMPO: ¿Ya ha cobrado el dinero de esta jornada?
+    private boolean reclamado;
 
     public Equipo() {
     }
@@ -29,21 +29,27 @@ public class Equipo {
     public Equipo(Usuario usuario, Jornada jornada) {
         this.usuario = usuario;
         this.jornada = jornada;
+        this.reclamado = false; // Por defecto no cobrado
     }
 
-    // Método útil para añadir jugadores fácilmente
-    public void alinearJugador(Jugador j) {
-        this.jugadoresAlineados.add(j);
+    public void alinearJugador(Jugador jugador) {
+        if (this.jugadoresAlineados == null) {
+            this.jugadoresAlineados = new java.util.ArrayList<>();
+        }
+        this.jugadoresAlineados.add(jugador);
     }
 
-    // Getters y Setters
     public Long getId() { return id; }
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
     public Jornada getJornada() { return jornada; }
     public void setJornada(Jornada jornada) { this.jornada = jornada; }
-    public List<Jugador> getJugadoresAlineados() { return jugadoresAlineados; }
-    public void setJugadoresAlineados(List<Jugador> jugadoresAlineados) { this.jugadoresAlineados = jugadoresAlineados; }
+    public java.util.List<Jugador> getJugadoresAlineados() { return jugadoresAlineados; }
+    public void setJugadoresAlineados(java.util.List<Jugador> jugadoresAlineados) { this.jugadoresAlineados = jugadoresAlineados; }
     public int getPuntosTotalesJornada() { return puntosTotalesJornada; }
     public void setPuntosTotalesJornada(int puntosTotalesJornada) { this.puntosTotalesJornada = puntosTotalesJornada; }
+    
+    // Getters/Setters nuevo campo
+    public boolean isReclamado() { return reclamado; }
+    public void setReclamado(boolean reclamado) { this.reclamado = reclamado; }
 }
