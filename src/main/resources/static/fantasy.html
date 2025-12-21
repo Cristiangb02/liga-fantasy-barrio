@@ -14,7 +14,6 @@
         .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
 
         .user-info { display: flex; align-items: center; gap: 10px; }
-        /* 🔴 AVATAR GENÉRICO PERFECTO */
         .avatar-header { width: 45px; height: 45px; border-radius: 50%; background: #e0e0e0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border: 2px solid white; }
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
@@ -56,9 +55,9 @@
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         
+        /* TABLA CLASIFICACION */
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
-        /* 🔴 AVATAR TABLA GENÉRICO */
         .avatar-small { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background-color: #e0e0e0; border: 2px solid #e3e8ee; display:flex; align-items:center; justify-content:center; }
         .clasif-user { display: flex; align-items: center; gap: 12px; }
 
@@ -66,6 +65,11 @@
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
+        /* 🔴 ESTILOS CONTADOR MERCADO */
+        .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .timer-badge { background: #1a237e; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em; letter-spacing: 1px; }
+
+        /* MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
@@ -126,8 +130,13 @@
     </div>
 
     <div id="sec-mercado" class="seccion oculto">
-        <h3>Mercado Libre</h3>
-        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">🔄 Ofertas diarias (12 jugadores). Se renuevan cada 24h.</p>
+        <div class="market-header">
+            <span style="font-weight:bold; font-size:1.1rem;">Mercado Libre</span>
+            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
+                <div id="market-countdown" class="timer-badge">--:--:--</div>
+            </div>
+        </div>
         <div id="grid-mercado" class="grid-jugadores">Cargando...</div>
     </div>
 
@@ -217,6 +226,7 @@
             if (tipo === 'input' || tipo === 'blindar') {
                 inputContainer.classList.remove('oculto');
                 input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe...";
+                
                 if(tipo === 'blindar') {
                     input.onkeyup = function() {
                         let val = parseInt(this.value);
@@ -251,8 +261,33 @@
                 cargarUsuariosAdmin();
             }
             cargarTodo();
-            setInterval(cargarNoticias, 5000); 
+            setInterval(cargarNoticias, 5000);
+            
+            // 🔴 INICIAR EL CONTADOR DEL MERCADO
+            iniciarContadorMercado();
         };
+
+        // 🔴 LÓGICA DEL CONTADOR (CUENTA ATRÁS A MEDIANOCHE UTC)
+        function iniciarContadorMercado() {
+            function actualizar() {
+                const ahora = new Date();
+                const manana = new Date(ahora);
+                manana.setUTCHours(24, 0, 0, 0); // La próxima medianoche UTC
+                
+                const diferencia = manana - ahora;
+                
+                if (diferencia > 0) {
+                    const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+                    
+                    document.getElementById('market-countdown').innerText = 
+                        `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }
+            }
+            actualizar(); // Primera ejecución inmediata
+            setInterval(actualizar, 1000);
+        }
 
         function cargarTodo() {
             fetch('/jornada/actual').then(r=>r.json()).then(n => {
@@ -260,7 +295,6 @@
                 document.getElementById('num-jornada-alineacion').innerText = n;
             });
 
-            // 1. CARGA PLANTILLA Y RIVALES (TODOS LOS JUGADORES)
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
@@ -271,14 +305,13 @@
                 });
             });
 
-            // 🔴 2. PUNTO 10: CARGA MERCADO DIARIO (SOLO 12)
+            // CARGA MERCADO DIARIO
             fetch('/mercado-diario').then(r=>r.json()).then(mercado => {
                 pintarMercado(mercado);
             });
 
             fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
             
-            // 🔴 CLASIFICACIÓN LIMPIA (SIN FOTO ROTA)
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 let html = data.map((fila, i) => `
                     <div class="fila-clasif">
