@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 import java.util.Optional;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Collections;
+import java.util.Random;
+import java.time.LocalDate;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -49,6 +52,23 @@ public class FantasyController {
     @GetMapping("/jugadores")
     public List<Jugador> verTodosLosJugadores() { return jugadorRepository.findAll(); }
 
+    // 🔴 PUNTO 10: MERCADO DIARIO ROTATORIO (MÁXIMO 12)
+    @GetMapping("/mercado-diario")
+    public List<Jugador> getMercadoDiario() {
+        // 1. Cogemos todos los libres
+        List<Jugador> libres = jugadorRepository.findAll().stream()
+                .filter(j -> j.getPropietario() == null)
+                .collect(Collectors.toList());
+        
+        // 2. Usamos la FECHA DE HOY como semilla aleatoria.
+        // Esto hace que el orden sea aleatorio, pero EL MISMO para todo el mundo durante 24h.
+        long seed = LocalDate.now().toEpochDay();
+        Collections.shuffle(libres, new Random(seed));
+        
+        // 3. Devolvemos solo los 12 primeros
+        return libres.stream().limit(12).collect(Collectors.toList());
+    }
+
     @GetMapping("/noticias")
     public List<Noticia> verNoticias() { return noticiaRepository.findAllByOrderByFechaDesc(); }
 
@@ -62,7 +82,6 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
-    // CLASIFICACIÓN (LIMPIA, SIN FOTOS)
     @GetMapping("/clasificacion")
     public List<Map<String, Object>> verClasificacion() {
         List<Usuario> usuarios = usuarioRepository.findAll();
