@@ -301,7 +301,17 @@
                 pintarMercado(mercado);
             });
 
-            fetch('/usuarios').then(r=>r.json()).then(usuarios => pintarRivales(usuarios));
+            // 🔴 🔴 AQUÍ ESTÁ EL TRUCO PARA ACTUALIZAR TU DINERO AL RESETEAR
+            fetch('/usuarios').then(r=>r.json()).then(usuarios => {
+                pintarRivales(usuarios);
+                // Buscamos mi usuario y actualizamos el presupuesto local
+                const yo = usuarios.find(u => u.id == usuarioId);
+                if (yo) {
+                    presupuesto = yo.presupuesto;
+                    localStorage.setItem('presupuesto', presupuesto); // Actualizar memoria
+                    actualizarPresupuestoUI(); // Refrescar pantalla
+                }
+            });
             
             fetch('/clasificacion').then(r=>r.json()).then(data => {
                 let html = data.map((fila, i) => `
@@ -391,7 +401,6 @@
         function blindar(id) { mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => { if (cant && !isNaN(cant) && cant > 0) post(`/jugador/subir-clausula/${id}/${cant}`, {}, cant); }); }
         function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
         
-        // 🔴 PUNTO 12: RESETEAR LIGA CON RECARGA DE PÁGINA OBLIGATORIA
         function resetearLiga() { 
             mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => { 
                 if(t==="RESET") {
@@ -399,7 +408,7 @@
                     .then(r => r.text())
                     .then(msg => {
                         mostrarModal("Info", msg, 'confirm', () => {
-                            location.reload(); // 🔴 OBLIGA A RECARGAR PARA VER EL DINERO NUEVO
+                            location.reload(); 
                         });
                     });
                 } else {
