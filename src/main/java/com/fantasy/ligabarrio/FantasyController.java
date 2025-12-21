@@ -43,12 +43,14 @@ public class FantasyController {
         return jornadas.get(jornadas.size() - 1);
     }
 
-    // 🔴 CAMBIO PUNTO 12: Usamos .count() en vez de .getId() para que el reset vuelva a "1"
-    @GetMapping("/jornada/actual")
-    public long getNumeroJornadaActual() { 
-        long cantidad = jornadaRepository.count();
-        return cantidad == 0 ? 1 : cantidad;
+    // Usamos count() para mostrar el número bonito (1, 2, 3...)
+    private long getNumeroJornadaReal() {
+        long c = jornadaRepository.count();
+        return c == 0 ? 1 : c;
     }
+
+    @GetMapping("/jornada/actual")
+    public long getNumeroJornadaActualEndpoint() { return getNumeroJornadaReal(); }
 
     @GetMapping("/usuarios")
     public List<Usuario> verRivales() { return usuarioRepository.findAll(); }
@@ -214,7 +216,8 @@ public class FantasyController {
         
         equipo.setJugadoresAlineados(seleccionados);
         equipoRepository.save(equipo);
-        return "✅ Alineación guardada para Jornada " + jornada.getId();
+        // 🔴 CORRECCIÓN: Usamos el número real calculado
+        return "✅ Alineación guardada para Jornada " + getNumeroJornadaReal();
     }
 
     @PostMapping("/admin/registrar")
@@ -240,6 +243,9 @@ public class FantasyController {
     @PostMapping("/admin/cerrar-jornada")
     public String cerrarJornada() {
         Jornada jornadaActual = getJornadaActiva();
+        // Guardamos el número ANTES de crear la nueva
+        long numJornadaCerrada = getNumeroJornadaReal();
+        
         List<Equipo> equipos = equipoRepository.findByJornada(jornadaActual);
         StringBuilder resumenPremios = new StringBuilder();
 
@@ -265,8 +271,10 @@ public class FantasyController {
         
         Jornada nuevaJornada = new Jornada();
         jornadaRepository.save(nuevaJornada);
-        noticiaRepository.save(new Noticia("🏁 JORNADA " + jornadaActual.getId() + " FINALIZADA.\n" + resumenPremios));
-        return "✅ Jornada " + jornadaActual.getId() + " cerrada. ¡Arranca la Jornada " + nuevaJornada.getId() + "!";
+        
+        // 🔴 CORRECCIÓN: Usamos el número calculado para el mensaje
+        noticiaRepository.save(new Noticia("🏁 JORNADA " + numJornadaCerrada + " FINALIZADA.\n" + resumenPremios));
+        return "✅ Jornada " + numJornadaCerrada + " cerrada. ¡Arranca la Jornada " + (numJornadaCerrada + 1) + "!";
     }
 
     @DeleteMapping("/admin/eliminar-usuario/{idUsuario}")
@@ -283,10 +291,8 @@ public class FantasyController {
         return "✅ Usuario eliminado.";
     }
 
-    // 🔴 PUNTO 12: RESET COMPLETO Y SEGURO
     @PostMapping("/admin/reset-liga")
     public String resetearLiga() {
-        // 1. Limpiar Jugadores
         List<Jugador> jugadores = jugadorRepository.findAll();
         for (Jugador j : jugadores) {
             j.setPropietario(null);
@@ -295,22 +301,17 @@ public class FantasyController {
         }
         jugadorRepository.saveAll(jugadores);
 
-        // 2. Resetear Dinero Usuarios (100M)
         List<Usuario> usuarios = usuarioRepository.findAll();
         for (Usuario u : usuarios) {
             u.setPresupuesto(100_000_000); 
         }
         usuarioRepository.saveAll(usuarios);
 
-        // 3. Borrar historial
         equipoRepository.deleteAll();
         actuacionRepository.deleteAll();
         noticiaRepository.deleteAll();
-        
-        // 4. Resetear Jornadas (Borrar todas y crear 1 nueva)
         jornadaRepository.deleteAll();
-        Jornada j1 = new Jornada(); // ID será nuevo, pero .count() será 1
-        jornadaRepository.save(j1); 
+        jornadaRepository.save(new Jornada()); 
 
         noticiaRepository.save(new Noticia("☢️ LIGA RESETEADA: ¡Todos empiezan de cero con 100M! ¡A fichar!"));
 
