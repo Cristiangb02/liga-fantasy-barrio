@@ -43,7 +43,6 @@ public class FantasyController {
         return jornadas.get(jornadas.size() - 1);
     }
 
-    // Usamos count() para mostrar el número bonito (1, 2, 3...)
     private long getNumeroJornadaReal() {
         long c = jornadaRepository.count();
         return c == 0 ? 1 : c;
@@ -108,7 +107,7 @@ public class FantasyController {
         .collect(Collectors.toList());
     }
 
-    // --- MERCADO ---
+    // --- MERCADO (PERMITIMOS SALDO NEGATIVO) ---
 
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
@@ -116,9 +115,10 @@ public class FantasyController {
         Usuario comprador = usuarioRepository.findById(idUsuario).orElseThrow();
 
         if (jugador.getPropietario() != null) return "❌ Error: Jugador ya tiene dueño.";
-        if (comprador.getPresupuesto() < jugador.getValor()) return "❌ Error: Sin dinero.";
-
+        
+        // 🔴 CAMBIO: Eliminada restricción de dinero. Se permite deuda.
         comprador.setPresupuesto(comprador.getPresupuesto() - jugador.getValor());
+        
         jugador.setPropietario(comprador);
         jugador.setClausula(jugador.getValor());
 
@@ -137,9 +137,10 @@ public class FantasyController {
 
         if (victima == null) return "❌ Es libre, fíchalo normal.";
         if (victima.getId().equals(ladron.getId())) return "❌ No te puedes robar a ti mismo.";
-        if (ladron.getPresupuesto() < jugador.getClausula()) return "❌ Falta dinero.";
-
+        
+        // 🔴 CAMBIO: Eliminada restricción de dinero. Se permite deuda.
         ladron.setPresupuesto(ladron.getPresupuesto() - jugador.getClausula());
+        
         victima.setPresupuesto(victima.getPresupuesto() + jugador.getClausula());
         jugador.setPropietario(ladron);
         
@@ -188,9 +189,10 @@ public class FantasyController {
         Usuario propietario = jugador.getPropietario();
 
         if (cantidad <= 0) return "❌ Cantidad inválida.";
-        if (propietario.getPresupuesto() < cantidad) return "❌ No tienes suficiente dinero.";
-
+        
+        // 🔴 CAMBIO: Eliminada restricción de dinero. Se permite deuda.
         propietario.setPresupuesto(propietario.getPresupuesto() - cantidad);
+        
         jugador.setClausula(jugador.getClausula() + (cantidad * 2));
 
         usuarioRepository.save(propietario);
@@ -216,7 +218,6 @@ public class FantasyController {
         
         equipo.setJugadoresAlineados(seleccionados);
         equipoRepository.save(equipo);
-        // 🔴 CORRECCIÓN: Usamos el número real calculado
         return "✅ Alineación guardada para Jornada " + getNumeroJornadaReal();
     }
 
@@ -243,20 +244,21 @@ public class FantasyController {
     @PostMapping("/admin/cerrar-jornada")
     public String cerrarJornada() {
         Jornada jornadaActual = getJornadaActiva();
-        // Guardamos el número ANTES de crear la nueva
         long numJornadaCerrada = getNumeroJornadaReal();
-        
         List<Equipo> equipos = equipoRepository.findByJornada(jornadaActual);
         StringBuilder resumenPremios = new StringBuilder();
 
         for (Equipo equipo : equipos) {
             Usuario manager = equipo.getUsuario();
+            
+            // 🔴 REGLA DE ORO: Si tienes saldo negativo, PUNTOS = 0.
             if (manager.getPresupuesto() < 0) {
                 equipo.setPuntosTotalesJornada(0);
                 equipoRepository.save(equipo);
-                resumenPremios.append("🚫 ").append(manager.getNombre()).append(" (Saldo -)\n");
+                resumenPremios.append("🚫 ").append(manager.getNombre()).append(" (Saldo Negativo -0 pts)\n");
                 continue; 
             }
+            
             int puntos = calculadora.calcularTotalEquipo(equipo);
             equipo.setPuntosTotalesJornada(puntos);
             int premioEconomico = puntos * 100_000;
@@ -272,7 +274,6 @@ public class FantasyController {
         Jornada nuevaJornada = new Jornada();
         jornadaRepository.save(nuevaJornada);
         
-        // 🔴 CORRECCIÓN: Usamos el número calculado para el mensaje
         noticiaRepository.save(new Noticia("🏁 JORNADA " + numJornadaCerrada + " FINALIZADA.\n" + resumenPremios));
         return "✅ Jornada " + numJornadaCerrada + " cerrada. ¡Arranca la Jornada " + (numJornadaCerrada + 1) + "!";
     }
