@@ -68,10 +68,16 @@
         .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .timer-badge { background: #1a237e; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em; letter-spacing: 1px; }
 
-        /* 🔴 ESTILOS BLOQUE PREMIOS */
         .bloque-premios { background: #e8f5e9; border: 1px solid #43a047; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
+
+        /* 🔴 ESTILOS HISTORIAL (PUNTO 3) */
+        .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
+        .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
+        .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
+        .historial-body { padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+        .player-mini { background: #fff; border: 1px solid #ddd; padding: 5px; border-radius: 5px; font-size: 0.8em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
@@ -112,7 +118,7 @@
         <button onclick="cambiarPestaña('mercado')" id="tab-mercado">🛒 Mercado</button>
         <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Rivales</button>
         <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Tabla</button>
-        <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
+        <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Historial</button> <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
         <button onclick="cambiarPestaña('admin')" id="tab-admin" class="admin-tab oculto">ADMIN</button>
     </nav>
 
@@ -158,9 +164,13 @@
         <div id="lista-clasificacion">Cargando...</div>
     </div>
 
+    <div id="sec-historial" class="seccion oculto">
+        <h3>Historial de Jornadas</h3>
+        <div id="lista-historial">Cargando...</div>
+    </div>
+
     <div id="sec-noticias" class="seccion oculto">
         <div id="zona-premios"></div>
-        
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h3>Noticias</h3>
             <small style="color:#666">En vivo 🔴</small>
@@ -332,42 +342,57 @@
                     </div>`).join('');
                 document.getElementById('lista-clasificacion').innerHTML = html;
             });
+            
+            // 🔴 CARGAR HISTORIAL (PUNTO 3)
+            cargarHistorial();
+            
             cargarNoticias();
         }
 
-        // 🔴 CAMBIO PUNTO 2: Cargar premios pendientes y botón RECLAMAR
+        // 🔴 FUNCIÓN CARGAR HISTORIAL (PUNTO 3)
+        function cargarHistorial() {
+            fetch('/historial/' + usuarioId).then(r=>r.json()).then(historial => {
+                const div = document.getElementById('lista-historial');
+                if (historial.length === 0) {
+                    div.innerHTML = '<p>No hay jornadas registradas.</p>';
+                    return;
+                }
+                div.innerHTML = historial.map(h => `
+                    <div class="historial-card">
+                        <div class="historial-header">
+                            <span>Jornada ${h.jornadaId}</span>
+                            <span class="historial-badge">${h.puntos} pts</span>
+                        </div>
+                        <div class="historial-body">
+                            ${h.jugadores.map(j => `<div class="player-mini">${j.nombre}</div>`).join('') || '<small>Sin jugadores</small>'}
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
         function cargarNoticias() {
-            // 1. Cargar Noticias Texto
             fetch('/noticias').then(r=>r.json()).then(noticias => {
                 let html = noticias.map(n => `<div class="noticia-item ${n.mensaje.includes("CLÁUSULAZO") || n.mensaje.includes("ADMIN") ? 'noticia-robo':''}"><span class="noticia-fecha">${n.fechaBonita}</span><span class="noticia-texto">${n.mensaje}</span></div>`).join('');
                 const container = document.getElementById('lista-noticias');
                 if (container.innerHTML !== html) container.innerHTML = html || '<p>No hay noticias.</p>';
             });
 
-            // 2. Cargar Premios Pendientes
             fetch('/premios-pendientes/' + usuarioId).then(r=>r.json()).then(premios => {
                 const zonaPremios = document.getElementById('zona-premios');
                 if (premios.length > 0) {
                     let htmlPremios = premios.map(p => `
                         <div class="bloque-premios">
-                            <div>
-                                <strong>🏆 JORNADA FINALIZADA</strong><br>
-                                Has ganado: ${p.puntos} pts
-                            </div>
+                            <div><strong>🏆 JORNADA FINALIZADA</strong><br>Has ganado: ${p.puntos} pts</div>
                             <button class="btn-reclamar" onclick="reclamar(${p.idEquipo})">Reclamar ${p.dineroFmt}</button>
                         </div>
                     `).join('');
                     zonaPremios.innerHTML = htmlPremios;
-                } else {
-                    zonaPremios.innerHTML = '';
-                }
+                } else { zonaPremios.innerHTML = ''; }
             });
         }
 
-        // 🔴 FUNCIÓN RECLAMAR
-        function reclamar(idEquipo) {
-            post(`/reclamar-premio/${idEquipo}`, {});
-        }
+        function reclamar(idEquipo) { post(`/reclamar-premio/${idEquipo}`, {}); }
 
         function cargarUsuariosAdmin() {
             fetch('/usuarios').then(r => r.json()).then(usuarios => {
@@ -467,25 +492,19 @@
         }
 
         function post(url, data, coste = 0) {
-            // Permitimos la acción siempre (deuda permitida)
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
                 let titulo = msg.includes("❌") ? "⛔ ERROR" : "✅ Éxito";
-                
                 mostrarModal(titulo, msg, 'confirm', () => {
                     if(!msg.includes("❌")) {
-                        // Actualizamos presupuesto
                         if(coste !== 0) { 
                             presupuesto -= coste; 
                             localStorage.setItem('presupuesto', presupuesto); 
                             actualizarPresupuestoUI(); 
                         }
-                        
-                        // AVISO DE NÚMEROS ROJOS
                         if (presupuesto < 0) {
                             mostrarModal("⚠️ AVISO DE SALDO", "¡Estás en números rojos!\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
                         }
-
                         cargarTodo();
                     }
                 });
