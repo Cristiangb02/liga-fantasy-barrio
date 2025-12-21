@@ -48,15 +48,13 @@ public class InicializadorDatos implements CommandLineRunner {
                     new Jugador("Jose", Posicion.DEFENSA, 45_000_000, "/jose.png"),
                     new Jugador("Luis", Posicion.MEDIO, 21_550_000, "/luis.png"),
                     new Jugador("Juanlu", Posicion.DEFENSA, 17_000_000, "/juanlu.png"),
-                    new Jugador("Jhona", Posicion.PORTERO, 10_000_000, "/jhona.png")
-                    new Jugador("Carlos", Posicion.PORTERO, 950_000, "/carlos.png")
-                    new Jugador("Diego", Posicion.DEFENSA, 67_450_000, "/diego.png")
-                    new Jugador("Andrés", Posicion.DEFENSA, 1_000_000, "/andres.png")
-                    new Jugador("Felipe", Posicion.MEDIO, 92_000_000, "/felipe.png")
-                    new Jugador("Cristian", Posicion.DELANTERO, 32_100_000, "/cristian.png")
+                    new Jugador("Jhona", Posicion.PORTERO, 10_000_000, "/jhona.png"),
+                    new Jugador("Carlos", Posicion.PORTERO, 950_000, "/carlos.png"),
+                    new Jugador("Diego", Posicion.DEFENSA, 67_450_000, "/diego.png"),
+                    new Jugador("Andrés", Posicion.DEFENSA, 1_000_000, "/andres.png"),
+                    new Jugador("Felipe", Posicion.MEDIO, 92_000_000, "/felipe.png"),
+                    new Jugador("Cristian", Posicion.DELANTERO, 32_100_000, "/cristian.png"),
                     new Jugador("Fran", Posicion.PORTERO, 12_500_000, "/franportero.png")
-
-
             ));
         }
 
@@ -96,3 +94,4 @@ public class InicializadorDatos implements CommandLineRunner {
     }
 
 }
+
