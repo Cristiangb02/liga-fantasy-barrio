@@ -72,14 +72,12 @@
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
-        /* 🔴 ESTILOS HISTORIAL (PUNTO 3) */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
         .historial-body { padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
         .player-mini { background: #fff; border: 1px solid #ddd; padding: 5px; border-radius: 5px; font-size: 0.8em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* MODAL */
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
@@ -114,11 +112,14 @@
 
     <nav>
         <button onclick="cambiarPestaña('plantilla')" id="tab-plantilla" class="active">👥 Plantilla</button>
-        <button onclick="cambiarPestaña('alineacion')" id="tab-alineacion">⚽ Once</button>
+        
+        <button onclick="cambiarPestaña('alineacion')" id="tab-alineacion">⚽ Mi alineación</button>
         <button onclick="cambiarPestaña('mercado')" id="tab-mercado">🛒 Mercado</button>
-        <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Rivales</button>
+        <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Mánagers</button>
+        
         <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Tabla</button>
-        <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Historial</button> <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
+        <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Historial</button>
+        <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
         <button onclick="cambiarPestaña('admin')" id="tab-admin" class="admin-tab oculto">ADMIN</button>
     </nav>
 
@@ -343,13 +344,10 @@
                 document.getElementById('lista-clasificacion').innerHTML = html;
             });
             
-            // 🔴 CARGAR HISTORIAL (PUNTO 3)
             cargarHistorial();
-            
             cargarNoticias();
         }
 
-        // 🔴 FUNCIÓN CARGAR HISTORIAL (PUNTO 3)
         function cargarHistorial() {
             fetch('/historial/' + usuarioId).then(r=>r.json()).then(historial => {
                 const div = document.getElementById('lista-historial');
@@ -492,19 +490,25 @@
         }
 
         function post(url, data, coste = 0) {
+            // Permitimos la acción siempre (deuda permitida)
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
                 let titulo = msg.includes("❌") ? "⛔ ERROR" : "✅ Éxito";
+                
                 mostrarModal(titulo, msg, 'confirm', () => {
                     if(!msg.includes("❌")) {
+                        // Actualizamos presupuesto
                         if(coste !== 0) { 
                             presupuesto -= coste; 
                             localStorage.setItem('presupuesto', presupuesto); 
                             actualizarPresupuestoUI(); 
                         }
+                        
+                        // AVISO DE NÚMEROS ROJOS
                         if (presupuesto < 0) {
                             mostrarModal("⚠️ AVISO DE SALDO", "¡Estás en números rojos!\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
                         }
+
                         cargarTodo();
                     }
                 });
@@ -521,3 +525,4 @@
     </script>
 </body>
 </html>
+
