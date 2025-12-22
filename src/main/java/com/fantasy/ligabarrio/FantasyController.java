@@ -130,10 +130,7 @@ public class FantasyController {
     public List<Map<String, Object>> getHistorialPuntosJugador(@PathVariable Long id) {
         Jugador jugador = jugadorRepository.findById(id).orElseThrow();
         return actuacionRepository.findByJugador(jugador).stream()
-            .map(a -> Map.<String, Object>of(
-                "jornada", a.getJornada().getId(),
-                "puntos", a.getPuntosTotales()
-            ))
+            .map(a -> Map.<String, Object>of("jornada", a.getJornada().getId(), "puntos", a.getPuntosTotales()))
             .sorted((m1, m2) -> Long.compare((Long)m1.get("jornada"), (Long)m2.get("jornada")))
             .collect(Collectors.toList());
     }
@@ -157,9 +154,7 @@ public class FantasyController {
         return equipoRepository.findByUsuario(usuario).stream()
                 .filter(e -> !e.getJornada().getId().equals(jornadaActual.getId()))
                 .filter(e -> !e.isReclamado())
-                // 🔴 CAMBIO: Permitimos ver jornadas con 0 o negativos, aunque el dinero sea 0
                 .map(e -> {
-                    // Dinero solo si puntos > 0
                     int dinero = (e.getPuntosTotalesJornada() > 0) ? e.getPuntosTotalesJornada() * 100_000 : 0;
                     return Map.<String, Object>of("idEquipo", e.getId(), "jornada", e.getJornada().getId(), "puntos", e.getPuntosTotalesJornada(), "dinero", dinero, "dineroFmt", fmtDinero(dinero));
                 }).collect(Collectors.toList());
@@ -169,11 +164,8 @@ public class FantasyController {
     public String reclamarPremio(@PathVariable Long idEquipo) {
         Equipo equipo = equipoRepository.findById(idEquipo).orElseThrow();
         if (equipo.isReclamado()) return "❌ Ya cobrado.";
-        
-        // 🔴 CAMBIO: Dinero = 0 si puntos son negativos
         int puntos = equipo.getPuntosTotalesJornada();
         int dinero = (puntos > 0) ? puntos * 100_000 : 0;
-        
         Usuario usuario = equipo.getUsuario();
         usuario.setPresupuesto(usuario.getPresupuesto() + dinero);
         equipo.setReclamado(true);
@@ -203,13 +195,11 @@ public class FantasyController {
         Usuario victima = jugador.getPropietario();
         if (victima == null) return "❌ Es libre, fíchalo normal.";
         if (victima.getId().equals(ladron.getId())) return "❌ No te puedes robar a ti mismo.";
-        
         int precioRobo = jugador.getClausula();
         ladron.setPresupuesto(ladron.getPresupuesto() - precioRobo);
         victima.setPresupuesto(victima.getPresupuesto() + precioRobo);
         jugador.setPropietario(ladron);
         jugador.setClausula((int)(precioRobo * 1.5));
-        
         usuarioRepository.save(ladron);
         usuarioRepository.save(victima);
         jugadorRepository.save(jugador);
@@ -261,21 +251,43 @@ public class FantasyController {
         return "✅ Alineación guardada para Jornada " + getNumeroJornadaReal();
     }
 
+    // 🔴 PUNTO 7: ACTUALIZACIÓN DE VALOR DE MERCADO AL REGISTRAR
     @PostMapping("/admin/registrar")
     public String registrarPartido(@RequestBody DatosPartido datos) {
         Jugador jugador = jugadorRepository.findById(datos.idJugador).orElseThrow();
         Jornada jornada = getJornadaActiva(); 
         Actuacion actuacion = actuacionRepository.findByJugadorAndJornada(jugador, jornada).orElse(new Actuacion(jugador, jornada));
+
         actuacion.setVictoria(datos.victoria);
         actuacion.setDerrota(datos.derrota);
         actuacion.setGolesMarcados(datos.goles);
         actuacion.setGolesEncajados(datos.golesEncajados);
+        
+        // 1. Calculamos puntos
         int puntos = calculadora.calcularPuntos(actuacion);
         actuacion.setPuntosTotales(puntos);
         actuacionRepository.save(actuacion);
+        
+        // 2. Sumamos al total del jugador
         jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() + puntos);
+        
+        // 3. 🔴 ACTUALIZAMOS VALOR DE MERCADO
+        // Regla: 100.000€ por cada punto (positivo o negativo)
+        int cambioValor = puntos * 100_000;
+        int nuevoValor = jugador.getValor() + cambioValor;
+        
+        // 4. Tope mínimo: 150.000€
+        if (nuevoValor < 150_000) {
+            nuevoValor = 150_000;
+        }
+        
+        jugador.setValor(nuevoValor);
+        // OJO: La cláusula NO la tocamos automáticamente (solo sube si el manager paga para blindar)
+        // Esto crea juego: si el valor sube mucho y la cláusula se queda baja, ¡hay peligro de robo!
+
         jugadorRepository.save(jugador);
-        return "✅ Puntos registrados: " + puntos;
+        
+        return "✅ Puntos: " + puntos + " | Nuevo Valor: " + fmtDinero(nuevoValor);
     }
 
     @PostMapping("/admin/cerrar-jornada")
@@ -288,28 +300,19 @@ public class FantasyController {
         for (Equipo equipo : equipos) {
             Usuario manager = equipo.getUsuario();
             if (manager.getPresupuesto() < 0) {
-                equipo.setPuntosTotalesJornada(0); // Si está en números rojos, 0 puntos
+                equipo.setPuntosTotalesJornada(0);
                 equipoRepository.save(equipo);
                 resumenPremios.append("🚫 ").append(manager.getNombre()).append(" (Saldo Negativo - 0 pts)\n");
                 continue; 
             }
-            
-            // 🔴 LÓGICA IMPORTANTE: Calculamos los puntos REALES de la alineación
-            // (Pueden ser negativos, ej: -5)
-            int puntosTotales = 0;
-            for(Jugador j : equipo.getJugadoresAlineados()) {
-                // Buscamos la actuación de este jugador en esta jornada
-                Optional<Actuacion> act = actuacionRepository.findByJugadorAndJornada(j, jornadaActual);
-                if(act.isPresent()) {
-                    puntosTotales += act.get().getPuntosTotales();
-                }
-            }
-            
-            // Guardamos el resultado REAL (-5) para la historia
-            equipo.setPuntosTotalesJornada(puntosTotales);
+            int puntos = calculadora.calcularTotalEquipo(equipo);
+            if (puntos < 0) puntos = 0; // Para el premio, no restamos
+            equipo.setPuntosTotalesJornada(puntos);
             equipoRepository.save(equipo);
             
-            resumenPremios.append("✅ ").append(manager.getNombre()).append(": ").append(puntosTotales).append("p\n");
+            if (puntos > 0) {
+                resumenPremios.append("✅ ").append(manager.getNombre()).append(": ").append(puntos).append("p\n");
+            }
         }
         Jornada nuevaJornada = new Jornada();
         jornadaRepository.save(nuevaJornada);
