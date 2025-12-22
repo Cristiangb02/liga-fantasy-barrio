@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Collections;
 import java.util.Random;
 import java.time.LocalDate;
+import java.time.ZoneId; // 🔴 IMPORTANTE: Para la hora de España
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -52,11 +53,23 @@ public class FantasyController {
     @PostMapping("/auth/registro")
     public String registrarUsuario(@RequestBody Usuario datos) {
         if (usuarioRepository.findByNombre(datos.getNombre()) != null) return "❌ El nombre ya existe.";
-        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, false);
-        nuevo.setActivo(false); 
+        
+        // 🔴 MEJORA: Si es el PRIMER usuario de la base de datos, le hacemos ADMIN automáticamente
+        boolean esPrimero = usuarioRepository.count() == 0;
+        
+        // Constructor: nombre, pass, dinero, esAdmin
+        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, esPrimero);
+        nuevo.setActivo(esPrimero); // Si es el primero, entra activo. Si no, espera aprobación.
+        
         usuarioRepository.save(nuevo);
-        noticiaRepository.save(new Noticia("🔔 SOLICITUD: " + datos.getNombre() + " quiere entrar en la liga."));
-        return "✅ Solicitud enviada. Espera a que el Admin te acepte.";
+        
+        if (esPrimero) {
+            noticiaRepository.save(new Noticia("👑 FUNDADOR: " + datos.getNombre() + " ha inaugurado la liga como Admin."));
+            return "✅ ¡Liga inaugurada! Eres el Admin.";
+        } else {
+            noticiaRepository.save(new Noticia("🔔 SOLICITUD: " + datos.getNombre() + " quiere entrar en la liga."));
+            return "✅ Solicitud enviada. Espera a que el Admin te acepte.";
+        }
     }
 
     @PostMapping("/auth/login")
@@ -101,7 +114,10 @@ public class FantasyController {
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
         List<Jugador> libres = jugadorRepository.findAll().stream().filter(j -> j.getPropietario() == null).collect(Collectors.toList());
-        long seed = LocalDate.now().toEpochDay();
+        
+        // 🔴 CORRECCIÓN PUNTO 9: Usamos la hora de MADRID para calcular la semilla del mercado
+        long seed = LocalDate.now(ZoneId.of("Europe/Madrid")).toEpochDay();
+        
         Collections.shuffle(libres, new Random(seed));
         return libres.stream().limit(12).collect(Collectors.toList());
     }
@@ -254,32 +270,26 @@ public class FantasyController {
         return "✅ Alineación guardada para Jornada " + getNumeroJornadaReal();
     }
 
-    // 🔴 PUNTO 8: REGISTRO CON NUEVA RÚBRICA Y MERCADO DINÁMICO
     @PostMapping("/admin/registrar")
     public String registrarPartido(@RequestBody DatosPartido datos) {
         Jugador jugador = jugadorRepository.findById(datos.idJugador).orElseThrow();
         Jornada jornada = getJornadaActiva(); 
         Actuacion actuacion = actuacionRepository.findByJugadorAndJornada(jugador, jornada).orElse(new Actuacion(jugador, jornada));
 
-        // Asignamos datos del formulario Admin
         actuacion.setJugado(datos.jugado);
         actuacion.setVictoria(datos.victoria);
         actuacion.setDerrota(datos.derrota);
-        // Empate no se guarda explícitamente, es si no es victoria ni derrota
-        
         actuacion.setGolesMarcados(datos.goles);
         actuacion.setGolesEncajados(datos.golesEncajados);
         actuacion.setAutogoles(datos.autogoles);
         
-        // 1. Calculamos puntos con la nueva Rúbrica
         int puntos = calculadora.calcularPuntos(actuacion);
         actuacion.setPuntosTotales(puntos);
         actuacionRepository.save(actuacion);
         
-        // 2. Sumamos al total del jugador
         jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() + puntos);
         
-        // 3. Mercado Dinámico
+        // Mercado dinámico
         int cambioValor = puntos * 100_000;
         int nuevoValor = jugador.getValor() + cambioValor;
         if (nuevoValor < 150_000) nuevoValor = 150_000;
@@ -287,7 +297,7 @@ public class FantasyController {
 
         jugadorRepository.save(jugador);
         
-        return "✅ Puntos registrados: " + puntos; // 🔴 Mensaje limpio
+        return "✅ Puntos registrados: " + puntos;
     }
 
     @PostMapping("/admin/cerrar-jornada")
@@ -306,7 +316,6 @@ public class FantasyController {
                 continue; 
             }
             
-            // Calculamos puntos REALES de la alineación
             int puntosTotales = 0;
             for(Jugador j : equipo.getJugadoresAlineados()) {
                 Optional<Actuacion> act = actuacionRepository.findByJugadorAndJornada(j, jornadaActual);
@@ -354,14 +363,11 @@ public class FantasyController {
         return "✅ Liga reseteada. Recarga la página.";
     }
 
-    // 🔴 DTO INTERNO PARA RECIBIR DATOS DEL FRONTEND
     public static class DatosPartido {
         public Long idJugador;
         public boolean jugado;
         public boolean victoria;
         public boolean derrota;
-        // Si no es victoria ni derrota, es empate
-        
         public int goles;
         public int golesEncajados;
         public int autogoles;
