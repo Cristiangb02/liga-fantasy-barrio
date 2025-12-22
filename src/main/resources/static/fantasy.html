@@ -78,6 +78,11 @@
         .historial-body { padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
         .player-mini { background: #fff; border: 1px solid #ddd; padding: 5px; border-radius: 5px; font-size: 0.8em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+        /* 🔴 ESTILOS SOLICITUDES */
+        .solicitud-row { display: flex; justify-content: space-between; align-items: center; background: #fffde7; border: 1px solid #fbc02d; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+        .btn-aprobar { background: #43a047; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-rechazar { background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
         .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
@@ -112,11 +117,9 @@
 
     <nav>
         <button onclick="cambiarPestaña('plantilla')" id="tab-plantilla" class="active">👥 Plantilla</button>
-        
         <button onclick="cambiarPestaña('alineacion')" id="tab-alineacion">⚽ Mi alineación</button>
         <button onclick="cambiarPestaña('mercado')" id="tab-mercado">🛒 Mercado</button>
         <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Mánagers</button>
-        
         <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Tabla</button>
         <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Historial</button>
         <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
@@ -195,6 +198,12 @@
             <button onclick="registrarActa()" style="background:#c62828; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; margin-bottom:10px;">Registrar Puntos</button>
             <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA</button>
         </div>
+        
+        <div style="background:#fffde7; padding:15px; border-radius:10px; border:1px solid #fbc02d; margin-bottom: 20px;">
+            <h4 style="color:#f57f17; margin-top:0;">🔔 Solicitudes de Acceso</h4>
+            <div id="admin-lista-pendientes">Cargando...</div>
+        </div>
+
         <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
             <h4>👮 Gestión Usuarios</h4>
             <div id="admin-lista-usuarios">Cargando...</div>
@@ -398,6 +407,33 @@
                     <div class="user-row"><span>${u.nombre} ${u.esAdmin ? '(ADMIN)' : ''}</span>${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}</div>
                 `).join('');
             });
+            
+            // 🔴 CARGAR PENDIENTES
+            fetch('/admin/pendientes').then(r => r.json()).then(pendientes => {
+                const div = document.getElementById('admin-lista-pendientes');
+                if(pendientes.length === 0) {
+                    div.innerHTML = '<small>No hay solicitudes.</small>';
+                } else {
+                    div.innerHTML = pendientes.map(u => `
+                        <div class="solicitud-row">
+                            <strong>${u.nombre}</strong>
+                            <div>
+                                <button class="btn-aprobar" onclick="gestionarUsuario(${u.id}, 'aprobar')">✅</button>
+                                <button class="btn-rechazar" onclick="gestionarUsuario(${u.id}, 'rechazar')">❌</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            });
+        }
+        
+        function gestionarUsuario(id, accion) {
+            let method = accion === 'aprobar' ? 'POST' : 'DELETE';
+            fetch(`/admin/${accion}/${id}`, { method: method })
+            .then(r => r.text())
+            .then(msg => {
+                mostrarModal("Gestión", msg, 'confirm', () => cargarUsuariosAdmin());
+            });
         }
 
         function crearCarta(j, tipo, alineado = false) {
@@ -490,25 +526,19 @@
         }
 
         function post(url, data, coste = 0) {
-            // Permitimos la acción siempre (deuda permitida)
             fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
             .then(r => r.text()).then(msg => {
                 let titulo = msg.includes("❌") ? "⛔ ERROR" : "✅ Éxito";
-                
                 mostrarModal(titulo, msg, 'confirm', () => {
                     if(!msg.includes("❌")) {
-                        // Actualizamos presupuesto
                         if(coste !== 0) { 
                             presupuesto -= coste; 
                             localStorage.setItem('presupuesto', presupuesto); 
                             actualizarPresupuestoUI(); 
                         }
-                        
-                        // AVISO DE NÚMEROS ROJOS
                         if (presupuesto < 0) {
                             mostrarModal("⚠️ AVISO DE SALDO", "¡Estás en números rojos!\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
                         }
-
                         cargarTodo();
                     }
                 });
@@ -525,4 +555,3 @@
     </script>
 </body>
 </html>
-
