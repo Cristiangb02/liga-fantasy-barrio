@@ -13,6 +13,9 @@ public class Usuario {
     private String password;
     private int presupuesto;
     private boolean esAdmin;
+    
+    // 🔴 NUEVO CAMPO: Control de acceso
+    private boolean activo; 
 
     public Usuario() {
     }
@@ -22,6 +25,8 @@ public class Usuario {
         this.password = password;
         this.presupuesto = presupuesto;
         this.esAdmin = esAdmin;
+        // Si es Admin nace activo, si no, nace inactivo (pendiente de aprobar)
+        this.activo = esAdmin; 
     }
 
     public Long getId() { return id; }
@@ -33,4 +38,7 @@ public class Usuario {
     public void setPresupuesto(int presupuesto) { this.presupuesto = presupuesto; }
     public boolean isEsAdmin() { return esAdmin; }
     public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
+    
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 }
