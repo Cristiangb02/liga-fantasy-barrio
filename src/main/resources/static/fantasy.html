@@ -76,11 +76,17 @@
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
+        /* 🔴 NUEVOS ESTILOS HISTORIAL */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
-        .historial-body { padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
-        .player-mini { background: #fff; border: 1px solid #ddd; padding: 5px; border-radius: 5px; font-size: 0.8em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .historial-body { padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+        .player-mini { background: #fff; border: 1px solid #ddd; padding: 8px; border-radius: 5px; font-size: 0.85em; display:flex; flex-direction:column; gap:4px; }
+        .mini-puntos { font-weight:bold; font-size:1.1em; align-self: flex-end; }
+        .mini-pos { font-size: 0.8em; opacity: 0.7; }
+        .text-green { color: #2e7d32; }
+        .text-red { color: #d32f2f; }
+        .text-orange { color: #ff9800; }
 
         .solicitud-row { display: flex; justify-content: space-between; align-items: center; background: #fffde7; border: 1px solid #fbc02d; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
         .btn-aprobar { background: #43a047; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
@@ -360,19 +366,13 @@
             iniciarContadorMercado();
         };
 
-        // 🔴 CORRECCIÓN PUNTO 9: RELOJ SINCRONIZADO CON MADRID
         function iniciarContadorMercado() {
             function actualizar() {
                 const now = new Date();
-                
-                // Obtenemos la hora en Madrid
                 const fechaMadridStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
                 const nowMadrid = new Date(fechaMadridStr);
-                
-                // Calculamos medianoche en Madrid
                 const midnightMadrid = new Date(nowMadrid);
                 midnightMadrid.setHours(24, 0, 0, 0);
-                
                 const diferencia = midnightMadrid - nowMadrid;
                 
                 if (diferencia > 0) {
@@ -432,6 +432,7 @@
                 document.getElementById('lista-clasificacion').innerHTML = html;
             });
             
+            // 🔴 ACTUALIZAR HISTORIAL CON LA NUEVA ESTRUCTURA
             cargarHistorial();
             cargarNoticias();
         }
@@ -443,17 +444,30 @@
                     div.innerHTML = '<p>No hay jornadas registradas.</p>';
                     return;
                 }
-                div.innerHTML = historial.map(h => `
+                div.innerHTML = historial.map(h => {
+                    let jugadoresHtml = h.jugadores.map(j => {
+                        let colorClass = j.puntos > 0 ? 'text-green' : (j.puntos < 0 ? 'text-red' : 'text-orange');
+                        return `
+                        <div class="player-mini">
+                            <div style="display:flex; justify-content:space-between;">
+                                <strong>${j.nombre}</strong>
+                                <span class="mini-puntos ${colorClass}">${j.puntos}</span>
+                            </div>
+                            <span class="mini-pos">${j.posicion}</span>
+                        </div>`;
+                    }).join('');
+
+                    return `
                     <div class="historial-card">
                         <div class="historial-header">
-                            <span>Jornada ${h.jornadaId}</span>
-                            <span class="historial-badge">${h.puntos} pts</span>
+                            <span>Jornada ${h.jornadaNumero}</span>
+                            <span class="historial-badge">${h.puntosTotal} pts</span>
                         </div>
                         <div class="historial-body">
-                            ${h.jugadores.map(j => `<div class="player-mini">${j.nombre}</div>`).join('') || '<small>Sin jugadores</small>'}
+                            ${jugadoresHtml || '<small>Sin jugadores alineados</small>'}
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             });
         }
 
