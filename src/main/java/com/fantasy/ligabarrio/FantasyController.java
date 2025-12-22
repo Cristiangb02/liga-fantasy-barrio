@@ -2,7 +2,7 @@ package com.fantasy.ligabarrio;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.ArrayList; // Necesario
+import java.util.ArrayList; 
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Optional;
@@ -43,14 +43,13 @@ public class FantasyController {
         List<Jornada> jornadas = jornadaRepository.findAll();
         if (jornadas.isEmpty()) {
             Jornada j1 = new Jornada();
-            j1.setNumero(1); // Aseguramos que empiece en 1
+            j1.setNumero(1); 
             return jornadaRepository.save(j1);
         }
         return jornadas.get(jornadas.size() - 1);
     }
 
     private long getNumeroJornadaReal() {
-        // Obtenemos el número de la última jornada activa
         return getJornadaActiva().getNumero();
     }
 
@@ -130,23 +129,21 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
-    // 🔴 PUNTO 12: HISTORIAL DETALLADO POR JUGADOR
     @GetMapping("/historial/{usuarioId}")
     public List<Map<String, Object>> getHistorialUsuario(@PathVariable Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
         
         return equipoRepository.findByUsuario(usuario).stream()
-            .sorted((e1, e2) -> Integer.compare(e2.getJornada().getNumero(), e1.getJornada().getNumero())) // Ordenar por Numero Jornada Desc
+            .sorted((e1, e2) -> Integer.compare(e2.getJornada().getNumero(), e1.getJornada().getNumero())) 
             .map(e -> {
-                // Para cada equipo histórico, buscamos los puntos que hizo CADA jugador en ESA jornada
-                List<Map<String, Object>> detallesJugadores = new ArrayList<>();
+                List<Map<String, Object>> detallesJugadores = new ArrayList<>(); // 🔴 CORREGIDO EL NOMBRE
                 for (Jugador j : e.getJugadoresAlineados()) {
                     int puntosJugador = 0;
                     Optional<Actuacion> act = actuacionRepository.findByJugadorAndJornada(j, e.getJornada());
                     if (act.isPresent()) {
                         puntosJugador = act.get().getPuntosTotales();
                     }
-                    detalleJugadores.add(Map.of(
+                    detallesJugadores.add(Map.of( // 🔴 CORREGIDO EL USO DE LA VARIABLE
                         "nombre", j.getNombre(),
                         "posicion", j.getPosicion(),
                         "puntos", puntosJugador
@@ -154,7 +151,7 @@ public class FantasyController {
                 }
 
                 return Map.<String, Object>of(
-                    "jornadaNumero", e.getJornada().getNumero(), // Usamos el numero real (1, 2...)
+                    "jornadaNumero", e.getJornada().getNumero(), 
                     "puntosTotal", e.getPuntosTotalesJornada(),
                     "jugadores", detallesJugadores
                 );
@@ -349,7 +346,6 @@ public class FantasyController {
             resumenPremios.append("✅ ").append(manager.getNombre()).append(": ").append(puntosTotales).append("p\n");
         }
         
-        // 🔴 ASEGURAMOS QUE LA NUEVA JORNADA SEA LA SIGUIENTE NUMÉRICAMENTE
         Jornada nuevaJornada = new Jornada();
         nuevaJornada.setNumero(numJornadaCerrada + 1);
         jornadaRepository.save(nuevaJornada);
@@ -387,7 +383,6 @@ public class FantasyController {
         noticiaRepository.deleteAll();
         jornadaRepository.deleteAll();
         
-        // Creamos Jornada 1 explícita
         Jornada j1 = new Jornada();
         j1.setNumero(1);
         jornadaRepository.save(j1); 
