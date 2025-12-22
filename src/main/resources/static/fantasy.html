@@ -76,7 +76,6 @@
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
-        /* 🔴 NUEVOS ESTILOS HISTORIAL */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
@@ -395,7 +394,8 @@
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
-                if(esAdmin) pintarSelectAdmin(jugadores);
+                // 🔴 BUG 2: Llamamos al endpoint especial para admin
+                if(esAdmin) pintarSelectAdmin();
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
                     pintarAlineacion(jugadores, idsAlineados);
@@ -432,7 +432,6 @@
                 document.getElementById('lista-clasificacion').innerHTML = html;
             });
             
-            // 🔴 ACTUALIZAR HISTORIAL CON LA NUEVA ESTRUCTURA
             cargarHistorial();
             cargarNoticias();
         }
@@ -655,8 +654,18 @@
                 });
             });
         }
-
-        function pintarSelectAdmin(jugadores) { document.getElementById('admin-jugador').innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre}</option>`).join(''); }
+        
+        // 🔴 BUG 2: PINTAR DESPLEGABLE FILTRADO Y CON POSICIÓN
+        function pintarSelectAdmin() {
+            fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
+                const select = document.getElementById('admin-jugador');
+                if (jugadores.length === 0) {
+                    select.innerHTML = '<option>Todos puntuados</option>';
+                    return;
+                }
+                select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join(''); 
+            });
+        }
         
         function registrarActa() { 
             const resultado = document.getElementById('select-resultado').value;
