@@ -48,48 +48,29 @@ public class FantasyController {
         return c == 0 ? 1 : c;
     }
 
-    // --- 🔴 AUTENTICACIÓN Y REGISTRO (PUNTO 5) ---
-
+    // --- AUTH ---
     @PostMapping("/auth/registro")
     public String registrarUsuario(@RequestBody Usuario datos) {
-        if (usuarioRepository.findByNombre(datos.getNombre()) != null) {
-            return "❌ El nombre ya existe.";
-        }
-        // Creamos usuario con 100M pero INACTIVO (false)
+        if (usuarioRepository.findByNombre(datos.getNombre()) != null) return "❌ El nombre ya existe.";
         Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, false);
-        nuevo.setActivo(false); // Forzamos inactivo
+        nuevo.setActivo(false); 
         usuarioRepository.save(nuevo);
-        
-        // Noticia interna para el admin
         noticiaRepository.save(new Noticia("🔔 SOLICITUD: " + datos.getNombre() + " quiere entrar en la liga."));
-        
         return "✅ Solicitud enviada. Espera a que el Admin te acepte.";
     }
 
     @PostMapping("/auth/login")
     public Map<String, Object> login(@RequestBody Usuario datos) {
         Usuario user = usuarioRepository.findByNombre(datos.getNombre());
-        if (user == null || !user.getPassword().equals(datos.getPassword())) {
-            return Map.of("error", "Credenciales incorrectas.");
-        }
-        if (!user.isActivo()) {
-            return Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
-        }
-        return Map.of(
-            "id", user.getId(),
-            "nombre", user.getNombre(),
-            "esAdmin", user.isEsAdmin(),
-            "presupuesto", user.getPresupuesto()
-        );
+        if (user == null || !user.getPassword().equals(datos.getPassword())) return Map.of("error", "Credenciales incorrectas.");
+        if (!user.isActivo()) return Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
+        return Map.of("id", user.getId(), "nombre", user.getNombre(), "esAdmin", user.isEsAdmin(), "presupuesto", user.getPresupuesto());
     }
 
-    // --- 🔴 GESTIÓN ADMIN DE SOLICITUDES (PUNTO 5) ---
-
+    // --- ADMIN USUARIOS ---
     @GetMapping("/admin/pendientes")
     public List<Usuario> verUsuariosPendientes() {
-        return usuarioRepository.findAll().stream()
-                .filter(u -> !u.isActivo())
-                .collect(Collectors.toList());
+        return usuarioRepository.findAll().stream().filter(u -> !u.isActivo()).collect(Collectors.toList());
     }
 
     @PostMapping("/admin/aprobar/{idUsuario}")
@@ -107,25 +88,19 @@ public class FantasyController {
         return "🗑️ Solicitud rechazada.";
     }
 
-    // --- RESTO DE ENDPOINTS ---
-
+    // --- DATA ---
     @GetMapping("/jornada/actual")
     public long getNumeroJornadaActualEndpoint() { return getNumeroJornadaReal(); }
 
     @GetMapping("/usuarios")
-    public List<Usuario> verRivales() { 
-        // Solo mostramos usuarios ACTIVOS en la lista de rivales
-        return usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList()); 
-    }
+    public List<Usuario> verRivales() { return usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList()); }
 
     @GetMapping("/jugadores")
     public List<Jugador> verTodosLosJugadores() { return jugadorRepository.findAll(); }
 
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
-        List<Jugador> libres = jugadorRepository.findAll().stream()
-                .filter(j -> j.getPropietario() == null)
-                .collect(Collectors.toList());
+        List<Jugador> libres = jugadorRepository.findAll().stream().filter(j -> j.getPropietario() == null).collect(Collectors.toList());
         long seed = LocalDate.now().toEpochDay();
         Collections.shuffle(libres, new Random(seed));
         return libres.stream().limit(12).collect(Collectors.toList());
@@ -138,9 +113,7 @@ public class FantasyController {
     public List<Jugador> getAlineacion(@PathVariable Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
         Jornada jornadaActual = getJornadaActiva();
-        Optional<Equipo> equipo = equipoRepository.findByUsuario(usuario).stream()
-                .filter(e -> e.getJornada().getId().equals(jornadaActual.getId()))
-                .findFirst();
+        Optional<Equipo> equipo = equipoRepository.findByUsuario(usuario).stream().filter(e -> e.getJornada().getId().equals(jornadaActual.getId())).findFirst();
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
@@ -149,11 +122,20 @@ public class FantasyController {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
         return equipoRepository.findByUsuario(usuario).stream()
             .sorted((e1, e2) -> Long.compare(e2.getJornada().getId(), e1.getJornada().getId()))
-            .map(e -> Map.<String, Object>of(
-                "jornadaId", e.getJornada().getId(), 
-                "puntos", e.getPuntosTotalesJornada(),
-                "jugadores", e.getJugadoresAlineados()
+            .map(e -> Map.<String, Object>of("jornadaId", e.getJornada().getId(), "puntos", e.getPuntosTotalesJornada(), "jugadores", e.getJugadoresAlineados()))
+            .collect(Collectors.toList());
+    }
+
+    // 🔴 PUNTO 6: DETALLE JUGADOR (HISTORIAL DE PUNTOS)
+    @GetMapping("/jugador/{id}/historial-puntos")
+    public List<Map<String, Object>> getHistorialPuntosJugador(@PathVariable Long id) {
+        Jugador jugador = jugadorRepository.findById(id).orElseThrow();
+        return actuacionRepository.findByJugador(jugador).stream()
+            .map(a -> Map.<String, Object>of(
+                "jornada", a.getJornada().getId(), // ID interno jornada
+                "puntos", a.getPuntosTotales()
             ))
+            .sorted((m1, m2) -> Long.compare((Long)m1.get("jornada"), (Long)m2.get("jornada")))
             .collect(Collectors.toList());
     }
 
@@ -162,64 +144,36 @@ public class FantasyController {
         List<Usuario> usuarios = usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList());
         List<Jugador> todosJugadores = jugadorRepository.findAll();
         List<Equipo> todosEquipos = equipoRepository.findAll();
-
         return usuarios.stream().map(u -> {
-            int puntosTotales = todosEquipos.stream()
-                    .filter(e -> e.getUsuario().getId().equals(u.getId()))
-                    .mapToInt(Equipo::getPuntosTotalesJornada)
-                    .sum();
-            
-            int valorPlantilla = todosJugadores.stream()
-                    .filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId()))
-                    .mapToInt(Jugador::getValor)
-                    .sum();
-
-            return Map.<String, Object>of(
-                    "nombre", u.getNombre(),
-                    "puntos", puntosTotales,
-                    "valorPlantilla", valorPlantilla
-            );
-        })
-        .sorted((m1, m2) -> Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos")))
-        .collect(Collectors.toList());
+            int puntosTotales = todosEquipos.stream().filter(e -> e.getUsuario().getId().equals(u.getId())).mapToInt(Equipo::getPuntosTotalesJornada).sum();
+            int valorPlantilla = todosJugadores.stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId())).mapToInt(Jugador::getValor).sum();
+            return Map.<String, Object>of("nombre", u.getNombre(), "puntos", puntosTotales, "valorPlantilla", valorPlantilla);
+        }).sorted((m1, m2) -> Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos"))).collect(Collectors.toList());
     }
 
     @GetMapping("/premios-pendientes/{idUsuario}")
     public List<Map<String, Object>> verPremiosPendientes(@PathVariable Long idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
-        Jornada jornadaActual = getJornadaActiva(); 
-
+        Jornada jornadaActual = getJornadaActiva();
         return equipoRepository.findByUsuario(usuario).stream()
                 .filter(e -> !e.getJornada().getId().equals(jornadaActual.getId()))
-                .filter(e -> !e.isReclamado())
-                .filter(e -> e.getPuntosTotalesJornada() > 0)
+                .filter(e -> !e.isReclamado() && e.getPuntosTotalesJornada() > 0)
                 .map(e -> {
                     int dinero = e.getPuntosTotalesJornada() * 100_000;
-                    return Map.<String, Object>of(
-                        "idEquipo", e.getId(),
-                        "jornada", e.getJornada().getId(), 
-                        "puntos", e.getPuntosTotalesJornada(),
-                        "dinero", dinero,
-                        "dineroFmt", fmtDinero(dinero)
-                    );
-                })
-                .collect(Collectors.toList());
+                    return Map.<String, Object>of("idEquipo", e.getId(), "jornada", e.getJornada().getId(), "puntos", e.getPuntosTotalesJornada(), "dinero", dinero, "dineroFmt", fmtDinero(dinero));
+                }).collect(Collectors.toList());
     }
 
     @PostMapping("/reclamar-premio/{idEquipo}")
     public String reclamarPremio(@PathVariable Long idEquipo) {
         Equipo equipo = equipoRepository.findById(idEquipo).orElseThrow();
         if (equipo.isReclamado()) return "❌ Ya cobrado.";
-        
         int dinero = equipo.getPuntosTotalesJornada() * 100_000;
         Usuario usuario = equipo.getUsuario();
-        
         usuario.setPresupuesto(usuario.getPresupuesto() + dinero);
         equipo.setReclamado(true);
-        
         usuarioRepository.save(usuario);
         equipoRepository.save(equipo);
-        
         return "💰 ¡Has cobrado " + fmtDinero(dinero) + "!";
     }
 
@@ -227,16 +181,12 @@ public class FantasyController {
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario comprador = usuarioRepository.findById(idUsuario).orElseThrow();
-
         if (jugador.getPropietario() != null) return "❌ Error: Jugador ya tiene dueño.";
-        
         comprador.setPresupuesto(comprador.getPresupuesto() - jugador.getValor());
         jugador.setPropietario(comprador);
         jugador.setClausula(jugador.getValor());
-
         usuarioRepository.save(comprador);
         jugadorRepository.save(jugador);
-        
         noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));
         return "✅ Fichaje realizado.";
     }
@@ -246,22 +196,18 @@ public class FantasyController {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario ladron = usuarioRepository.findById(idLadron).orElseThrow();
         Usuario victima = jugador.getPropietario();
-
         if (victima == null) return "❌ Es libre, fíchalo normal.";
         if (victima.getId().equals(ladron.getId())) return "❌ No te puedes robar a ti mismo.";
         
         int precioRobo = jugador.getClausula();
-
         ladron.setPresupuesto(ladron.getPresupuesto() - precioRobo);
         victima.setPresupuesto(victima.getPresupuesto() + precioRobo);
-        
         jugador.setPropietario(ladron);
         jugador.setClausula((int)(precioRobo * 1.5));
-
+        
         usuarioRepository.save(ladron);
         usuarioRepository.save(victima);
         jugadorRepository.save(jugador);
-
         noticiaRepository.save(new Noticia("🔥 CLÁUSULAZO: El mánager " + ladron.getNombre() + " robó el jugador " + jugador.getNombre() + " al mánager " + victima.getNombre() + " por " + fmtDinero(precioRobo)));
         return "✅ ¡Robo completado!";
     }
@@ -270,27 +216,18 @@ public class FantasyController {
     public String venderJugador(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario vendedor = usuarioRepository.findById(idUsuario).orElseThrow();
-
         if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(idUsuario)) return "❌ No es tuyo.";
-
         int ingreso = jugador.getValor() + (jugador.getClausula() - jugador.getValor()) / 2;
-
         vendedor.setPresupuesto(vendedor.getPresupuesto() + ingreso);
         jugador.setPropietario(null);
         jugador.setClausula(jugador.getValor()); 
-
         Jornada jornadaActual = getJornadaActiva();
         List<Equipo> equipos = equipoRepository.findByUsuario(vendedor);
         for(Equipo e : equipos) {
-            if(e.getJornada().getId().equals(jornadaActual.getId())) {
-                e.getJugadoresAlineados().remove(jugador);
-                equipoRepository.save(e);
-            }
+            if(e.getJornada().getId().equals(jornadaActual.getId())) { e.getJugadoresAlineados().remove(jugador); equipoRepository.save(e); }
         }
-
         usuarioRepository.save(vendedor);
         jugadorRepository.save(jugador);
-        
         noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " vende a " + jugador.getNombre() + " y recibe " + fmtDinero(ingreso)));
         return "✅ Jugador vendido. Recibes " + fmtDinero(ingreso);
     }
@@ -299,15 +236,11 @@ public class FantasyController {
     public String subirClausula(@PathVariable Long idJugador, @PathVariable int cantidad) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario propietario = jugador.getPropietario();
-
         if (cantidad <= 0) return "❌ Cantidad inválida.";
-        
         propietario.setPresupuesto(propietario.getPresupuesto() - cantidad);
         jugador.setClausula(jugador.getClausula() + (cantidad * 2));
-
         usuarioRepository.save(propietario);
         jugadorRepository.save(jugador);
-
         return "✅ Blindado. Nueva cláusula: " + fmtDinero(jugador.getClausula());
     }
 
@@ -316,16 +249,8 @@ public class FantasyController {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
         Jornada jornada = getJornadaActiva(); 
         List<Jugador> seleccionados = jugadorRepository.findAllById(idsJugadores);
-        
-        for (Jugador j : seleccionados) {
-            if (j.getPropietario() == null || !j.getPropietario().getId().equals(usuarioId)) return "❌ " + j.getNombre() + " no es tuyo.";
-        }
-        
-        Equipo equipo = equipoRepository.findByUsuario(usuario).stream()
-                .filter(e -> e.getJornada().getId().equals(jornada.getId()))
-                .findFirst()
-                .orElse(new Equipo(usuario, jornada));
-        
+        for (Jugador j : seleccionados) { if (j.getPropietario() == null || !j.getPropietario().getId().equals(usuarioId)) return "❌ " + j.getNombre() + " no es tuyo."; }
+        Equipo equipo = equipoRepository.findByUsuario(usuario).stream().filter(e -> e.getJornada().getId().equals(jornada.getId())).findFirst().orElse(new Equipo(usuario, jornada));
         equipo.setJugadoresAlineados(seleccionados);
         equipoRepository.save(equipo);
         return "✅ Alineación guardada para Jornada " + getNumeroJornadaReal();
@@ -336,16 +261,13 @@ public class FantasyController {
         Jugador jugador = jugadorRepository.findById(datos.idJugador).orElseThrow();
         Jornada jornada = getJornadaActiva(); 
         Actuacion actuacion = actuacionRepository.findByJugadorAndJornada(jugador, jornada).orElse(new Actuacion(jugador, jornada));
-
         actuacion.setVictoria(datos.victoria);
         actuacion.setDerrota(datos.derrota);
         actuacion.setGolesMarcados(datos.goles);
         actuacion.setGolesEncajados(datos.golesEncajados);
-        
         int puntos = calculadora.calcularPuntos(actuacion);
         actuacion.setPuntosTotales(puntos);
         actuacionRepository.save(actuacion);
-        
         jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() + puntos);
         jugadorRepository.save(jugador);
         return "✅ Puntos registrados: " + puntos;
@@ -360,26 +282,25 @@ public class FantasyController {
 
         for (Equipo equipo : equipos) {
             Usuario manager = equipo.getUsuario();
-            
             if (manager.getPresupuesto() < 0) {
                 equipo.setPuntosTotalesJornada(0);
                 equipoRepository.save(equipo);
                 resumenPremios.append("🚫 ").append(manager.getNombre()).append(" (Saldo Negativo - 0 pts)\n");
                 continue; 
             }
-            
             int puntos = calculadora.calcularTotalEquipo(equipo);
+            
+            // 🔴 CORRECCIÓN PUNTO 6: Si los puntos son negativos, ponemos 0 para no restar dinero
+            if (puntos < 0) puntos = 0;
+            
             equipo.setPuntosTotalesJornada(puntos);
             equipoRepository.save(equipo);
-            
             if (puntos > 0) {
                 resumenPremios.append("✅ ").append(manager.getNombre()).append(": ").append(puntos).append("p\n");
             }
         }
-        
         Jornada nuevaJornada = new Jornada();
         jornadaRepository.save(nuevaJornada);
-        
         noticiaRepository.save(new Noticia("🏁 JORNADA " + numJornadaCerrada + " FINALIZADA.\n" + resumenPremios));
         return "✅ Jornada " + numJornadaCerrada + " cerrada. ¡Arranca la Jornada " + (numJornadaCerrada + 1) + "!";
     }
@@ -388,10 +309,7 @@ public class FantasyController {
     public String eliminarUsuario(@PathVariable Long idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
         if (usuario.isEsAdmin()) return "❌ No se puede eliminar al admin.";
-
-        jugadorRepository.findAll().stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(idUsuario))
-                .forEach(j -> { j.setPropietario(null); j.setClausula(j.getValor()); jugadorRepository.save(j); });
-
+        jugadorRepository.findAll().stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(idUsuario)).forEach(j -> { j.setPropietario(null); j.setClausula(j.getValor()); jugadorRepository.save(j); });
         equipoRepository.deleteAll(equipoRepository.findByUsuario(usuario));
         usuarioRepository.delete(usuario);
         noticiaRepository.save(new Noticia("👮 ADMIN: " + usuario.getNombre() + " ha sido expulsado."));
@@ -401,29 +319,17 @@ public class FantasyController {
     @PostMapping("/admin/reset-liga")
     public String resetearLiga() {
         List<Jugador> jugadores = jugadorRepository.findAll();
-        for (Jugador j : jugadores) {
-            j.setPropietario(null);
-            j.setPuntosAcumulados(0);
-            j.setClausula(j.getValor()); 
-        }
+        for (Jugador j : jugadores) { j.setPropietario(null); j.setPuntosAcumulados(0); j.setClausula(j.getValor()); }
         jugadorRepository.saveAll(jugadores);
-
         List<Usuario> usuarios = usuarioRepository.findAll();
-        for (Usuario u : usuarios) {
-            u.setPresupuesto(100_000_000); 
-            // 🔴 IMPORTANTE: Al resetear, reactivamos a todos por si acaso
-            u.setActivo(true);
-        }
+        for (Usuario u : usuarios) { u.setPresupuesto(100_000_000); u.setActivo(true); }
         usuarioRepository.saveAll(usuarios);
-
         equipoRepository.deleteAll();
         actuacionRepository.deleteAll();
         noticiaRepository.deleteAll();
         jornadaRepository.deleteAll();
         jornadaRepository.save(new Jornada()); 
-
         noticiaRepository.save(new Noticia("☢️ LIGA RESETEADA: ¡Todos empiezan de cero con 100M! ¡A fichar!"));
-
         return "✅ Liga reseteada. Recarga la página.";
     }
 }
