@@ -48,11 +48,75 @@ public class FantasyController {
         return c == 0 ? 1 : c;
     }
 
+    // --- 🔴 AUTENTICACIÓN Y REGISTRO (PUNTO 5) ---
+
+    @PostMapping("/auth/registro")
+    public String registrarUsuario(@RequestBody Usuario datos) {
+        if (usuarioRepository.findByNombre(datos.getNombre()) != null) {
+            return "❌ El nombre ya existe.";
+        }
+        // Creamos usuario con 100M pero INACTIVO (false)
+        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, false);
+        nuevo.setActivo(false); // Forzamos inactivo
+        usuarioRepository.save(nuevo);
+        
+        // Noticia interna para el admin
+        noticiaRepository.save(new Noticia("🔔 SOLICITUD: " + datos.getNombre() + " quiere entrar en la liga."));
+        
+        return "✅ Solicitud enviada. Espera a que el Admin te acepte.";
+    }
+
+    @PostMapping("/auth/login")
+    public Map<String, Object> login(@RequestBody Usuario datos) {
+        Usuario user = usuarioRepository.findByNombre(datos.getNombre());
+        if (user == null || !user.getPassword().equals(datos.getPassword())) {
+            return Map.of("error", "Credenciales incorrectas.");
+        }
+        if (!user.isActivo()) {
+            return Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
+        }
+        return Map.of(
+            "id", user.getId(),
+            "nombre", user.getNombre(),
+            "esAdmin", user.isEsAdmin(),
+            "presupuesto", user.getPresupuesto()
+        );
+    }
+
+    // --- 🔴 GESTIÓN ADMIN DE SOLICITUDES (PUNTO 5) ---
+
+    @GetMapping("/admin/pendientes")
+    public List<Usuario> verUsuariosPendientes() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> !u.isActivo())
+                .collect(Collectors.toList());
+    }
+
+    @PostMapping("/admin/aprobar/{idUsuario}")
+    public String aprobarUsuario(@PathVariable Long idUsuario) {
+        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
+        u.setActivo(true);
+        usuarioRepository.save(u);
+        noticiaRepository.save(new Noticia("👋 BIENVENIDA: " + u.getNombre() + " ha entrado a la liga."));
+        return "✅ Usuario aprobado.";
+    }
+
+    @DeleteMapping("/admin/rechazar/{idUsuario}")
+    public String rechazarUsuario(@PathVariable Long idUsuario) {
+        usuarioRepository.deleteById(idUsuario);
+        return "🗑️ Solicitud rechazada.";
+    }
+
+    // --- RESTO DE ENDPOINTS ---
+
     @GetMapping("/jornada/actual")
     public long getNumeroJornadaActualEndpoint() { return getNumeroJornadaReal(); }
 
     @GetMapping("/usuarios")
-    public List<Usuario> verRivales() { return usuarioRepository.findAll(); }
+    public List<Usuario> verRivales() { 
+        // Solo mostramos usuarios ACTIVOS en la lista de rivales
+        return usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList()); 
+    }
 
     @GetMapping("/jugadores")
     public List<Jugador> verTodosLosJugadores() { return jugadorRepository.findAll(); }
@@ -80,16 +144,13 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
-    // 🔴 PUNTO 3: HISTORIAL DE JORNADAS
     @GetMapping("/historial/{usuarioId}")
     public List<Map<String, Object>> getHistorialUsuario(@PathVariable Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
-        
         return equipoRepository.findByUsuario(usuario).stream()
-            // Ordenamos: Las jornadas más recientes primero
             .sorted((e1, e2) -> Long.compare(e2.getJornada().getId(), e1.getJornada().getId()))
             .map(e -> Map.<String, Object>of(
-                "jornadaId", e.getJornada().getId(), // Nota: Esto usará el ID interno (1, 2, 3...)
+                "jornadaId", e.getJornada().getId(), 
                 "puntos", e.getPuntosTotalesJornada(),
                 "jugadores", e.getJugadoresAlineados()
             ))
@@ -98,7 +159,7 @@ public class FantasyController {
 
     @GetMapping("/clasificacion")
     public List<Map<String, Object>> verClasificacion() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<Usuario> usuarios = usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList());
         List<Jugador> todosJugadores = jugadorRepository.findAll();
         List<Equipo> todosEquipos = equipoRepository.findAll();
 
@@ -162,8 +223,6 @@ public class FantasyController {
         return "💰 ¡Has cobrado " + fmtDinero(dinero) + "!";
     }
 
-    // --- MERCADO ---
-
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
@@ -191,29 +250,21 @@ public class FantasyController {
         if (victima == null) return "❌ Es libre, fíchalo normal.";
         if (victima.getId().equals(ladron.getId())) return "❌ No te puedes robar a ti mismo.";
         
-        // 1. Guardamos el precio ACTUAL de la cláusula (antes de que suba)
         int precioRobo = jugador.getClausula();
 
-        // 2. Operación económica (Permitimos deuda)
         ladron.setPresupuesto(ladron.getPresupuesto() - precioRobo);
         victima.setPresupuesto(victima.getPresupuesto() + precioRobo);
         
-        // 3. Transferencia
         jugador.setPropietario(ladron);
-        
-        // 4. Subida automática de cláusula (50%)
         jugador.setClausula((int)(precioRobo * 1.5));
 
         usuarioRepository.save(ladron);
         usuarioRepository.save(victima);
         jugadorRepository.save(jugador);
 
-        // 🔴 CORRECCIÓN PUNTOS 4 y 11: Precio correcto y Mención a la víctima
         noticiaRepository.save(new Noticia("🔥 CLÁUSULAZO: El mánager " + ladron.getNombre() + " robó el jugador " + jugador.getNombre() + " al mánager " + victima.getNombre() + " por " + fmtDinero(precioRobo)));
-        
         return "✅ ¡Robo completado!";
     }
-    
 
     @PostMapping("/mercado/vender/{idJugador}/{idUsuario}")
     public String venderJugador(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
@@ -319,7 +370,6 @@ public class FantasyController {
             
             int puntos = calculadora.calcularTotalEquipo(equipo);
             equipo.setPuntosTotalesJornada(puntos);
-            
             equipoRepository.save(equipo);
             
             if (puntos > 0) {
@@ -361,6 +411,8 @@ public class FantasyController {
         List<Usuario> usuarios = usuarioRepository.findAll();
         for (Usuario u : usuarios) {
             u.setPresupuesto(100_000_000); 
+            // 🔴 IMPORTANTE: Al resetear, reactivamos a todos por si acaso
+            u.setActivo(true);
         }
         usuarioRepository.saveAll(usuarios);
 
@@ -375,5 +427,3 @@ public class FantasyController {
         return "✅ Liga reseteada. Recarga la página.";
     }
 }
-
-
