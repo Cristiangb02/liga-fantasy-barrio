@@ -360,12 +360,21 @@
             iniciarContadorMercado();
         };
 
+        // 🔴 CORRECCIÓN PUNTO 9: RELOJ SINCRONIZADO CON MADRID
         function iniciarContadorMercado() {
             function actualizar() {
-                const ahora = new Date();
-                const manana = new Date(ahora);
-                manana.setUTCHours(24, 0, 0, 0); 
-                const diferencia = manana - ahora;
+                const now = new Date();
+                
+                // Obtenemos la hora en Madrid
+                const fechaMadridStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
+                const nowMadrid = new Date(fechaMadridStr);
+                
+                // Calculamos medianoche en Madrid
+                const midnightMadrid = new Date(nowMadrid);
+                midnightMadrid.setHours(24, 0, 0, 0);
+                
+                const diferencia = midnightMadrid - nowMadrid;
+                
                 if (diferencia > 0) {
                     const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
@@ -635,7 +644,6 @@
 
         function pintarSelectAdmin(jugadores) { document.getElementById('admin-jugador').innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre}</option>`).join(''); }
         
-        // 🔴 NUEVA LÓGICA DE REGISTRO
         function registrarActa() { 
             const resultado = document.getElementById('select-resultado').value;
             const datos = { 
