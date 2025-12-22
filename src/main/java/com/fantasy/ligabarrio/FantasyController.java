@@ -46,7 +46,7 @@ public class FantasyController {
             j1.setNumero(1); 
             return jornadaRepository.save(j1);
         }
-        
+        // Autocorrección por si alguna jornada se guardó mal como 0
         Jornada activa = jornadas.get(jornadas.size() - 1);
         if (activa.getNumero() <= 0) {
             activa.setNumero(1);
@@ -115,13 +115,13 @@ public class FantasyController {
 
     @GetMapping("/jugadores")
     public List<Jugador> verTodosLosJugadores() { return jugadorRepository.findAll(); }
-    
-    // 🔴 BUG 2: JUGADORES PENDIENTES DE PUNTUAR EN LA JORNADA ACTUAL
+
+    // 🔴 BUG 2 (BACKEND): OBTENER SOLO JUGADORES PENDIENTES DE PUNTUAR
     @GetMapping("/admin/jugadores-pendientes")
-    public List<Jugador> getJugadoresPendientesJornada() {
+    public List<Jugador> getJugadoresPendientes() {
         Jornada actual = getJornadaActiva();
         List<Jugador> todos = jugadorRepository.findAll();
-        // Filtramos solo los que NO tienen actuación registrada en esta jornada
+        // Filtramos: devolvemos solo los que NO tengan ya una actuación en esta jornada
         return todos.stream()
             .filter(j -> actuacionRepository.findByJugadorAndJornada(j, actual).isEmpty())
             .collect(Collectors.toList());
@@ -202,18 +202,14 @@ public class FantasyController {
                 .filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId()))
                 .mapToInt(Jugador::getValor).sum();
                 
-            return Map.<String, Object>of(
-                "nombre", u.getNombre(), 
-                "puntos", puntosTotales, 
-                "valorPlantilla", valorPlantilla
-            );
+            return Map.<String, Object>of("nombre", u.getNombre(), "puntos", puntosTotales, "valorPlantilla", valorPlantilla);
         }).sorted((m1, m2) -> {
-            // 1º Criterio: Puntos (Mayor a menor)
+            // 1º Criterio: Puntos
             int p1 = (int) m1.get("puntos");
             int p2 = (int) m2.get("puntos");
             if (p1 != p2) return Integer.compare(p2, p1);
             
-            // 2º Criterio: Valor Plantilla (Mayor a menor)
+            // 2º Criterio: Valor Plantilla (Desempate)
             int v1 = (int) m1.get("valorPlantilla");
             int v2 = (int) m2.get("valorPlantilla");
             return Integer.compare(v2, v1);
@@ -278,16 +274,19 @@ public class FantasyController {
         jugador.setClausula((int)(precioRobo * 1.5));
         jugador.setJornadaFichaje(getJornadaActiva().getId());
         
-        // 🔴 BUG 3: ELIMINAR DE LA ALINEACIÓN DE LA VÍCTIMA INMEDIATAMENTE
+        // 🔴 BUG 3: ELIMINAR JUGADOR DE LA ALINEACIÓN DE LA VÍCTIMA (PERO SOLO EL JUGADOR)
+        // Buscamos si la víctima tenía equipo alineado en la jornada actual
         Jornada jornadaActual = getJornadaActiva();
         Optional<Equipo> equipoVictima = equipoRepository.findByUsuario(victima).stream()
-            .filter(e -> e.getJornada().getId().equals(jornadaActual.getId()))
-            .findFirst();
+                .filter(e -> e.getJornada().getId().equals(jornadaActual.getId()))
+                .findFirst();
         
         if (equipoVictima.isPresent()) {
             Equipo eq = equipoVictima.get();
-            eq.getJugadoresAlineados().remove(jugador); // Se va de la alineación
-            equipoRepository.save(eq); // Guardamos el equipo con el hueco vacío
+            // Quitamos al jugador robado de la lista de alineados
+            eq.getJugadoresAlineados().remove(jugador);
+            // Guardamos el equipo actualizado (con un hueco libre, pero el resto intacto)
+            equipoRepository.save(eq);
         }
 
         usuarioRepository.save(ladron);
