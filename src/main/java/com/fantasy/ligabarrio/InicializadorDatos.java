@@ -38,26 +38,28 @@ public class InicializadorDatos implements CommandLineRunner {
             t2025 = temporadaRepository.findAll().get(0);
         }
 
-        // 2. JUGADORES (MÁS JUGADORES AÑADIDOS
+        // 2. JUGADORES (Tus jugadores personalizados)
+        // 🔴 CORRECCIÓN: Cambiado Posicion.XXX por "XXX" (String)
         if (jugadorRepository.count() == 0) {
             jugadorRepository.saveAll(List.of(
-                    new Jugador("Cristian", Posicion.DEFENSA, 60_000_000, "/cristian.png"),
-                    new Jugador("Pepe", Posicion.DELANTERO, 9_450_000, "/pepe.png"),
-                    new Jugador("Cárdenas", Posicion.MEDIO, 14_500_000, "/cardenas.png"),
-                    new Jugador("Sergio", Posicion.MEDIO, 86_210_000, "/sergio.png"),
-                    new Jugador("Jose", Posicion.DEFENSA, 45_000_000, "/jose.png"),
-                    new Jugador("Luis", Posicion.MEDIO, 21_550_000, "/luis.png"),
-                    new Jugador("Juanlu", Posicion.DEFENSA, 17_000_000, "/juanlu.png"),
-                    new Jugador("Jhona", Posicion.PORTERO, 10_000_000, "/jhona.png"),
-                    new Jugador("Carlos", Posicion.PORTERO, 950_000, "/carlos.png"),
-                    new Jugador("Diego", Posicion.DEFENSA, 67_450_000, "/diego.png"),
-                    new Jugador("Andrés", Posicion.DEFENSA, 1_000_000, "/andres.png"),
-                    new Jugador("Felipe", Posicion.MEDIO, 92_000_000, "/felipe.png"),
-                    new Jugador("Cristian", Posicion.DELANTERO, 32_100_000, "/cristian.png"),
-                    new Jugador("Fran", Posicion.PORTERO, 12_500_000, "/franportero.png")
+                    new Jugador("Cristian", "DEFENSA", 60_000_000, "/cristian.png"),
+                    new Jugador("Pepe", "DELANTERO", 9_450_000, "/pepe.png"),
+                    new Jugador("Cárdenas", "MEDIO", 14_500_000, "/cardenas.png"),
+                    new Jugador("Sergio", "MEDIO", 86_210_000, "/sergio.png"),
+                    new Jugador("Jose", "DEFENSA", 45_000_000, "/jose.png"),
+                    new Jugador("Luis", "MEDIO", 21_550_000, "/luis.png"),
+                    new Jugador("Juanlu", "DEFENSA", 17_000_000, "/juanlu.png"),
+                    new Jugador("Jhona", "PORTERO", 10_000_000, "/jhona.png"),
+                    new Jugador("Carlos", "PORTERO", 950_000, "/carlos.png"),
+                    new Jugador("Diego", "DEFENSA", 67_450_000, "/diego.png"),
+                    new Jugador("Andrés", "DEFENSA", 1_000_000, "/andres.png"),
+                    new Jugador("Felipe", "MEDIO", 92_000_000, "/felipe.png"),
+                    new Jugador("Cristian", "DELANTERO", 32_100_000, "/cristian.png"),
+                    new Jugador("Fran", "PORTERO", 12_500_000, "/franportero.png")
             ));
         }
 
+        // 3. JORNADA
         Jornada jornada1;
         if (jornadaRepository.count() == 0) {
             jornada1 = new Jornada(1, LocalDate.now(), t2025);
@@ -70,9 +72,10 @@ public class InicializadorDatos implements CommandLineRunner {
         if (usuarioRepository.count() == 0) {
             // Creamos al Admin. IMPORTANTE: el 'true' al final.
             Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
+            admin.setActivo(true); // Aseguramos que nazca activo
             usuarioRepository.save(admin);
 
-            // Asignamos 2 jugadores a Cristian para empezar (opcional)
+            // Asignamos 2 jugadores a Cristian para empezar (opcional, coge los 2 primeros de la lista)
             List<Jugador> jugadores = jugadorRepository.findAll();
             if(jugadores.size() >= 2) {
                 Jugador j1 = jugadores.get(0);
@@ -92,6 +95,6 @@ public class InicializadorDatos implements CommandLineRunner {
             System.out.println(">>> Inicialización completada. Usuario 'Cristian' es ADMIN.");
         }
     }
-
 }
+
 
