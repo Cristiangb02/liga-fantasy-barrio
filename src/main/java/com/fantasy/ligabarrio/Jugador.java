@@ -10,7 +10,7 @@ public class Jugador {
     private Long id;
 
     private String nombre;
-    private String posicion; // PORTERO, DEFENSA, MEDIO, DELANTERO
+    private String posicion; // Es un String: "PORTERO", "DEFENSA"...
     private int valor;
     private int clausula;
     private int puntosAcumulados;
@@ -19,7 +19,6 @@ public class Jugador {
     @ManyToOne
     private Usuario propietario;
     
-    // 🔴 NUEVO CAMPO: Guardamos el ID de la jornada en la que se fichó
     private Long jornadaFichaje;
 
     public Jugador() {
@@ -27,19 +26,18 @@ public class Jugador {
 
     public Jugador(String nombre, String posicion, int valor, String urlImagen) {
         this.nombre = nombre;
-        this.posicion = posicion;
+        this.posicion = posicion; // Recibe String
         this.valor = valor;
         this.clausula = valor; 
         this.puntosAcumulados = 0;
         this.urlImagen = urlImagen;
-        this.jornadaFichaje = 0L; // Inicializamos a 0
+        this.jornadaFichaje = 0L;
     }
 
-    // Getters y Setters básicos
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getPosicion() { return posicion; }
+    public String getPosicion() { return posicion; } // Devuelve String
     public void setPosicion(String posicion) { this.posicion = posicion; }
     public int getValor() { return valor; }
     public void setValor(int valor) { this.valor = valor; }
@@ -51,8 +49,6 @@ public class Jugador {
     public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
     public Usuario getPropietario() { return propietario; }
     public void setPropietario(Usuario propietario) { this.propietario = propietario; }
-
-    // 🔴 Getters y Setters NUEVO CAMPO
     public Long getJornadaFichaje() { return jornadaFichaje; }
     public void setJornadaFichaje(Long jornadaFichaje) { this.jornadaFichaje = jornadaFichaje; }
 }
