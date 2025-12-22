@@ -394,7 +394,7 @@
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
-                // 🔴 BUG 2: Llamamos al endpoint especial para admin
+                // 🔴 BUG 2: Llamada al endpoint filtrado
                 if(esAdmin) pintarSelectAdmin();
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
@@ -680,6 +680,8 @@
                 autogoles: parseInt(document.getElementById('input-autogoles').value)||0 
             }; 
             post('/admin/registrar', datos); 
+            // Recargar para que desaparezca el jugador de la lista
+            setTimeout(pintarSelectAdmin, 500);
         }
         
         function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Repartir puntos y dinero?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
