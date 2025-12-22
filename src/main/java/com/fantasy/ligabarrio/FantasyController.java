@@ -46,7 +46,14 @@ public class FantasyController {
             j1.setNumero(1); 
             return jornadaRepository.save(j1);
         }
-        return jornadas.get(jornadas.size() - 1);
+        
+        // 🔴 AUTOCORRECCIÓN JORNADA 0
+        Jornada activa = jornadas.get(jornadas.size() - 1);
+        if (activa.getNumero() <= 0) {
+            activa.setNumero(1);
+            jornadaRepository.save(activa);
+        }
+        return activa;
     }
 
     private long getNumeroJornadaReal() {
@@ -129,6 +136,7 @@ public class FantasyController {
         return equipo.map(Equipo::getJugadoresAlineados).orElse(List.of());
     }
 
+    // 🔴 HISTORIAL CORREGIDO
     @GetMapping("/historial/{usuarioId}")
     public List<Map<String, Object>> getHistorialUsuario(@PathVariable Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
@@ -136,14 +144,14 @@ public class FantasyController {
         return equipoRepository.findByUsuario(usuario).stream()
             .sorted((e1, e2) -> Integer.compare(e2.getJornada().getNumero(), e1.getJornada().getNumero())) 
             .map(e -> {
-                List<Map<String, Object>> detallesJugadores = new ArrayList<>(); // 🔴 CORREGIDO EL NOMBRE
+                List<Map<String, Object>> detallesJugadores = new ArrayList<>();
                 for (Jugador j : e.getJugadoresAlineados()) {
                     int puntosJugador = 0;
                     Optional<Actuacion> act = actuacionRepository.findByJugadorAndJornada(j, e.getJornada());
                     if (act.isPresent()) {
                         puntosJugador = act.get().getPuntosTotales();
                     }
-                    detallesJugadores.add(Map.of( // 🔴 CORREGIDO EL USO DE LA VARIABLE
+                    detallesJugadores.add(Map.of(
                         "nombre", j.getNombre(),
                         "posicion", j.getPosicion(),
                         "puntos", puntosJugador
@@ -347,7 +355,7 @@ public class FantasyController {
         }
         
         Jornada nuevaJornada = new Jornada();
-        nuevaJornada.setNumero(numJornadaCerrada + 1);
+        nuevaJornada.setNumero(numJornadaCerrada + 1); // Ahora sí funciona
         jornadaRepository.save(nuevaJornada);
         
         noticiaRepository.save(new Noticia("🏁 JORNADA " + numJornadaCerrada + " FINALIZADA.\n" + resumenPremios));
@@ -384,7 +392,7 @@ public class FantasyController {
         jornadaRepository.deleteAll();
         
         Jornada j1 = new Jornada();
-        j1.setNumero(1);
+        j1.setNumero(1); // 🔴 SEGURIDAD JORNADA 1
         jornadaRepository.save(j1); 
         
         noticiaRepository.save(new Noticia("☢️ LIGA RESETEADA: ¡Todos empiezan de cero con 100M! ¡A fichar!"));
