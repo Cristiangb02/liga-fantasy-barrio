@@ -9,29 +9,28 @@ public class CalculadoraPuntosService {
     private final Random random = new Random();
 
     public int calcularPuntos(Actuacion a) {
-        // 1. Si no juega, 0 puntos directos (según rúbrica común)
+        // 1. Si no juega, 0 puntos directos
         if (!a.isJugado()) return 0;
 
-        int puntos = 1; // +1 por jugar (Rúbrica común)
-        String pos = a.getJugador().getPosicion().toUpperCase(); // PORTERO, DEFENSA, MEDIO, DELANTERO
+        int puntos = 1; // +1 por jugar
+        
+        // 🔴 CORRECCIÓN: Usamos .name() porque Posicion es un Enum
+        String pos = a.getJugador().getPosicion().name(); // Devuelve "PORTERO", "DEFENSA"...
 
-        // 2. Resultado del Partido (Rúbrica común)
+        // 2. Resultado del Partido
         if (a.isVictoria()) {
             puntos += 2;
-            // Factor Suerte Extra por ganar (0 a 3)
-            puntos += random.nextInt(4); // nextInt(4) da 0, 1, 2 o 3
+            puntos += random.nextInt(4); // 0 a 3 extra
         } else if (a.isDerrota()) {
             puntos -= 1;
-            // Factor Suerte Extra por perder (0 a 1)
-            puntos += random.nextInt(2); // nextInt(2) da 0 o 1
+            puntos += random.nextInt(2); // 0 a 1 extra
         }
-        // Empate suma 0
-
+        
         // 3. Reglas Específicas por Posición
         switch (pos) {
             case "PORTERO":
                 puntos += calcularGolesEncajados(a.getGolesEncajados(), 6, 3, 0, -2);
-                puntos += (a.getGolesMarcados() * 10); // Asumimos +10 por rareza
+                puntos += (a.getGolesMarcados() * 10);
                 puntos += (a.getAutogoles() * -2);
                 break;
 
@@ -57,7 +56,6 @@ public class CalculadoraPuntosService {
         return puntos;
     }
 
-    // Método auxiliar para limpiar el switch
     private int calcularGolesEncajados(int goles, int pCero, int pMenos3, int p3a6, int pMas6) {
         if (goles == 0) return pCero;
         if (goles < 3) return pMenos3;
@@ -66,7 +64,6 @@ public class CalculadoraPuntosService {
     }
 
     public int calcularTotalEquipo(Equipo equipo) {
-        // Suma simple de los puntos ya calculados en las actuaciones
         return equipo.getPuntosTotalesJornada(); 
     }
 }
