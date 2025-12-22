@@ -10,45 +10,49 @@ public class Jugador {
     private Long id;
 
     private String nombre;
-    @Enumerated(EnumType.STRING)
-    private Posicion posicion;
+    private String posicion; // PORTERO, DEFENSA, MEDIO, DELANTERO
     private int valor;
-    private int clausula; // <--- NUEVO: PRECIO PARA ROBARLO
+    private int clausula;
+    private int puntosAcumulados;
     private String urlImagen;
-    private int puntosAcumulados = 0;
 
     @ManyToOne
     private Usuario propietario;
+    
+    // 🔴 NUEVO CAMPO: Guardamos el ID de la jornada en la que se fichó
+    private Long jornadaFichaje;
 
-    public Jugador() {}
+    public Jugador() {
+    }
 
-    public Jugador(String nombre, Posicion posicion, int valor, String urlImagen) {
+    public Jugador(String nombre, String posicion, int valor, String urlImagen) {
         this.nombre = nombre;
         this.posicion = posicion;
         this.valor = valor;
-        // La cláusula inicial será el doble del valor (por ejemplo)
-        this.clausula = valor * 2;
-        this.urlImagen = urlImagen;
+        this.clausula = valor; 
         this.puntosAcumulados = 0;
+        this.urlImagen = urlImagen;
+        this.jornadaFichaje = 0L; // Inicializamos a 0
     }
 
-    // GETTERS Y SETTERS
+    // Getters y Setters básicos
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
-    public Posicion getPosicion() { return posicion; }
-    public void setPosicion(Posicion posicion) { this.posicion = posicion; }
+    public String getPosicion() { return posicion; }
+    public void setPosicion(String posicion) { this.posicion = posicion; }
     public int getValor() { return valor; }
     public void setValor(int valor) { this.valor = valor; }
-
-    // Getter/Setter Clausula
     public int getClausula() { return clausula; }
     public void setClausula(int clausula) { this.clausula = clausula; }
-
-    public String getUrlImagen() { return urlImagen; }
-    public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
     public int getPuntosAcumulados() { return puntosAcumulados; }
     public void setPuntosAcumulados(int puntosAcumulados) { this.puntosAcumulados = puntosAcumulados; }
+    public String getUrlImagen() { return urlImagen; }
+    public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
     public Usuario getPropietario() { return propietario; }
     public void setPropietario(Usuario propietario) { this.propietario = propietario; }
+
+    // 🔴 Getters y Setters NUEVO CAMPO
+    public Long getJornadaFichaje() { return jornadaFichaje; }
+    public void setJornadaFichaje(Long jornadaFichaje) { this.jornadaFichaje = jornadaFichaje; }
 }
