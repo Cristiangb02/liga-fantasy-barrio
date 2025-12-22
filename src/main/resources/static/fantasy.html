@@ -28,14 +28,19 @@
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
         .card.alineado { border: 3px solid #2e7d32; box-shadow: 0 0 10px rgba(46, 125, 50, 0.3); }
 
-        .puntos-triangle { position: absolute; top: 0; right: 0; width: 0; height: 0; border-style: solid; border-width: 0 55px 55px 0; border-color: transparent #2e7d32 transparent transparent; z-index: 2; }
+        /* 🔴 NUEVOS ESTILOS TRIÁNGULOS PUNTOS */
+        .puntos-triangle { position: absolute; top: 0; right: 0; width: 0; height: 0; border-style: solid; border-width: 0 55px 55px 0; z-index: 2; }
+        .triangle-pos { border-color: transparent #2e7d32 transparent transparent; } /* Verde */
+        .triangle-neu { border-color: transparent #ff9800 transparent transparent; } /* Naranja */
+        .triangle-neg { border-color: transparent #d32f2f transparent transparent; } /* Rojo */
+
         .puntos-val { position: absolute; top: 6px; right: 7px; color: white; font-weight: 800; font-size: 0.9rem; z-index: 3; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 
-        .card-img-container { height: 140px; background: linear-gradient(to top, #cfd8dc, #eceff1); display: flex; justify-content: center; align-items: flex-end; overflow: hidden; position: relative; }
+        .card-img-container { height: 140px; background: linear-gradient(to top, #cfd8dc, #eceff1); display: flex; justify-content: center; align-items: flex-end; overflow: hidden; position: relative; cursor: pointer; }
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         .card:hover .card-img { transform: scale(1.05); }
 
-        .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
+        .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; cursor: pointer; }
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-pos-badge { display: inline-block; background: #eceff1; color: #546e7a; font-size: 0.7em; font-weight: 800; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; align-self: center; }
         .card-clausula { font-size: 0.8em; color: #d32f2f; font-weight: bold; }
@@ -78,13 +83,21 @@
         .historial-body { padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
         .player-mini { background: #fff; border: 1px solid #ddd; padding: 5px; border-radius: 5px; font-size: 0.8em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* 🔴 ESTILOS SOLICITUDES */
         .solicitud-row { display: flex; justify-content: space-between; align-items: center; background: #fffde7; border: 1px solid #fbc02d; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
         .btn-aprobar { background: #43a047; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
         .btn-rechazar { background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
+        /* 🔴 MODAL DETALLE JUGADOR */
+        .modal-jugador-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #1a237e; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }
+        .detalle-stats { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .stat-row { display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 6px; align-items: center; font-weight: bold; }
+        .badge-puntos { padding: 4px 10px; border-radius: 15px; color: white; font-size: 0.9em; min-width: 30px; text-align: center; }
+        .bg-green { background: #2e7d32; }
+        .bg-orange { background: #ff9800; color: #333; }
+        .bg-red { background: #d32f2f; }
+
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
-        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; max-height: 80vh; overflow-y: auto; }
         .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
         .modal-mensaje { color: #555; margin-bottom: 20px; font-size: 0.95em; line-height: 1.5; }
         .modal-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 10px; box-sizing: border-box; }
@@ -216,13 +229,19 @@
 
     <div id="modal-overlay" class="oculto">
         <div class="modal-box">
-            <h3 id="modal-titulo" class="modal-titulo">Título</h3>
-            <p id="modal-mensaje" class="modal-mensaje">Mensaje...</p>
-            <div id="modal-input-container" class="oculto">
-                <input type="text" id="modal-input" class="modal-input" placeholder="Escribe aquí...">
-                <div id="modal-info-extra" class="modal-info-extra oculto"></div>
+            <div id="modal-content-wrapper">
+                <h3 id="modal-titulo" class="modal-titulo">Título</h3>
+                <p id="modal-mensaje" class="modal-mensaje">Mensaje...</p>
+                <div id="modal-input-container" class="oculto">
+                    <input type="text" id="modal-input" class="modal-input" placeholder="Escribe aquí...">
+                    <div id="modal-info-extra" class="modal-info-extra oculto"></div>
+                </div>
             </div>
-            <div class="modal-buttons">
+            
+            <div id="modal-jugador-detalle" class="oculto">
+                </div>
+
+            <div class="modal-buttons" style="margin-top:20px;">
                 <button id="btn-modal-cancel" class="btn-modal btn-modal-cancel">Cancelar</button>
                 <button id="btn-modal-ok" class="btn-modal btn-modal-ok">Confirmar</button>
             </div>
@@ -236,7 +255,10 @@
         const formatoDinero = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
         let modalCallback = null;
+        
         function mostrarModal(titulo, mensaje, tipo, callback) {
+            document.getElementById('modal-content-wrapper').classList.remove('oculto');
+            document.getElementById('modal-jugador-detalle').classList.add('oculto');
             document.getElementById('modal-titulo').innerText = titulo;
             document.getElementById('modal-mensaje').innerText = mensaje;
             document.getElementById('modal-overlay').classList.remove('oculto');
@@ -248,6 +270,7 @@
             inputContainer.classList.add('oculto');
             infoExtra.classList.add('oculto');
             btnOk.className = 'btn-modal btn-modal-ok'; 
+            btnOk.classList.remove('oculto'); // Asegurar que se ve
 
             if (tipo === 'input' || tipo === 'blindar') {
                 inputContainer.classList.remove('oculto');
@@ -265,14 +288,60 @@
                 inputContainer.classList.remove('oculto');
                 input.placeholder = "Escribe RESET para confirmar";
                 btnOk.className = 'btn-modal btn-modal-danger';
+            } else if (tipo === 'info') {
+                btnOk.classList.add('oculto'); // Solo botón cerrar
             }
+
             modalCallback = () => {
                 if (tipo === 'confirm') callback();
                 else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
                 cerrarModal();
             };
         }
-        function cerrarModal() { document.getElementById('modal-overlay').classList.add('oculto'); modalCallback = null; }
+
+        // 🔴 NUEVA FUNCIÓN: VER DETALLE JUGADOR
+        function verDetalleJugador(id, nombre, img) {
+            document.getElementById('modal-overlay').classList.remove('oculto');
+            document.getElementById('modal-content-wrapper').classList.add('oculto');
+            const detalleDiv = document.getElementById('modal-jugador-detalle');
+            detalleDiv.classList.remove('oculto');
+            
+            // Ocultar botón OK, solo Cancelar (Cerrar)
+            document.getElementById('btn-modal-ok').classList.add('oculto');
+            document.getElementById('btn-modal-cancel').innerText = "Cerrar";
+
+            detalleDiv.innerHTML = `
+                <img src="${img}" class="modal-jugador-img">
+                <h3 style="margin:0; color:#1a237e;">${nombre}</h3>
+                <div id="stats-loading">Cargando historial...</div>
+                <div id="stats-content" class="detalle-stats"></div>
+            `;
+
+            fetch(`/jugador/${id}/historial-puntos`).then(r=>r.json()).then(stats => {
+                document.getElementById('stats-loading').style.display = 'none';
+                const content = document.getElementById('stats-content');
+                if(stats.length === 0) content.innerHTML = '<p>Sin puntos registrados.</p>';
+                else {
+                    content.innerHTML = stats.map(s => {
+                        let colorClass = s.puntos > 0 ? 'bg-green' : (s.puntos < 0 ? 'bg-red' : 'bg-orange');
+                        return `
+                            <div class="stat-row">
+                                <span>Jornada ${s.jornada}</span>
+                                <span class="badge-puntos ${colorClass}">${s.puntos}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            });
+        }
+
+        function cerrarModal() { 
+            document.getElementById('modal-overlay').classList.add('oculto'); 
+            modalCallback = null; 
+            // Restaurar textos por defecto
+            document.getElementById('btn-modal-cancel').innerText = "Cancelar";
+            document.getElementById('btn-modal-ok').classList.remove('oculto');
+        }
         document.getElementById('btn-modal-ok').onclick = () => { if(modalCallback) modalCallback(); };
         document.getElementById('btn-modal-cancel').onclick = cerrarModal;
 
@@ -408,7 +477,6 @@
                 `).join('');
             });
             
-            // 🔴 CARGAR PENDIENTES
             fetch('/admin/pendientes').then(r => r.json()).then(pendientes => {
                 const div = document.getElementById('admin-lista-pendientes');
                 if(pendientes.length === 0) {
@@ -444,6 +512,11 @@
             let extraClass = alineado ? 'alineado' : '';
             let checked = alineado ? 'checked' : '';
 
+            // 🔴 LÓGICA DE COLORES DEL TRIÁNGULO
+            let colorTriangulo = 'triangle-pos'; // Verde por defecto
+            if (j.puntosAcumulados < 0) colorTriangulo = 'triangle-neg';
+            else if (j.puntosAcumulados === 0) colorTriangulo = 'triangle-neu';
+
             if (tipo === 'alinear') contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
             else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
             else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
@@ -453,7 +526,23 @@
                     <div class="card-clausula">🔒 ${clausula}</div>
                     <div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
             }
-            return `<div class="card ${extraClass}" id="card-${j.id}"><div class="puntos-triangle"></div><div class="puntos-val">${j.puntosAcumulados}</div>${tipo === 'alinear' ? contenido : ''}<div class="card-img-container"><img src="${img}" class="card-img"></div><div class="card-body"><div><div class="card-name">${j.nombre}</div><div class="card-pos-badge">${j.posicion}</div></div>${tipo !== 'alinear' ? contenido : ''}</div></div>`;
+            
+            // 🔴 AÑADIDO ONCLICK EN BODY E IMG PARA ABRIR DETALLE
+            let accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}')"`;
+
+            return `<div class="card ${extraClass}" id="card-${j.id}">
+                <div class="puntos-triangle ${colorTriangulo}"></div>
+                <div class="puntos-val">${j.puntosAcumulados}</div>
+                ${tipo === 'alinear' ? contenido : ''}
+                <div class="card-img-container" ${accionDetalle}><img src="${img}" class="card-img"></div>
+                <div class="card-body">
+                    <div ${accionDetalle}>
+                        <div class="card-name">${j.nombre}</div>
+                        <div class="card-pos-badge">${j.posicion}</div>
+                    </div>
+                    ${tipo !== 'alinear' ? contenido : ''}
+                </div>
+            </div>`;
         }
 
         function pintarPlantilla(jugadores) { document.getElementById('grid-mi-plantilla').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>'; }
