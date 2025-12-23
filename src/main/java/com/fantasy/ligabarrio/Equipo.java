@@ -17,10 +17,7 @@ public class Equipo {
 
     @ManyToMany
     private java.util.List<Jugador> jugadoresAlineados;
-
-    private int puntosTotalesJornada;
-    
-    // 🔴 NUEVO CAMPO: ¿Ya ha cobrado el dinero de esta jornada?
+    private int puntosTotalesJornada;    
     private boolean reclamado;
 
     public Equipo() {
@@ -29,7 +26,7 @@ public class Equipo {
     public Equipo(Usuario usuario, Jornada jornada) {
         this.usuario = usuario;
         this.jornada = jornada;
-        this.reclamado = false; // Por defecto no cobrado
+        this.reclamado = false; 
     }
 
     public void alinearJugador(Jugador jugador) {
@@ -49,7 +46,7 @@ public class Equipo {
     public int getPuntosTotalesJornada() { return puntosTotalesJornada; }
     public void setPuntosTotalesJornada(int puntosTotalesJornada) { this.puntosTotalesJornada = puntosTotalesJornada; }
     
-    // Getters/Setters nuevo campo
     public boolean isReclamado() { return reclamado; }
     public void setReclamado(boolean reclamado) { this.reclamado = reclamado; }
 }
+
