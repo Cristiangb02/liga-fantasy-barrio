@@ -12,7 +12,6 @@ public class CalculadoraPuntosService {
         if (!a.isJugado()) return 0;
 
         int puntos = 1; 
-        // 🔴 CORRECCIÓN: Ahora es String, usamos toUpperCase() directamente
         String pos = a.getJugador().getPosicion().toUpperCase(); 
 
         if (a.isVictoria()) {
@@ -20,7 +19,7 @@ public class CalculadoraPuntosService {
             puntos += random.nextInt(4); 
         } else if (a.isDerrota()) {
             puntos -= 1;
-            puntos += random.nextInt(2);
+            puntos += random.nextInt(1);
         }
 
         switch (pos) {
@@ -35,13 +34,13 @@ public class CalculadoraPuntosService {
                 puntos += (a.getAutogoles() * -4);
                 break;
             case "MEDIO":
-                puntos += calcularGolesEncajados(a.getGolesEncajados(), 2, 1, -2, -4);
-                puntos += (a.getGolesMarcados() * 4);
+                puntos += calcularGolesEncajados(a.getGolesEncajados(), 4, 2, 0, -4);
+                puntos += (a.getGolesMarcados() * 5);
                 puntos += (a.getAutogoles() * -3);
                 break;
             case "DELANTERO":
-                puntos += calcularGolesEncajados(a.getGolesEncajados(), 1, 0, -3, -5);
-                puntos += (a.getGolesMarcados() * 3);
+                puntos += calcularGolesEncajados(a.getGolesEncajados(), 3, 2, 0, -1);
+                puntos += (a.getGolesMarcados() * 4);
                 puntos += (a.getAutogoles() * -2);
                 break;
         }
@@ -59,3 +58,4 @@ public class CalculadoraPuntosService {
         return equipo.getPuntosTotalesJornada(); 
     }
 }
+
