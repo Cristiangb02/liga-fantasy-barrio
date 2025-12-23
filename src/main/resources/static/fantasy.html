@@ -41,7 +41,14 @@
 
         .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; cursor: pointer; }
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-pos-badge { display: inline-block; background: #eceff1; color: #546e7a; font-size: 0.7em; font-weight: 800; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; align-self: center; }
+        
+        /* 🔴 ESTILOS POSICIONES RESALTADAS */
+        .card-pos-badge { display: inline-block; font-size: 0.75em; font-weight: 900; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; align-self: center; color: white; letter-spacing: 0.5px; margin-top: 2px; }
+        .pos-portero { background-color: #7b1fa2; } /* Morado */
+        .pos-defensa { background-color: #d32f2f; } /* Rojo */
+        .pos-medio { background-color: #f57c00; }   /* Naranja */
+        .pos-delantero { background-color: #388e3c; } /* Verde */
+
         .card-clausula { font-size: 0.8em; color: #d32f2f; font-weight: bold; }
         .card-coste { font-size: 0.85em; color: #1565c0; font-weight: 800; }
 
@@ -76,6 +83,7 @@
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
+        /* 🔴 NUEVOS ESTILOS HISTORIAL */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
@@ -394,7 +402,7 @@
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
-                // 🔴 BUG 2: Llamada al endpoint filtrado
+                // 🔴 SELECT ADMIN
                 if(esAdmin) pintarSelectAdmin();
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
@@ -550,6 +558,9 @@
             }
             
             let accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}')"`;
+            
+            // 🔴 NUEVO: PINTAR BADGE POSICIÓN CON COLOR CORRECTO
+            let posClass = 'pos-' + j.posicion.toLowerCase();
 
             return `<div class="card ${extraClass}" id="card-${j.id}">
                 <div class="puntos-triangle ${colorTriangulo}"></div>
@@ -559,7 +570,7 @@
                 <div class="card-body">
                     <div ${accionDetalle}>
                         <div class="card-name">${j.nombre}</div>
-                        <div class="card-pos-badge">${j.posicion}</div>
+                        <div class="card-pos-badge ${posClass}">${j.posicion}</div>
                     </div>
                     ${tipo !== 'alinear' ? contenido : ''}
                 </div>
@@ -655,7 +666,7 @@
             });
         }
         
-        // 🔴 BUG 2: PINTAR DESPLEGABLE FILTRADO Y CON POSICIÓN
+        // 🔴 PINTAR DESPLEGABLE
         function pintarSelectAdmin() {
             fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
                 const select = document.getElementById('admin-jugador');
@@ -680,8 +691,7 @@
                 autogoles: parseInt(document.getElementById('input-autogoles').value)||0 
             }; 
             post('/admin/registrar', datos); 
-            // Recargar para que desaparezca el jugador de la lista
-            setTimeout(pintarSelectAdmin, 500);
+            setTimeout(pintarSelectAdmin, 500); // Recargar lista
         }
         
         function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Repartir puntos y dinero?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
