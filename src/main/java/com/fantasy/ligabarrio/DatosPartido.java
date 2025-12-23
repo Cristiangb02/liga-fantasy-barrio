@@ -8,5 +8,5 @@ public class DatosPartido {
     public int goles;
     public int golesEncajados;
     public int autogoles;
-    // No necesitamos getters/setters si las hacemos publicas para este ejemplo rápido
+    
 }
