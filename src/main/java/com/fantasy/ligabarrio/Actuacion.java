@@ -14,18 +14,11 @@ public class Actuacion {
 
     @ManyToOne
     private Jornada jornada;
-
     private int puntosTotales;
-    
-    // Resultados del partido
     private boolean victoria;
     private boolean derrota;
-    
-    // 🔴 NUEVOS CAMPOS NECESARIOS (PUNTO 8)
-    private boolean jugado;  // ¿Jugó o no?
-    private int autogoles;   // Goles en propia
-
-    // Estadísticas individuales
+    private boolean jugado; // ¿Jugó o no?
+    private int autogoles;  
     private int golesMarcados;
     private int golesEncajados;
 
@@ -58,10 +51,10 @@ public class Actuacion {
     public int getGolesEncajados() { return golesEncajados; }
     public void setGolesEncajados(int golesEncajados) { this.golesEncajados = golesEncajados; }
 
-    // 🔴 Getters y Setters NUEVOS
     public boolean isJugado() { return jugado; }
     public void setJugado(boolean jugado) { this.jugado = jugado; }
     
     public int getAutogoles() { return autogoles; }
     public void setAutogoles(int autogoles) { this.autogoles = autogoles; }
 }
+
