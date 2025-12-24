@@ -14,40 +14,53 @@ public class InicializadorDatos implements CommandLineRunner {
     private final JornadaRepository jornadaRepository;
     private final UsuarioRepository usuarioRepository;
     private final EquipoRepository equipoRepository;
+    private final ActuacionRepository actuacionRepository; // AÑADIDO
+    private final NoticiaRepository noticiaRepository;     // AÑADIDO
 
     public InicializadorDatos(JugadorRepository jugadorRepository, 
                               TemporadaRepository temporadaRepository, 
                               JornadaRepository jornadaRepository, 
                               UsuarioRepository usuarioRepository, 
-                              EquipoRepository equipoRepository) {
+                              EquipoRepository equipoRepository,
+                              ActuacionRepository actuacionRepository,
+                              NoticiaRepository noticiaRepository) {
         this.jugadorRepository = jugadorRepository;
         this.temporadaRepository = temporadaRepository;
         this.jornadaRepository = jornadaRepository;
         this.usuarioRepository = usuarioRepository;
         this.equipoRepository = equipoRepository;
+        this.actuacionRepository = actuacionRepository;
+        this.noticiaRepository = noticiaRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
 
-        System.out.println(">>> INICIANDO RESETEO DE DATOS CORRECTO...");
+        System.out.println(">>> 🧹 INICIANDO LIMPIEZA PROFUNDA (MODO TIJERA)...");
 
-        // 0. LIMPIEZA EN EL ORDEN EXACTO (Para evitar errores de Foreign Key)
         // -------------------------------------------------------------------
-        // 1º Borramos Equipos (porque vinculan usuarios y jornadas)
-        equipoRepository.deleteAll();
-        
-        // 2º Borramos Jugadores (CRUCIAL: al borrarlos, "sueltan" a los usuarios)
-        jugadorRepository.deleteAll();
-        
-        // 3º Ahora que nadie los usa, podemos borrar Usuarios
-        usuarioRepository.deleteAll();
-        
-        // 4º Resto de tablas base
+        // PASO 1: ROMPER CADENAS (La "Tijera")
+        // Antes de borrar nada, desvinculamos a los jugadores de sus dueños.
+        // Esto evita el error "Foreign Key Violation" al borrar usuarios.
+        List<Jugador> todosLosJugadores = jugadorRepository.findAll();
+        for (Jugador j : todosLosJugadores) {
+            j.setPropietario(null); // Cortamos el vínculo con el usuario
+            j.setJornadaFichaje(0L);
+            j.setClausula(j.getValor());
+        }
+        jugadorRepository.saveAll(todosLosJugadores);
+        // -------------------------------------------------------------------
+
+        // PASO 2: BORRADO SEGURO (Ahora que están desvinculados)
+        actuacionRepository.deleteAll(); // Borrar puntos/goles antiguos
+        equipoRepository.deleteAll();    // Borrar equipos
+        noticiaRepository.deleteAll();   // Borrar noticias
+        usuarioRepository.deleteAll();   // AHORA SÍ dejará borrar usuarios
+        jugadorRepository.deleteAll();   // Borrar jugadores antiguos para recargarlos
         jornadaRepository.deleteAll();
         temporadaRepository.deleteAll();
 
-        // -------------------------------------------------------------------
+        System.out.println(">>> ✅ LIMPIEZA COMPLETADA. CARGANDO DATOS NUEVOS...");
 
         // 1. TEMPORADA
         Temporada t2026 = new Temporada(2026);
@@ -69,7 +82,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Juanlu", "PORTERO", 3_850_000, "/juanlu.png"));
         lista.add(new Jugador("Sergio", "PORTERO", 6_570_000, "/sergio.png"));
 
-        // --- DEFENSAS (Centrales + Laterales) ---
+        // --- DEFENSAS ---
         lista.add(new Jugador("Cardenas", "DEFENSA", 2_370_000, "/cardenas.png"));
         lista.add(new Jugador("Chico", "DEFENSA", 1_760_000, "/user.png")); 
         lista.add(new Jugador("Conce", "DEFENSA", 2_380_000, "/conce.png"));
