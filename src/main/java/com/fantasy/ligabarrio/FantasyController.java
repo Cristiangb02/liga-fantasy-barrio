@@ -146,37 +146,41 @@ public class FantasyController {
         }
     }
 
-    // 🔴 BUG CORREGIDO: LÓGICA DE SNAPSHOT PARA MERCADO ESTÁTICO
+    // 🔴 BUG 3 CORREGIDO DEFINITIVAMENTE: MERCADO FIJO DIARIO
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
         Jornada jornadaActual = getJornadaActiva();
         List<Jugador> todos = jugadorRepository.findAll();
-        List<Jugador> poolMercado = new ArrayList<>();
+        List<Jugador> candidatosHoy = new ArrayList<>();
 
-        // 1. CREAMOS EL "POOL" DE HOY:
-        // Incluimos a todos los que están libres AHORA MISMO
-        // Y TAMBIÉN a los que se han comprado HOY (para que el mercado recuerde que estaban ahí)
+        // 1. IDENTIFICAR QUIÉNES FORMAN EL MERCADO HOY (SNAPSHOT)
+        // Son todos los que están libres AHORA + los que se ficharon HOY.
         for (Jugador j : todos) {
             boolean esLibre = (j.getPropietario() == null);
             boolean fichadoHoy = (j.getPropietario() != null && j.getJornadaFichaje() == jornadaActual.getId());
 
             if (esLibre || fichadoHoy) {
-                poolMercado.add(j);
+                candidatosHoy.add(j);
             }
         }
 
-        // 2. Barajamos ese Pool con la semilla diaria (siempre dará el mismo orden hoy)
+        // 2. ORDENAR POR ID (ESTO ES LO QUE FALTABA)
+        // Al ordenar por ID, garantizamos que la lista SIEMPRE entra igual al shuffle,
+        // sin importar si has modificado/comprado jugadores.
+        candidatosHoy.sort((j1, j2) -> Long.compare(j1.getId(), j2.getId()));
+
+        // 3. Barajar con la semilla fija del día
         long seed = LocalDate.now(ZoneId.of("Europe/Madrid")).toEpochDay() + jornadaActual.getId();
-        Collections.shuffle(poolMercado, new Random(seed));
+        Collections.shuffle(candidatosHoy, new Random(seed));
 
-        // 3. Cogemos los 14 primeros de esa lista barajada.
-        // Estos 14 son los "Elegidos del día". Pase lo que pase, nadie más entra hoy.
-        int limite = Math.min(poolMercado.size(), 14);
-        List<Jugador> los14Elegidos = poolMercado.subList(0, limite);
+        // 4. Seleccionar el "Escaparate Fijo" de 14
+        int limite = Math.min(candidatosHoy.size(), 14);
+        List<Jugador> escaparateFijo = candidatosHoy.subList(0, limite);
 
-        // 4. De esos 14 elegidos, devolvemos SOLO los que siguen libres.
-        // Si compraste a uno de los 14, desaparece de aquí, pero nadie ocupa su lugar.
-        return los14Elegidos.stream()
+        // 5. Mostrar SOLO los que siguen libres
+        // Si compraste a uno, estaba en 'escaparateFijo', pero ahora tiene dueño,
+        // así que el filtro lo elimina y NO entra nadie a sustituirlo.
+        return escaparateFijo.stream()
                 .filter(j -> j.getPropietario() == null)
                 .collect(Collectors.toList());
     }
@@ -490,3 +494,4 @@ public class FantasyController {
         public int autogoles;
     }
 }
+
