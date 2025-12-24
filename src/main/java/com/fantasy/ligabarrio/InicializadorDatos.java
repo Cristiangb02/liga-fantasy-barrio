@@ -30,23 +30,30 @@ public class InicializadorDatos implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        System.out.println(">>> INICIANDO RESETEO DE DATOS...");
+        System.out.println(">>> INICIANDO RESETEO DE DATOS CORRECTO...");
 
-        // 0. LIMPIEZA TOTAL (Para que no se mezclen datos viejos con nuevos)
-        // El orden es importante si tienes relaciones (foreign keys), 
-        // pero probaremos borrando jugadores primero.
-        // Si te da error de integridad, habría que borrar primero Equipos/Mercado.
-        equipoRepository.deleteAll(); 
-        usuarioRepository.deleteAll();
-        jornadaRepository.deleteAll();
+        // 0. LIMPIEZA EN EL ORDEN EXACTO (Para evitar errores de Foreign Key)
+        // -------------------------------------------------------------------
+        // 1º Borramos Equipos (porque vinculan usuarios y jornadas)
+        equipoRepository.deleteAll();
+        
+        // 2º Borramos Jugadores (CRUCIAL: al borrarlos, "sueltan" a los usuarios)
         jugadorRepository.deleteAll();
+        
+        // 3º Ahora que nadie los usa, podemos borrar Usuarios
+        usuarioRepository.deleteAll();
+        
+        // 4º Resto de tablas base
+        jornadaRepository.deleteAll();
         temporadaRepository.deleteAll();
+
+        // -------------------------------------------------------------------
 
         // 1. TEMPORADA
         Temporada t2026 = new Temporada(2026);
         temporadaRepository.save(t2026);
 
-        // 2. JUGADORES (Sin el 'if count == 0' para que siempre los cargue)
+        // 2. JUGADORES
         List<Jugador> lista = new ArrayList<>();
         
         // --- PORTEROS ---
@@ -62,7 +69,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Juanlu", "PORTERO", 3_850_000, "/juanlu.png"));
         lista.add(new Jugador("Sergio", "PORTERO", 6_570_000, "/sergio.png"));
 
-        // --- DEFENSAS ---
+        // --- DEFENSAS (Centrales + Laterales) ---
         lista.add(new Jugador("Cardenas", "DEFENSA", 2_370_000, "/cardenas.png"));
         lista.add(new Jugador("Chico", "DEFENSA", 1_760_000, "/user.png")); 
         lista.add(new Jugador("Conce", "DEFENSA", 2_380_000, "/conce.png"));
