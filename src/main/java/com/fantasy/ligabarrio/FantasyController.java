@@ -145,8 +145,13 @@ public class FantasyController {
             default: return 99;
         }
     }
+    
+    // Auxiliar para ordenar en el resumen del partido (Lambda reference)
+    private int compararPorPosicion(Map<String, Object> m1, Map<String, Object> m2) {
+        return Integer.compare(getPrioridadPosicion((String)m1.get("posicion")), getPrioridadPosicion((String)m2.get("posicion")));
+    }
 
-    // 🔴 BUG 3 CORREGIDO DEFINITIVAMENTE: MERCADO FIJO DIARIO
+    // MERCADO FIJO DIARIO
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
         Jornada jornadaActual = getJornadaActiva();
@@ -154,7 +159,6 @@ public class FantasyController {
         List<Jugador> candidatosHoy = new ArrayList<>();
 
         // 1. IDENTIFICAR QUIÉNES FORMAN EL MERCADO HOY (SNAPSHOT)
-        // Son todos los que están libres AHORA + los que se ficharon HOY.
         for (Jugador j : todos) {
             boolean esLibre = (j.getPropietario() == null);
             boolean fichadoHoy = (j.getPropietario() != null && j.getJornadaFichaje() == jornadaActual.getId());
@@ -164,9 +168,7 @@ public class FantasyController {
             }
         }
 
-        // 2. ORDENAR POR ID (ESTO ES LO QUE FALTABA)
-        // Al ordenar por ID, garantizamos que la lista SIEMPRE entra igual al shuffle,
-        // sin importar si has modificado/comprado jugadores.
+        // 2. ORDENAR POR ID
         candidatosHoy.sort((j1, j2) -> Long.compare(j1.getId(), j2.getId()));
 
         // 3. Barajar con la semilla fija del día
@@ -178,8 +180,6 @@ public class FantasyController {
         List<Jugador> escaparateFijo = candidatosHoy.subList(0, limite);
 
         // 5. Mostrar SOLO los que siguen libres
-        // Si compraste a uno, estaba en 'escaparateFijo', pero ahora tiene dueño,
-        // así que el filtro lo elimina y NO entra nadie a sustituirlo.
         return escaparateFijo.stream()
                 .filter(j -> j.getPropietario() == null)
                 .collect(Collectors.toList());
@@ -234,6 +234,65 @@ public class FantasyController {
             ))
             .sorted((m1, m2) -> Integer.compare((Integer)m1.get("jornada"), (Integer)m2.get("jornada")))
             .collect(Collectors.toList());
+    }
+    
+    // 🏟️ NUEVO: RESUMEN VISUAL DEL PARTIDO POR COLORES (ALINEACIONES)
+    @GetMapping("/jornada/{numero}/resumen-partido")
+    public Map<String, Object> getResumenPartido(@PathVariable int numero) {
+        Jornada jornada = jornadaRepository.findAll().stream()
+                .filter(j -> j.getNumero() == numero).findFirst().orElse(null);
+        if (jornada == null) return Map.of("error", "Jornada no encontrada");
+
+        List<Actuacion> actuaciones = actuacionRepository.findAll().stream()
+                .filter(a -> a.getJornada().getId().equals(jornada.getId()))
+                .filter(a -> a.getEquipoColor() != null) // Solo los que tengan color asignado
+                .collect(Collectors.toList());
+
+        // Buscamos cuáles son los 2 colores que se han usado esta jornada
+        List<String> coloresUsados = actuaciones.stream()
+                .map(Actuacion::getEquipoColor)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Si no hay datos o falta un equipo, devolvemos error controlado
+        if (coloresUsados.isEmpty()) return Map.of("error", "Sin datos de equipos para esta jornada");
+        
+        String colorA = coloresUsados.get(0);
+        // Si solo hay un color (raro, pero posible si no se registran datos), usamos "RIVAL" como placeholder
+        String colorB = (coloresUsados.size() > 1) ? coloresUsados.get(1) : "RIVAL";
+
+        List<Map<String, Object>> equipoA = new ArrayList<>();
+        List<Map<String, Object>> equipoB = new ArrayList<>();
+
+        for (Actuacion a : actuaciones) {
+            Map<String, Object> dato = Map.of(
+                "nombre", a.getJugador().getNombre(),
+                "posicion", a.getJugador().getPosicion(),
+                "puntos", a.getPuntosTotales(),
+                "goles", a.getGolesMarcados(),
+                "imagen", a.getJugador().getImagen(), 
+                "mvp", (a.getPuntosTotales() >= 10),
+                "color", a.getEquipoColor()
+            );
+
+            if (a.getEquipoColor().equalsIgnoreCase(colorA)) {
+                equipoA.add(dato);
+            } else {
+                equipoB.add(dato);
+            }
+        }
+
+        // Ordenar por posición (GK -> DEF -> MED -> DEL)
+        equipoA.sort(this::compararPorPosicion);
+        equipoB.sort(this::compararPorPosicion);
+
+        return Map.of(
+            "jornada", numero,
+            "equipoA", equipoA,
+            "colorA", colorA,
+            "equipoB", equipoB,
+            "colorB", colorB
+        );
     }
 
     @GetMapping("/clasificacion")
@@ -397,7 +456,8 @@ public class FantasyController {
         actuacion.setGolesMarcados(datos.goles);
         actuacion.setGolesEncajados(datos.golesEncajados);
         actuacion.setAutogoles(datos.autogoles);
-        
+        actuacion.setEquipoColor(datos.equipoColor); // <--- GUARDAMOS EL COLOR
+
         int puntos = calculadora.calcularPuntos(actuacion);
         actuacion.setPuntosTotales(puntos);
         actuacionRepository.save(actuacion);
@@ -492,6 +552,6 @@ public class FantasyController {
         public int goles;
         public int golesEncajados;
         public int autogoles;
+        public String equipoColor; // <--- NUEVO CAMPO
     }
 }
-
