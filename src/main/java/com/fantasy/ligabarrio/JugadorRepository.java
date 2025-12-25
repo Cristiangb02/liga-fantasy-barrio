@@ -1,11 +1,14 @@
 package com.fantasy.ligabarrio;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
-@Repository
 public interface JugadorRepository extends JpaRepository<Jugador, Long> {
-
-List<Jugador> findByNombre(String nombre);
+    
+    // Búsqueda simple (útil para otras cosas)
+    List<Jugador> findByNombre(String nombre);
+    
+    // 🔴 BÚSQUEDA EXACTA: Nombre Y Posición
+    // Esto permite que existan "Diego PORTERO" y "Diego DEFENSA" como personas distintas
+    List<Jugador> findByNombreAndPosicion(String nombre, String posicion);
 }
-
