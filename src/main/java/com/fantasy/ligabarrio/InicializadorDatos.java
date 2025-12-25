@@ -14,8 +14,8 @@ public class InicializadorDatos implements CommandLineRunner {
     private final JornadaRepository jornadaRepository;
     private final UsuarioRepository usuarioRepository;
     private final EquipoRepository equipoRepository;
-    private final ActuacionRepository actuacionRepository; // AÑADIDO
-    private final NoticiaRepository noticiaRepository;     // AÑADIDO
+    private final ActuacionRepository actuacionRepository;
+    private final NoticiaRepository noticiaRepository;
 
     public InicializadorDatos(JugadorRepository jugadorRepository, 
                               TemporadaRepository temporadaRepository, 
@@ -36,37 +36,31 @@ public class InicializadorDatos implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        System.out.println(">>> 🧹 INICIANDO LIMPIEZA PROFUNDA (MODO TIJERA)...");
+        System.out.println(">>> 🔄 VERIFICANDO DATOS (MODO ACTUALIZACIÓN)...");
 
-        // -------------------------------------------------------------------
-        // PASO 1: ROMPER CADENAS (La "Tijera")
-        // Antes de borrar nada, desvinculamos a los jugadores de sus dueños.
-        // Esto evita el error "Foreign Key Violation" al borrar usuarios.
-        List<Jugador> todosLosJugadores = jugadorRepository.findAll();
-        for (Jugador j : todosLosJugadores) {
-            j.setPropietario(null); // Cortamos el vínculo con el usuario
-            j.setJornadaFichaje(0L);
-            j.setClausula(j.getValor());
-        }
-        jugadorRepository.saveAll(todosLosJugadores);
-        // -------------------------------------------------------------------
-
-        // PASO 2: BORRADO SEGURO (Ahora que están desvinculados)
-        actuacionRepository.deleteAll(); // Borrar puntos/goles antiguos
-        equipoRepository.deleteAll();    // Borrar equipos
-        noticiaRepository.deleteAll();   // Borrar noticias
-        usuarioRepository.deleteAll();   // AHORA SÍ dejará borrar usuarios
-        jugadorRepository.deleteAll();   // Borrar jugadores antiguos para recargarlos
+        // ⚠️ IMPORTANTE: EN MODO 'TEMPORADA EN CURSO', NO BORRAMOS NADA.
+        // Si quisieras reiniciar la liga de cero, tendrías que descomentar esto:
+        /*
+        List<Jugador> todos = jugadorRepository.findAll();
+        for (Jugador j : todos) { j.setPropietario(null); }
+        jugadorRepository.saveAll(todos);
+        
+        actuacionRepository.deleteAll();
+        equipoRepository.deleteAll();
+        noticiaRepository.deleteAll();
+        usuarioRepository.deleteAll();
+        jugadorRepository.deleteAll();
         jornadaRepository.deleteAll();
         temporadaRepository.deleteAll();
+        */
 
-        System.out.println(">>> ✅ LIMPIEZA COMPLETADA. CARGANDO DATOS NUEVOS...");
+        // 1. TEMPORADA (Solo crea si no existe)
+        if (temporadaRepository.count() == 0) {
+            Temporada t2026 = new Temporada(2026);
+            temporadaRepository.save(t2026);
+        }
 
-        // 1. TEMPORADA
-        Temporada t2026 = new Temporada(2026);
-        temporadaRepository.save(t2026);
-
-        // 2. JUGADORES
+        // 2. JUGADORES (Añade solo los que falten)
         List<Jugador> lista = new ArrayList<>();
         
         // --- PORTEROS ---
@@ -148,17 +142,35 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Pepe", "DELANTERO", 5_260_000, "/pepe.png")); 
         lista.add(new Jugador("Raúl", "DELANTERO", 6_570_000, "/user.png"));
 
-        jugadorRepository.saveAll(lista);
+        // 🔴 LÓGICA DE INYECCIÓN SEGURA (NO BORRA, SOLO AÑADE NUEVOS)
+        for (Jugador j : lista) {
+            // Buscamos si existe por nombre (asumiendo nombres únicos)
+            // Si necesitas más precisión, podrías buscar por nombre Y posición
+            Jugador existente = jugadorRepository.findByNombre(j.getNombre());
+            
+            if (existente == null) {
+                jugadorRepository.save(j);
+                System.out.println("✅ NUEVO JUGADOR REGISTRADO: " + j.getNombre());
+            } else {
+                // Si existe, no hacemos nada para respetar a su dueño actual
+                // System.out.println("ℹ️ Jugador ya existe: " + j.getNombre());
+            }
+        }
 
         // 3. JORNADA
-        Jornada jornada1 = new Jornada(1, LocalDate.now(), t2026);
-        jornadaRepository.save(jornada1);
+        if (jornadaRepository.count() == 0) {
+            Jornada jornada1 = new Jornada(1, LocalDate.now(), new Temporada(2026)); // Simplificado
+            jornadaRepository.save(jornada1);
+        }
 
-        // 4. CREAR USUARIO ADMIN
-        Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
-        admin.setActivo(true);
-        usuarioRepository.save(admin);
+        // 4. CREAR USUARIO ADMIN (Solo si no existe)
+        if (usuarioRepository.findByNombre("Cristian") == null) {
+            Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
+            admin.setActivo(true);
+            usuarioRepository.save(admin);
+            System.out.println("👑 ADMIN CREADO");
+        }
         
-        System.out.println(">>> Inicialización completada. DATOS RESETEADOS CORRECTAMENTE.");
+        System.out.println(">>> ✅ ACTUALIZACIÓN DE DATOS COMPLETADA (Sin borrado).");
     }
 }
