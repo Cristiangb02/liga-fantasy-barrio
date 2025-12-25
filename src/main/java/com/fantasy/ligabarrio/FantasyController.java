@@ -270,7 +270,8 @@ public class FantasyController {
                 "posicion", a.getJugador().getPosicion(),
                 "puntos", a.getPuntosTotales(),
                 "goles", a.getGolesMarcados(),
-                "imagen", a.getJugador().getImagen(), 
+                // AQUÍ ESTABA EL ERROR: Ahora usamos getUrlImagen() 👇
+                "imagen", a.getJugador().getUrlImagen(), 
                 "mvp", (a.getPuntosTotales() >= 10),
                 "color", a.getEquipoColor()
             );
