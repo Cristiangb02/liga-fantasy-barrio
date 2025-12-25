@@ -21,6 +21,9 @@
         nav button.active { background: #1a237e; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(26, 35, 126, 0.3); }
         nav button.admin-tab { background: #ffebee !important; color: #b71c1c !important; }
         nav button.admin-tab.active { background: #d32f2f !important; color: white !important; }
+        
+        /* Botón Partido */
+        .btn-partido { background: #2e7d32 !important; color: white !important; }
 
         .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         
@@ -42,7 +45,7 @@
         .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; cursor: pointer; }
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* 🔴 ESTILOS POSICIONES RESALTADAS */
+        /* ESTILOS POSICIONES RESALTADAS */
         .card-pos-badge { display: inline-block; font-size: 0.75em; font-weight: 900; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; align-self: center; color: white; letter-spacing: 0.5px; margin-top: 2px; }
         .pos-portero { background-color: #7b1fa2; } /* Morado */
         .pos-defensa { background-color: #d32f2f; } /* Rojo */
@@ -83,7 +86,7 @@
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
-        /* 🔴 NUEVOS ESTILOS HISTORIAL */
+        /* NUEVOS ESTILOS HISTORIAL */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
@@ -147,7 +150,7 @@
         <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Tabla</button>
         <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Historial</button>
         <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
-        <button onclick="cambiarPestaña('admin')" id="tab-admin" class="admin-tab oculto">ADMIN</button>
+        <button onclick="window.location.href='resumen.html'" class="btn-partido">🏟️ Partido</button> <button onclick="cambiarPestaña('admin')" id="tab-admin" class="admin-tab oculto">ADMIN</button>
     </nav>
 
     <div id="sec-plantilla" class="seccion">
@@ -212,6 +215,14 @@
             <h4>📝 Gestionar Partidos</h4>
             <select id="admin-jugador" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;"><option>Cargando...</option></select>
             
+            <label style="font-size:0.85em; font-weight:bold;">Camiseta:</label>
+            <select id="select-equipo-color" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; background:#f0f4c3;">
+                <option value="ROJO">🔴 Rojo</option>
+                <option value="AZUL">🔵 Azul</option>
+                <option value="AMARILLO">🟡 Amarillo</option>
+                <option value="BLANCO">⚪ Blanco</option>
+            </select>
+
             <div style="display:flex; gap:15px; margin-bottom:15px; align-items:center; background:#f5f5f5; padding:10px; border-radius:6px;">
                 <label style="font-weight:bold; cursor:pointer;"><input type="checkbox" id="check-jugado" checked> ¿Jugó?</label>
                 <select id="select-resultado" style="padding:5px; border-radius:4px;">
@@ -402,7 +413,6 @@
             fetch('/jugadores').then(r=>r.json()).then(jugadores => {
                 window.todosLosJugadores = jugadores;
                 pintarPlantilla(jugadores);
-                // 🔴 SELECT ADMIN
                 if(esAdmin) pintarSelectAdmin();
                 fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                     const idsAlineados = new Set(alineados.map(a => a.id));
@@ -559,7 +569,6 @@
             
             let accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}')"`;
             
-            // 🔴 NUEVO: PINTAR BADGE POSICIÓN CON COLOR CORRECTO
             let posClass = 'pos-' + j.posicion.toLowerCase();
 
             return `<div class="card ${extraClass}" id="card-${j.id}">
@@ -666,7 +675,6 @@
             });
         }
         
-        // 🔴 PINTAR DESPLEGABLE
         function pintarSelectAdmin() {
             fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
                 const select = document.getElementById('admin-jugador');
@@ -688,7 +696,9 @@
                 derrota: resultado === 'derrota',
                 goles: parseInt(document.getElementById('input-goles').value)||0, 
                 golesEncajados: parseInt(document.getElementById('input-encajados').value)||0, 
-                autogoles: parseInt(document.getElementById('input-autogoles').value)||0 
+                autogoles: parseInt(document.getElementById('input-autogoles').value)||0,
+                // 🔴 NUEVO CAMPO: COLOR
+                equipoColor: document.getElementById('select-equipo-color').value
             }; 
             post('/admin/registrar', datos); 
             setTimeout(pintarSelectAdmin, 500); // Recargar lista
