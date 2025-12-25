@@ -1,3 +1,4 @@
+
 package com.fantasy.ligabarrio;
 
 import org.springframework.web.bind.annotation.*;
@@ -151,7 +152,7 @@ public class FantasyController {
         return Integer.compare(getPrioridadPosicion((String)m1.get("posicion")), getPrioridadPosicion((String)m2.get("posicion")));
     }
 
-    // MERCADO FIJO DIARIO
+    // 🔴 MERCADO FIJO DIARIO (CORREGIDO ERROR DE LONG COMPARISON)
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
         Jornada jornadaActual = getJornadaActiva();
@@ -161,14 +162,18 @@ public class FantasyController {
         // 1. IDENTIFICAR QUIÉNES FORMAN EL MERCADO HOY (SNAPSHOT)
         for (Jugador j : todos) {
             boolean esLibre = (j.getPropietario() == null);
-            boolean fichadoHoy = (j.getPropietario() != null && j.getJornadaFichaje() == jornadaActual.getId());
+            
+            // CORRECCIÓN CRÍTICA: Usamos .equals() para comparar IDs (Objetos Long)
+            boolean fichadoHoy = (j.getPropietario() != null 
+                                  && j.getJornadaFichaje() != null 
+                                  && j.getJornadaFichaje().equals(jornadaActual.getId()));
 
             if (esLibre || fichadoHoy) {
                 candidatosHoy.add(j);
             }
         }
 
-        // 2. ORDENAR POR ID
+        // 2. ORDENAR POR ID (Para consistencia antes de barajar)
         candidatosHoy.sort((j1, j2) -> Long.compare(j1.getId(), j2.getId()));
 
         // 3. Barajar con la semilla fija del día
@@ -180,6 +185,7 @@ public class FantasyController {
         List<Jugador> escaparateFijo = candidatosHoy.subList(0, limite);
 
         // 5. Mostrar SOLO los que siguen libres
+        // Si alguien compró a uno de los 14, se filtra aquí y NO entra nadie a reemplazarlo.
         return escaparateFijo.stream()
                 .filter(j -> j.getPropietario() == null)
                 .collect(Collectors.toList());
@@ -236,7 +242,7 @@ public class FantasyController {
             .collect(Collectors.toList());
     }
     
-    // 🏟️ NUEVO: RESUMEN VISUAL DEL PARTIDO (ALINEACIONES) - AHORA USA getUrlImagen()
+    // RESUMEN VISUAL DEL PARTIDO POR COLORES (ALINEACIONES)
     @GetMapping("/jornada/{numero}/resumen-partido")
     public Map<String, Object> getResumenPartido(@PathVariable int numero) {
         Jornada jornada = jornadaRepository.findAll().stream()
@@ -248,13 +254,11 @@ public class FantasyController {
                 .filter(a -> a.getEquipoColor() != null) // Solo los que tengan color asignado
                 .collect(Collectors.toList());
 
-        // Buscamos cuáles son los 2 colores que se han usado esta jornada
         List<String> coloresUsados = actuaciones.stream()
                 .map(Actuacion::getEquipoColor)
                 .distinct()
                 .collect(Collectors.toList());
 
-        // Si no hay datos o falta un equipo, devolvemos error controlado
         if (coloresUsados.isEmpty()) return Map.of("error", "Sin datos de equipos para esta jornada");
         
         String colorA = coloresUsados.get(0);
@@ -269,7 +273,7 @@ public class FantasyController {
                 "posicion", a.getJugador().getPosicion(),
                 "puntos", a.getPuntosTotales(),
                 "goles", a.getGolesMarcados(),
-                "imagen", a.getJugador().getUrlImagen(), // <--- CORREGIDO AQUÍ
+                "imagen", a.getJugador().getUrlImagen(), 
                 "mvp", (a.getPuntosTotales() >= 10),
                 "color", a.getEquipoColor()
             );
@@ -281,7 +285,6 @@ public class FantasyController {
             }
         }
 
-        // Ordenar por posición para que salgan bien en el dibujo
         equipoA.sort(this::compararPorPosicion);
         equipoB.sort(this::compararPorPosicion);
 
@@ -455,7 +458,7 @@ public class FantasyController {
         actuacion.setGolesMarcados(datos.goles);
         actuacion.setGolesEncajados(datos.golesEncajados);
         actuacion.setAutogoles(datos.autogoles);
-        actuacion.setEquipoColor(datos.equipoColor); // <--- GUARDAMOS EL COLOR
+        actuacion.setEquipoColor(datos.equipoColor);
 
         int puntos = calculadora.calcularPuntos(actuacion);
         actuacion.setPuntosTotales(puntos);
@@ -551,6 +554,6 @@ public class FantasyController {
         public int goles;
         public int golesEncajados;
         public int autogoles;
-        public String equipoColor; // <--- NUEVO CAMPO
+        public String equipoColor; 
     }
 }
