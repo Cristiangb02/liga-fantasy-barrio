@@ -1,3 +1,5 @@
+// Archivo: src/main/java/com/fantasy/ligabarrio/JugadorRepository.java
+
 package com.fantasy.ligabarrio;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -5,10 +7,9 @@ import java.util.List;
 
 public interface JugadorRepository extends JpaRepository<Jugador, Long> {
     
-    // Búsqueda simple (útil para otras cosas)
+    // IMPORTANTE: Devuelve List<Jugador> para no fallar si hay duplicados
     List<Jugador> findByNombre(String nombre);
     
-    // 🔴 BÚSQUEDA EXACTA: Nombre Y Posición
-    // Esto permite que existan "Diego PORTERO" y "Diego DEFENSA" como personas distintas
+    // IMPORTANTE: Devuelve List<Jugador> para permitir "Diego Portero" y "Diego Defensa"
     List<Jugador> findByNombreAndPosicion(String nombre, String posicion);
 }
