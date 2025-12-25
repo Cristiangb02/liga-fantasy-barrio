@@ -236,7 +236,7 @@ public class FantasyController {
             .collect(Collectors.toList());
     }
     
-    // 🏟️ NUEVO: RESUMEN VISUAL DEL PARTIDO POR COLORES (ALINEACIONES)
+    // 🏟️ NUEVO: RESUMEN VISUAL DEL PARTIDO (ALINEACIONES) - AHORA USA getUrlImagen()
     @GetMapping("/jornada/{numero}/resumen-partido")
     public Map<String, Object> getResumenPartido(@PathVariable int numero) {
         Jornada jornada = jornadaRepository.findAll().stream()
@@ -258,7 +258,6 @@ public class FantasyController {
         if (coloresUsados.isEmpty()) return Map.of("error", "Sin datos de equipos para esta jornada");
         
         String colorA = coloresUsados.get(0);
-        // Si solo hay un color (raro, pero posible si no se registran datos), usamos "RIVAL" como placeholder
         String colorB = (coloresUsados.size() > 1) ? coloresUsados.get(1) : "RIVAL";
 
         List<Map<String, Object>> equipoA = new ArrayList<>();
@@ -270,8 +269,7 @@ public class FantasyController {
                 "posicion", a.getJugador().getPosicion(),
                 "puntos", a.getPuntosTotales(),
                 "goles", a.getGolesMarcados(),
-                // AQUÍ ESTABA EL ERROR: Ahora usamos getUrlImagen() 👇
-                "imagen", a.getJugador().getUrlImagen(), 
+                "imagen", a.getJugador().getUrlImagen(), // <--- CORREGIDO AQUÍ
                 "mvp", (a.getPuntosTotales() >= 10),
                 "color", a.getEquipoColor()
             );
@@ -283,7 +281,7 @@ public class FantasyController {
             }
         }
 
-        // Ordenar por posición (GK -> DEF -> MED -> DEL)
+        // Ordenar por posición para que salgan bien en el dibujo
         equipoA.sort(this::compararPorPosicion);
         equipoB.sort(this::compararPorPosicion);
 
