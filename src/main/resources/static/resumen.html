@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen del Partido</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: white; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #ffd700; text-transform: uppercase; margin-bottom: 5px; }
+        
+        /* CAMPO DE FÚTBOL */
+        .campo {
+            background: linear-gradient(to bottom, #4caf50, #388e3c);
+            width: 100%; max-width: 600px; height: 900px;
+            margin: 20px auto; border: 5px solid white; border-radius: 10px;
+            position: relative; display: flex; flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .linea-medio { position: absolute; top: 50%; width: 100%; height: 4px; background: rgba(255,255,255,0.6); }
+        .circulo-central { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 4px solid rgba(255,255,255,0.6); border-radius: 50%; }
+
+        /* ÁREAS DE EQUIPOS */
+        .equipo-area { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; padding: 20px 0; }
+        .equipo-top { flex-direction: column; } 
+        .equipo-bottom { flex-direction: column-reverse; }
+
+        .linea-jugadores { display: flex; justify-content: center; gap: 15px; }
+
+        /* CARTA DE JUGADOR */
+        .jugador-card { width: 70px; text-align: center; position: relative; }
+        .jugador-img {
+            width: 50px; height: 50px; border-radius: 50%;
+            border: 4px solid #333; /* Borde por defecto */
+            background: #fff; object-fit: cover;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        /* COLORES DE CAMISETAS (Bordes dinámicos) */
+        .camiseta-ROJO .jugador-img { border-color: #ff4444; }
+        .camiseta-AZUL .jugador-img { border-color: #2196f3; }
+        .camiseta-AMARILLO .jugador-img { border-color: #ffeb3b; }
+        .camiseta-BLANCO .jugador-img { border-color: #ffffff; }
+
+        .puntos-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: #333; color: white;
+            font-weight: bold; font-size: 12px; width: 24px; height: 24px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 2px solid white;
+        }
+        .jugador-nombre { font-size: 10px; background: rgba(0,0,0,0.7); padding: 2px 5px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mvp .jugador-img { box-shadow: 0 0 15px #ffd700; transform: scale(1.1); }
+        
+        .marcador { font-size: 24px; font-weight: bold; margin: 10px 0; background: #333; padding: 10px 20px; border-radius: 10px; display: inline-block; border: 2px solid #555; }
+        .texto-equipo { font-size: 18px; font-weight: bold; text-transform: uppercase; margin: 0 10px; }
+        
+        /* Colores texto marcador */
+        .texto-ROJO { color: #ff4444; }
+        .texto-AZUL { color: #2196f3; }
+        .texto-AMARILLO { color: #ffeb3b; }
+        .texto-BLANCO { color: #ffffff; }
+
+        .controls { margin-bottom: 20px; }
+        input { padding: 8px; border-radius: 5px; border: none; text-align: center; }
+        button { padding: 8px 15px; background: #ffd700; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Resumen del Partido</h1>
+    
+    <div class="controls">
+        <input type="number" id="numJornada" placeholder="Nº Jornada" value="1">
+        <button onclick="cargarResumen()">Ver Partido</button>
+        <br>
+        <a href="index.html" style="color: #ccc; font-size: 12px; text-decoration: none; margin-top: 10px; display: inline-block;">⬅ Volver al Menú</a>
+    </div>
+
+    <div id="marcador" class="marcador">Esperando datos...</div>
+
+    <div class="campo">
+        <div class="linea-medio"></div>
+        <div class="circulo-central"></div>
+
+        <div class="equipo-area equipo-top" id="area-equipo-a"></div>
+
+        <div class="equipo-area equipo-bottom" id="area-equipo-b"></div>
+    </div>
+
+    <script>
+        const API_URL = "https://fantasy-veteranos.onrender.com"; 
+
+        async function cargarResumen() {
+            const num = document.getElementById("numJornada").value;
+            try {
+                const response = await fetch(`${API_URL}/jornada/${num}/resumen-partido`);
+                const data = await response.json();
+
+                if(data.error) {
+                    document.getElementById("marcador").innerText = "⚠️ " + data.error;
+                    document.getElementById("area-equipo-a").innerHTML = "";
+                    document.getElementById("area-equipo-b").innerHTML = "";
+                    return;
+                }
+
+                // Calcular Puntos Totales
+                const puntosA = data.equipoA.reduce((acc, j) => acc + j.puntos, 0);
+                const puntosB = data.equipoB.reduce((acc, j) => acc + j.puntos, 0);
+
+                // Pintar Marcador con colores dinámicos
+                const htmlMarcador = `
+                    <span class="texto-equipo texto-${data.colorA}">${data.colorA}: ${puntosA}</span> 
+                    VS 
+                    <span class="texto-equipo texto-${data.colorB}">${data.colorB}: ${puntosB}</span>
+                `;
+                document.getElementById("marcador").innerHTML = htmlMarcador;
+
+                renderEquipo("area-equipo-a", data.equipoA, data.colorA);
+                renderEquipo("area-equipo-b", data.equipoB, data.colorB);
+
+            } catch (e) {
+                console.error(e);
+                alert("Error cargando datos. Revisa la consola.");
+            }
+        }
+
+        function renderEquipo(elementId, jugadores, color) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = "";
+            
+            // Agrupar por líneas
+            const lineas = { PORTERO: [], DEFENSA: [], MEDIO: [], DELANTERO: [] };
+            jugadores.forEach(j => {
+                if(lineas[j.posicion]) lineas[j.posicion].push(j);
+                else lineas.MEDIO.push(j); // Default
+            });
+
+            // Orden de pintado: POR -> DEF -> MED -> DEL
+            // El CSS flex-direction se encarga de invertirlo para el equipo de abajo
+            const orden = ["PORTERO", "DEFENSA", "MEDIO", "DELANTERO"];
+
+            orden.forEach(pos => {
+                const fila = document.createElement("div");
+                fila.className = "linea-jugadores";
+                
+                if (lineas[pos].length > 0) {
+                    lineas[pos].forEach(jug => {
+                        fila.innerHTML += `
+                            <div class="jugador-card camiseta-${color}">
+                                <div class="puntos-badge">${jug.puntos}</div>
+                                <img src="${API_URL}${jug.imagen || '/user.png'}" class="jugador-img ${jug.mvp ? 'mvp' : ''}">
+                                <div class="jugador-nombre">${jug.nombre}</div>
+                            </div>
+                        `;
+                    });
+                    container.appendChild(fila);
+                }
+            });
+        }
+
+        // Cargar jornada 1 al entrar
+        window.onload = cargarResumen;
+    </script>
+</body>
+</html>
