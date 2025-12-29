@@ -48,7 +48,7 @@ public class InicializadorDatos implements CommandLineRunner {
         List<Jugador> lista = new ArrayList<>();
         
         // --- PORTEROS ---
-        lista.add(new Jugador("Alfonso", "PORTERO", 13_250_000, "/alfonso.png"));
+        lista.add(new Jugador("Alfonso", "PORTERO", 13_250_000, "/alfonsito.png"));
         lista.add(new Jugador("Antonio", "PORTERO", 4_170_000, "/antonioportero.png"));
         lista.add(new Jugador("Aitor", "PORTERO", 3_700_000, "/user.png"));
         lista.add(new Jugador("Carlos", "PORTERO", 8_130_000, "/carlos.png"));
