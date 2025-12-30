@@ -36,12 +36,15 @@ public class InicializadorDatos implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        System.out.println(">>> 🔄 CARGANDO JUGADORES (DEFENSAS UNIFICADOS)...");
+        System.out.println(">>> 🔄 CARGANDO JUGADORES (DEFENSAS FUSIONADOS)...");
 
         // 1. TEMPORADA
+        Temporada t2026;
         if (temporadaRepository.count() == 0) {
-            Temporada t2026 = new Temporada(2026);
+            t2026 = new Temporada(2026);
             temporadaRepository.save(t2026);
+        } else {
+            t2026 = temporadaRepository.findAll().get(0);
         }
 
         List<Jugador> lista = new ArrayList<>();
@@ -56,29 +59,29 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Juanlu", "PORTERO", 56, 5.98, "/juanlu.png"));
         lista.add(new Jugador("Sergio", "PORTERO", 0, 6.56, "/sergio.png"));
 
-        // --- DEFENSAS ---
+        // --- DEFENSAS (FUSIÓN CENTRALES + LATERALES) ---
 
-        lista.add(new Jugador("Alejandro", "DEFENSA", 32, 6.63, "/alejandro.png"));
-        lista.add(new Jugador("Alejandro G.", "DEFENSA", 0, 6.58, "/alejandrogarrocho.png"));
-        lista.add(new Jugador("Andrés", "DEFENSA", 0, 4.72, "/andres.png"));
-        lista.add(new Jugador("Cardenas", "DEFENSA", 45, 6.20, "/cardenas.png"));
-        lista.add(new Jugador("Chico", "DEFENSA", 0, 5.79, "/user.png"));
-        lista.add(new Jugador("Conce", "DEFENSA", 0, 5.84, "/conce.png"));
-        lista.add(new Jugador("Cristian", "DEFENSA", 24, 7.08, "/cristian.png"));
-        lista.add(new Jugador("Diego", "DEFENSA", 0, 8.07, "/diego.png"));
-        lista.add(new Jugador("Javier", "DEFENSA", 0, 6.06, "/javier.png"));
-        lista.add(new Jugador("Javier M.", "DEFENSA", 54, 5.88, "/javierm.png"));
-        lista.add(new Jugador("Jesús Jr", "DEFENSA", 25, 6.62, "/jesusjr.png"));
-        lista.add(new Jugador("Jhona", "DEFENSA", 48, 6.29, "/jhona.png"));
-        lista.add(new Jugador("Jose", "DEFENSA", 0, 7.03, "/jose.png"));
-        lista.add(new Jugador("Juan", "DEFENSA", 45, 6.04, "/juan.png"));
-        lista.add(new Jugador("Juanlu", "DEFENSA", 56, 6.89, "/juanlu.png"));
-        lista.add(new Jugador("Lucas", "DEFENSA", 0, 6.50, "/lucas.png"));
-        lista.add(new Jugador("Luis", "DEFENSA", 57, 6.19, "/luis.png"));
-        lista.add(new Jugador("Mario", "DEFENSA", 59, 7.01, "/mario.png"));
-        lista.add(new Jugador("Paco", "DEFENSA", 0, 7.11, "/paco.png"));
-        lista.add(new Jugador("Primo", "DEFENSA", 0, 6.87, "/primo.png"));
-        lista.add(new Jugador("Sergio", "DEFENSA", 0, 6.98, "/sergio.png"));
+        lista.add(new Jugador("Alejandro", "DEFENSA", 32, 6.63, "/alejandro.png")); // Solo era Lateral
+        lista.add(new Jugador("Alejandro G.", "DEFENSA", 0, 6.58, "/alejandrogarrocho.png")); // (6.53 + 6.63)/2
+        lista.add(new Jugador("Andrés", "DEFENSA", 0, 4.72, "/andres.png")); // (4.15 + 5.29)/2
+        lista.add(new Jugador("Cardenas", "DEFENSA", 45, 6.20, "/cardenas.png")); // (6.16 + 6.23)/2
+        lista.add(new Jugador("Chico", "DEFENSA", 0, 5.79, "/user.png")); // (5.58 + 5.99)/2
+        lista.add(new Jugador("Conce", "DEFENSA", 0, 5.84, "/conce.png")); // (5.80 + 5.88)/2
+        lista.add(new Jugador("Cristian", "DEFENSA", 24, 7.08, "/cristian.png")); // (5.99 + 8.16)/2
+        lista.add(new Jugador("Diego", "DEFENSA", 0, 8.07, "/diego.png")); // (8.61 + 7.53)/2
+        lista.add(new Jugador("Javier", "DEFENSA", 0, 6.06, "/javier.png")); // (5.97 + 6.14)/2
+        lista.add(new Jugador("Javier M.", "DEFENSA", 54, 5.88, "/javierm.png")); // (6.24 + 5.52)/2
+        lista.add(new Jugador("Jesús Jr", "DEFENSA", 25, 6.62, "/jesusjr.png")); // (6.28 + 6.96)/2
+        lista.add(new Jugador("Jhona", "DEFENSA", 48, 6.29, "/jhona.png")); // (5.63 + 6.94)/2
+        lista.add(new Jugador("Jose", "DEFENSA", 0, 7.03, "/jose.png")); // (7.53 + 6.52)/2
+        lista.add(new Jugador("Juan", "DEFENSA", 45, 6.04, "/juan.png")); // (5.54 + 6.53)/2
+        lista.add(new Jugador("Juanlu", "DEFENSA", 56, 6.89, "/juanlu.png")); // (6.70 + 7.08)/2
+        lista.add(new Jugador("Lucas", "DEFENSA", 0, 6.50, "/lucas.png")); // (6.11 + 6.89)/2
+        lista.add(new Jugador("Luis", "DEFENSA", 57, 6.19, "/luis.png")); // Solo era Lateral
+        lista.add(new Jugador("Mario", "DEFENSA", 59, 7.01, "/mario.png")); // (6.34 + 7.67)/2
+        lista.add(new Jugador("Paco", "DEFENSA", 0, 7.11, "/paco.png")); // (6.52 + 7.69)/2
+        lista.add(new Jugador("Primo", "DEFENSA", 0, 6.87, "/primo.png")); // (7.26 + 6.47)/2
+        lista.add(new Jugador("Sergio", "DEFENSA", 0, 6.98, "/sergio.png")); // Solo era Lateral
 
         // --- MEDIOS ---
         lista.add(new Jugador("Alberto", "MEDIO", 0, 8.06, "/alberto.png"));
@@ -104,20 +107,19 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Juanlu", "DELANTERO", 56, 5.89, "/juanlu.png"));
         lista.add(new Jugador("Pepe", "DELANTERO", 67, 7.02, "/pepe.png"));
 
-        //INSERCIÓN SEGURA (Evita duplicados)
+        // 🔴 INSERCIÓN SEGURA (Evita duplicados)
         for (Jugador j : lista) {
-            // Buscamos por nombre y posición exacta
             List<Jugador> existentes = jugadorRepository.findByNombreAndPosicion(j.getNombre(), j.getPosicion());
 
             if (existentes.isEmpty()) {
                 jugadorRepository.save(j);
-                System.out.println("✅ NUEVO JUGADOR: " + j.getNombre() + " (" + j.getPosicion() + ") -> " + j.getValor() + "€");
+                System.out.println("✅ " + j.getNombre() + " (" + j.getPosicion() + ") -> " + j.getValor() + "€");
             }
         }
 
         // 3. JORNADA
         if (jornadaRepository.count() == 0) {
-            Jornada jornada1 = new Jornada(1, LocalDate.now(), new Temporada(2026));
+            Jornada jornada1 = new Jornada(1, LocalDate.now(), t2026); // Usamos la temporada recuperada
             jornadaRepository.save(jornada1);
         }
 
