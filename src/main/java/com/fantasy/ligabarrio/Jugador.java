@@ -11,8 +11,8 @@ public class Jugador {
 
     private String nombre;
     private String posicion;
-    private int edad;   // NUEVO
-    private double media; // NUEVO (La nota del 0 al 10)
+    private int edad;
+    private double media;
 
     private int valor;
     private String imagen;
@@ -27,7 +27,6 @@ public class Jugador {
     public Jugador() {
     }
 
-    // CONSTRUCTOR NUEVO: Ya no pide "valor", pide "edad" y "media"
     public Jugador(String nombre, String posicion, int edad, double media, String imagen) {
         this.nombre = nombre;
         this.posicion = posicion;
@@ -37,26 +36,48 @@ public class Jugador {
         this.puntosAcumulados = 0;
         this.jornadaFichaje = 0L;
 
-        // 🧮 CÁLCULO AUTOMÁTICO DE PRECIO f(x,y)
-        this.valor = calcularPrecioInicial(edad, media);
+        // CÁLCULO DE PRECIO (VETERANOS RESPETADOS 🍷)
+        this.valor = calcularPrecioFinal(edad, media);
         this.clausula = this.valor;
     }
 
-    // LA FÓRMULA MATEMÁTICA
-    private int calcularPrecioInicial(int edad, double media) {
-        // 1. Base exponencial según la media (ajusta el 150000 o el 1.65 si quieres precios más altos/bajos)
-        double precioBase = 150_000 * Math.pow(1.65, media);
+    private int calcularPrecioFinal(int edad, double media) {
+        // 1. BASE EXPONENCIAL (Potencia 2.75)
+        // Mantenemos la potencia alta para que los cracks destaquen.
+        double precioBase = 10_000 * Math.pow(2.75, media);
 
-        // 2. Factor de edad (Jóvenes valen más, veteranos menos)
-        // 27 es la edad "neutra". Cada año de diferencia es un +/- 1.5%
-        double factorEdad = 1.0 + ((27.0 - edad) * 0.015);
+        // 2. FACTOR EDAD
+        double factorEdad = 1.0;
 
-        // 3. Cálculo final
+        if (edad < 27) {
+            // JUVENTUD (O EDAD 0): +12% por año (Dopado)
+            factorEdad += (27 - edad) * 0.12;
+        } else if (edad <= 33) {
+            // MADUREZ: -2% suave por año.
+            factorEdad -= (edad - 27) * 0.02;
+        } else {
+            // DECLIVE SUAVIZADO:
+            // Bajada previa hasta los 33 (-12% total)
+            double bajadaSuave = (33 - 27) * 0.02;
+
+            // AHORA: -5% por año a partir de 33 (Antes era -12%)
+            double bajadaFuerte = (edad - 33) * 0.05;
+
+            factorEdad -= (bajadaSuave + bajadaFuerte);
+        }
+
+        // SUELO MÍNIMO SUBIDO (del 0.10 al 0.25)
+        // Esto asegura que un veterano con buena media siga valiendo al menos el 25% de su valor base.
+        if (factorEdad < 0.25) factorEdad = 0.25;
+
+        // 3. CÁLCULO FINAL
         double precioFinal = precioBase * factorEdad;
 
-        // 4. Mínimo 150k y redondeo a bonitos (multiplos de 10.000)
-        if (precioFinal < 150_000) precioFinal = 150_000;
-        return (int) (Math.round(precioFinal / 10000.0) * 10000);
+        // Mínimo absoluto de mercado: 250.000 €
+        if (precioFinal < 250_000) precioFinal = 250_000;
+
+        // Redondear a las 50.000 unidades más cercanas
+        return (int) (Math.round(precioFinal / 50000.0) * 50000);
     }
 
     // --- GETTERS Y SETTERS ---
@@ -72,7 +93,7 @@ public class Jugador {
     public void setMedia(double media) { this.media = media; }
     public int getValor() { return valor; }
     public void setValor(int valor) { this.valor = valor; }
-    public String getUrlImagen() { return imagen; } // Mantenemos getUrlImagen para compatibilidad con tu HTML
+    public String getUrlImagen() { return imagen; }
     public void setUrlImagen(String imagen) { this.imagen = imagen; }
     public Usuario getPropietario() { return propietario; }
     public void setPropietario(Usuario propietario) { this.propietario = propietario; }
