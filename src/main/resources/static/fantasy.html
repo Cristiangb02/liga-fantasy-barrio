@@ -179,7 +179,7 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h3>Alineación <span style="font-size:0.7em; color:#1565c0;">(Jornada <span id="num-jornada-alineacion"></span>)</span></h3>
         <span style="background:#e3f2fd; padding:3px 10px; border-radius:15px; color:#0d47a1; font-weight:bold; font-size:0.9em;">
-                <span id="contador-alineados">0</span>/8
+                <span id="contador-alineados">0</span>/7
             </span>
     </div>
     <p style="font-size:0.8em; color:#d32f2f;" id="aviso-saldo">⚠️ Si tu saldo es negativo, harás 0 puntos.</p>
@@ -715,10 +715,15 @@
     }
 
     function guardarAlineacion() {
-        const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
-        if(ids.length > 8) { mostrarModal("Alineación", "Máximo 8 jugadores.", 'confirm', ()=>{}); return; }
-        post(`/alinear/${usuarioId}`, ids);
+    const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
+
+    if(ids.length > 7) {
+        mostrarModal("Alineación", "Máximo 7 jugadores.", 'confirm', ()=>{});
+        return;
     }
+
+    post(`/alinear/${usuarioId}`, ids);
+}
 
     function post(url, data, coste = 0) {
         fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
