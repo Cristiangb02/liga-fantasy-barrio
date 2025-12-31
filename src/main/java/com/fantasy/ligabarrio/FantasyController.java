@@ -427,15 +427,27 @@ public class FantasyController {
 
     @PostMapping("/alinear/{usuarioId}")
     public String guardarAlineacion(@RequestBody List<Long> idsJugadores, @PathVariable Long usuarioId) {
+
+        if (idsJugadores == null) return "❌ Error: Lista de jugadores vacía.";
+        if (idsJugadores.size() > 7) return "❌ Máximo 7 jugadores permitidos.";
+
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
-        Jornada jornada = getJornadaActiva(); 
+        Jornada jornada = getJornadaActiva();
         List<Jugador> seleccionados = jugadorRepository.findAllById(idsJugadores);
+
         for (Jugador j : seleccionados) {
-            if (j.getPropietario() == null || !j.getPropietario().getId().equals(usuarioId)) return "❌ " + j.getNombre() + " no te pertenece.";
+            if (j.getPropietario() == null || !j.getPropietario().getId().equals(usuarioId)) {
+                return "❌ " + j.getNombre() + " no te pertenece.";
+            }
         }
-        Equipo equipo = equipoRepository.findByUsuario(usuario).stream().filter(e -> e.getJornada().getId().equals(jornada.getId())).findFirst().orElse(new Equipo(usuario, jornada));
+
+        Equipo equipo = equipoRepository.findByUsuario(usuario).stream()
+                .filter(e -> e.getJornada().getId().equals(jornada.getId()))
+                .findFirst()
+                .orElse(new Equipo(usuario, jornada));
         equipo.setJugadoresAlineados(seleccionados);
         equipoRepository.save(equipo);
+
         return "✅ Alineación guardada para la Jornada " + getNumeroJornadaReal();
     }
 
