@@ -8,18 +8,15 @@ public class Jugador {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nombre;
     private String posicion;
     private int edad;
     private double media;
-
     private int valor;
     private String imagen;
 
     @ManyToOne
     private Usuario propietario;
-
     private int puntosAcumulados;
     private int clausula;
     private Long jornadaFichaje;
@@ -36,51 +33,50 @@ public class Jugador {
         this.puntosAcumulados = 0;
         this.jornadaFichaje = 0L;
 
-        // CÁLCULO DE PRECIO (VETERANOS RESPETADOS 🍷)
+        //CÁLCULO DE PRECIO
         this.valor = calcularPrecioFinal(edad, media);
         this.clausula = this.valor;
     }
 
     private int calcularPrecioFinal(int edad, double media) {
-        // 1. BASE EXPONENCIAL (Potencia 2.75)
-        // Mantenemos la potencia alta para que los cracks destaquen.
-        double precioBase = 10_000 * Math.pow(2.75, media);
+        // 1. BASE EXPONENCIAL (Potencia 2.85)
+        //Mantenemos la potencia alta para que los cracks destaquen.
+        double precioBase = 10_000 * Math.pow(2.85, media);
 
-        // 2. FACTOR EDAD
+        //2. FACTOR EDAD
         double factorEdad = 1.0;
 
-        if (edad < 27) {
-            // JUVENTUD (O EDAD 0): +12% por año (Dopado)
-            factorEdad += (27 - edad) * 0.12;
-        } else if (edad <= 33) {
-            // MADUREZ: -2% suave por año.
+        if (edad< 27) {
+            // JUVENTUD (O EDAD 0): +15% por año
+            factorEdad += (27 - edad) * 0.15;
+        } else if (edad <= 40) {
+            //MADUREZ: -2% suave por año.
             factorEdad -= (edad - 27) * 0.02;
         } else {
-            // DECLIVE SUAVIZADO:
-            // Bajada previa hasta los 33 (-12% total)
-            double bajadaSuave = (33 - 27) * 0.02;
+            //DECLIVE SUAVIZADO:
+            //Bajada previa hasta los 40 (-12% total)
+            double bajadaSuave = (40 - 27) * 0.02;
 
-            // AHORA: -5% por año a partir de 33 (Antes era -12%)
-            double bajadaFuerte = (edad - 33) * 0.05;
+            //AHORA: -5% por año a partir de 40 (Antes era -12%)
+            double bajadaFuerte = (edad - 40) * 0.05;
 
             factorEdad -= (bajadaSuave + bajadaFuerte);
         }
 
-        // SUELO MÍNIMO SUBIDO (del 0.10 al 0.25)
-        // Esto asegura que un veterano con buena media siga valiendo al menos el 25% de su valor base.
+        //SUELO MÍNIMO SUBIDO (del 0.10 al 0.25)
+        //Esto asegura que un veterano con buena media siga valiendo al menos el 25% de su valor base.
         if (factorEdad < 0.25) factorEdad = 0.25;
 
-        // 3. CÁLCULO FINAL
+        //3. CÁLCULO FINAL
         double precioFinal = precioBase * factorEdad;
 
-        // Mínimo absoluto de mercado: 250.000 €
+        //Mínimo absoluto de mercado: 250.000 €
         if (precioFinal < 250_000) precioFinal = 250_000;
 
-        // Redondear a las 50.000 unidades más cercanas
+        //Redondear a las 50.000 unidades más cercanas
         return (int) (Math.round(precioFinal / 50000.0) * 50000);
     }
 
-    // --- GETTERS Y SETTERS ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNombre() { return nombre; }

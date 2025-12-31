@@ -3,22 +3,18 @@ package com.fantasy.ligabarrio;
 import jakarta.persistence.*; // Importa las herramientas de base de datos
 import java.time.LocalDate;
 
-@Entity // ESTO ES MAGIA: Le dice a Spring "Crea una tabla llamada Temporada"
+@Entity
 public class Temporada {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Identificador único (1, 2, 3...)
-
-    private String nombre; // Ej: "Temporada 2025"
-    private int anio;      // 2025
-
+    private Long id;
+    private String nombre;
+    private int anio;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
+    private boolean activa;
 
-    private boolean activa; // Para saber si es la que estamos jugando ahora
-
-    // Constructor vacío (Obligatorio para Spring)
     public Temporada() {
     }
 
@@ -31,7 +27,6 @@ public class Temporada {
         this.activa = true;
     }
 
-    // Getters y Setters (Necesarios para que todo funcione)
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }

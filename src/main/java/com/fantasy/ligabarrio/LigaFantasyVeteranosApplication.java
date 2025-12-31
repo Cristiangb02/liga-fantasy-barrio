@@ -11,17 +11,15 @@ import java.util.TimeZone; // 🔴 IMPORTANTE
 public class LigaFantasyVeteranosApplication {
 
     public static void main(String[] args) {
-        // 🔴 FORZAR HORA ESPAÑOLA (EUROPE/MADRID)
-        // Esto arregla el desfase de 1 hora en las noticias y el mercado
+        //HORA ESPAÑOLA (EUROPE/MADRID)
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Madrid"));
-        
         SpringApplication.run(LigaFantasyVeteranosApplication.class, args);
     }
 
     @Bean
     public CommandLineRunner initData(UsuarioRepository usuarioRepository, JornadaRepository jornadaRepository) {
         return args -> {
-            // 1. INICIALIZAR JORNADA
+            //1. INICIALIZAR JORNADA
             if (jornadaRepository.count() == 0) {
                 jornadaRepository.save(new Jornada());
                 System.out.println(">>> ✅ Jornada 1 creada.");
@@ -33,13 +31,13 @@ public class LigaFantasyVeteranosApplication {
             if (admin == null) {
                 admin = new Usuario();
                 admin.setNombre("Cristian");
-                admin.setPresupuesto(100_000_000);
+                admin.setPresupuesto(50_000_000);
                 admin.setEsAdmin(true);
                 System.out.println(">>> 🆕 Creando usuario 'Cristian'...");
             } 
 
-            // 3. ASEGURAR CONTRASEÑA
-            admin.setPassword("1234");
+            //3. ASEGURAR CONTRASEÑA
+            admin.setPassword("Huelvamolamazo");
             usuarioRepository.save(admin);
             
             System.out.println(">>> 👑 ADMIN 'Cristian' asegurado.");

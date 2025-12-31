@@ -13,9 +13,7 @@ public class Usuario {
     private String password;
     private int presupuesto;
     private boolean esAdmin;
-    
-    // 🔴 NUEVO CAMPO: Control de acceso
-    private boolean activo; 
+    private boolean activo; //Control de acceso
 
     public Usuario() {
     }
@@ -26,7 +24,7 @@ public class Usuario {
         this.presupuesto = presupuesto;
         this.esAdmin = esAdmin;
         // Si es Admin nace activo, si no, nace inactivo (pendiente de aprobar)
-        this.activo = esAdmin; 
+        this.activo = esAdmin;
     }
 
     public Long getId() { return id; }

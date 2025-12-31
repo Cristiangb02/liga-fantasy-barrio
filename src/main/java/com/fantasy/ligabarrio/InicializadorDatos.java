@@ -117,15 +117,15 @@ public class InicializadorDatos implements CommandLineRunner {
             }
         }
 
-        // 3. JORNADA
+        //3. JORNADA
         if (jornadaRepository.count() == 0) {
             Jornada jornada1 = new Jornada(1, LocalDate.now(), t2026); // Usamos la temporada recuperada
             jornadaRepository.save(jornada1);
         }
 
-        // 4. CREAR USUARIO ADMIN
+        //4. CREAR USUARIO ADMIN
         if (usuarioRepository.findByNombre("Cristian") == null) {
-            Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
+            Usuario admin = new Usuario("Cristian", "1234", 50_000_000, true);
             admin.setActivo(true);
             usuarioRepository.save(admin);
             System.out.println("👑 ADMIN CREADO");

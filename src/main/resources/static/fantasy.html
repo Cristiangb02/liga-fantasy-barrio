@@ -163,11 +163,11 @@
     <button onclick="cambiarPestaña('alineacion')" id="tab-alineacion">⚽ Mi alineación</button>
     <button onclick="cambiarPestaña('mercado')" id="tab-mercado">🛒 Mercado</button>
     <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Mánagers</button>
-    <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Tabla</button>
-    <button onclick="cambiarPestaña('ranking')" id="tab-ranking">🌟 Top Jugadores</button>
-    <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Historial</button>
+    <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Clasificación</button>
+    <button onclick="cambiarPestaña('ranking')" id="tab-ranking">🌟 Mejores Jugadores</button>
+    <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Mis jornadas </button>
     <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
-    <button onclick="window.location.href='resumen.html'" class="btn-partido">🏟️ Partido</button>
+    <button onclick="window.location.href='resumen.html'" class="btn-partido">🏟️ Partidos</button>
     <button onclick="cambiarPestaña('admin')" id="tab-admin" class="admin-tab oculto">ADMIN</button>
 </nav>
 
@@ -185,7 +185,7 @@
     </div>
     <p style="font-size:0.8em; color:#d32f2f;" id="aviso-saldo">⚠️ Si tu saldo es negativo, harás 0 puntos.</p>
     <div id="grid-alineacion" class="grid-jugadores">Cargando...</div>
-    <button class="btn-action-big" onclick="guardarAlineacion()">💾 GUARDAR</button>
+    <button class="btn-action-big" onclick="guardarAlineacion()">💾 GUARDAR ALINEACIÓN</button>
 </div>
 
 <div id="sec-mercado" class="seccion oculto">
@@ -214,7 +214,7 @@
 </div>
 
 <div id="sec-ranking" class="seccion oculto">
-    <h3>🌟 Mejores Jugadores (Total)</h3>
+    <h3>🌟 Mejores Jugadores (Suma total de puntos acumulados)</h3>
     <div id="lista-ranking" style="display:flex; flex-direction:column;">Cargando...</div>
 </div>
 
@@ -227,7 +227,7 @@
     <div id="zona-premios"></div>
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3>Noticias</h3>
-        <small style="color:#666">En vivo 🔴</small>
+        <small style="color:#666">En directo 🔴</small>
     </div>
     <div id="lista-noticias">Cargando...</div>
 </div>
@@ -249,16 +249,16 @@
         <div style="display:flex; gap:15px; margin-bottom:15px; align-items:center; background:#f5f5f5; padding:10px; border-radius:6px;">
             <label style="font-weight:bold; cursor:pointer;"><input type="checkbox" id="check-jugado" checked> ¿Jugó?</label>
             <select id="select-resultado" style="padding:5px; border-radius:4px;">
-                <option value="empate">Empate (1 pto)</option>
-                <option value="victoria">Victoria (+2)</option>
-                <option value="derrota">Derrota (-1)</option>
+                <option value="empate">Empate </option>
+                <option value="victoria">Victoria </option>
+                <option value="derrota">Derrota </option>
             </select>
         </div>
 
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
-            <div><small>Goles</small><input type="number" id="input-goles" placeholder="0" class="modal-input" style="margin:0;"></div>
-            <div><small>Encajados</small><input type="number" id="input-encajados" placeholder="0" class="modal-input" style="margin:0;"></div>
-            <div><small>Autogoles</small><input type="number" id="input-autogoles" placeholder="0" class="modal-input" style="margin:0;"></div>
+            <div><small>Goles marcados</small><input type="number" id="input-goles" placeholder="0" class="modal-input" style="margin:0;"></div>
+            <div><small>Goles encajados</small><input type="number" id="input-encajados" placeholder="0" class="modal-input" style="margin:0;"></div>
+            <div><small>Goles en propia</small><input type="number" id="input-autogoles" placeholder="0" class="modal-input" style="margin:0;"></div>
         </div>
 
         <button onclick="registrarActa()" style="background:#c62828; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; margin-bottom:10px;">Registrar Puntos</button>
@@ -266,12 +266,12 @@
     </div>
 
     <div style="background:#fffde7; padding:15px; border-radius:10px; border:1px solid #fbc02d; margin-bottom: 20px;">
-        <h4 style="color:#f57f17; margin-top:0;">🔔 Solicitudes de Acceso</h4>
+        <h4 style="color:#f57f17; margin-top:0;">🔔 Solicitudes de acceso</h4>
         <div id="admin-lista-pendientes">Cargando...</div>
     </div>
 
     <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
-        <h4>👮 Gestión Usuarios</h4>
+        <h4>👮 Gestión de usuarios</h4>
         <div id="admin-lista-usuarios">Cargando...</div>
     </div>
     <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
