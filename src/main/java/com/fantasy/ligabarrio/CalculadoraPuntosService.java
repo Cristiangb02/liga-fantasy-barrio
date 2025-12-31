@@ -20,7 +20,7 @@ public class CalculadoraPuntosService {
             puntos += 2;
             puntos += random.nextInt(4);
         } else if (a.isDerrota()) {
-            puntos -= 3;
+            puntos -= 2;
             puntos += random.nextInt(2);
         } else {
             puntos += random.nextInt(2); //+0 o +1 como mucho
