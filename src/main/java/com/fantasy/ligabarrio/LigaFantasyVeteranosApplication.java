@@ -31,7 +31,7 @@ public class LigaFantasyVeteranosApplication {
             if (admin == null) {
                 admin = new Usuario();
                 admin.setNombre("Cristian");
-                admin.setPresupuesto(50_000_000);
+                admin.setPresupuesto(100_000_000);
                 admin.setEsAdmin(true);
                 System.out.println(">>> 🆕 Creando usuario 'Cristian'...");
             } 

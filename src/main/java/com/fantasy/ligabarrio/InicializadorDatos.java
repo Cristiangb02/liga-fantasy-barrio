@@ -125,7 +125,7 @@ public class InicializadorDatos implements CommandLineRunner {
 
         //4. CREAR USUARIO ADMIN
         if (usuarioRepository.findByNombre("Cristian") == null) {
-            Usuario admin = new Usuario("Cristian", "1234", 50_000_000, true);
+            Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
             admin.setActivo(true);
             usuarioRepository.save(admin);
             System.out.println("👑 ADMIN CREADO");

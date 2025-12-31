@@ -39,33 +39,31 @@ public class Jugador {
     }
 
     private int calcularPrecioFinal(int edad, double media) {
-        // 1. BASE EXPONENCIAL (Potencia 2.85)
+        // 1. BASE EXPONENCIAL (Potencia 2.92)
         //Mantenemos la potencia alta para que los cracks destaquen.
-        double precioBase = 10_000 * Math.pow(2.85, media);
+        double precioBase = 10_000 * Math.pow(2.92, media);
 
         //2. FACTOR EDAD
         double factorEdad = 1.0;
 
         if (edad< 27) {
-            // JUVENTUD (O EDAD 0): +15% por año
-            factorEdad += (27 - edad) * 0.15;
+            // JUVENTUD (O EDAD 0): +16% por año
+            factorEdad += (27 - edad) * 0.16;
         } else if (edad <= 40) {
-            //MADUREZ: -2% suave por año.
-            factorEdad -= (edad - 27) * 0.02;
+            //MADUREZ: -15% suave por año.
+            factorEdad -= (edad - 27) * 0.015;
         } else {
             //DECLIVE SUAVIZADO:
             //Bajada previa hasta los 40 (-12% total)
             double bajadaSuave = (40 - 27) * 0.02;
-
             //AHORA: -5% por año a partir de 40 (Antes era -12%)
             double bajadaFuerte = (edad - 40) * 0.05;
 
             factorEdad -= (bajadaSuave + bajadaFuerte);
         }
 
-        //SUELO MÍNIMO SUBIDO (del 0.10 al 0.25)
-        //Esto asegura que un veterano con buena media siga valiendo al menos el 25% de su valor base.
-        if (factorEdad < 0.25) factorEdad = 0.25;
+        //Esto asegura que un veterano con buena media siga valiendo al menos el 24% de su valor base.
+        if (factorEdad < 0.25) factorEdad = 0.24;
 
         //3. CÁLCULO FINAL
         double precioFinal = precioBase * factorEdad;
@@ -74,7 +72,8 @@ public class Jugador {
         if (precioFinal < 250_000) precioFinal = 250_000;
 
         //Redondear a las 50.000 unidades más cercanas
-        return (int) (Math.round(precioFinal / 50000.0) * 50000);
+        //return (int) (Math.round(precioFinal / 50000.0) * 50000);
+        return (int) precioFinal;
     }
 
     public Long getId() { return id; }

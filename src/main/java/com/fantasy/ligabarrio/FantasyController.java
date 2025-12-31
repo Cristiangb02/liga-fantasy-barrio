@@ -64,7 +64,7 @@ public class FantasyController {
     public String registrarUsuario(@RequestBody Usuario datos) {
         if (usuarioRepository.findByNombre(datos.getNombre()) != null) return "❌ El nombre ya existe.";
         boolean esPrimero = usuarioRepository.count() == 0;
-        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 50_000_000, esPrimero);
+        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, esPrimero);
         nuevo.setActivo(esPrimero); 
         usuarioRepository.save(nuevo);
         
@@ -524,7 +524,7 @@ public class FantasyController {
         }
         jugadorRepository.saveAll(jugadores);
         List<Usuario> usuarios = usuarioRepository.findAll();
-        for (Usuario u : usuarios) { u.setPresupuesto(50_000_000); u.setActivo(true); }
+        for (Usuario u : usuarios) { u.setPresupuesto(100_000_000); u.setActivo(true); }
         usuarioRepository.saveAll(usuarios);
         equipoRepository.deleteAll();
         actuacionRepository.deleteAll();
@@ -535,7 +535,7 @@ public class FantasyController {
         j1.setNumero(1); 
         jornadaRepository.save(j1); 
         
-        noticiaRepository.save(new Noticia("☢️ LIGA RESETEADA: ¡Todos empiezan de cero con 50M! ¡A fichar!"));
+        noticiaRepository.save(new Noticia("☢️ LIGA RESETEADA: ¡Todos empiezan de cero con 100M! ¡A fichar!"));
         return "✅ Liga reseteada. Recarga la página.";
     }
 
