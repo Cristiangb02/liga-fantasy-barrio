@@ -41,7 +41,7 @@ public class Jugador {
     private int calcularPrecioFinal(int edad, double media) {
         // 1. BASE EXPONENCIAL (Potencia 2.88)
         //Mantenemos la potencia alta para que los cracks destaquen.
-        double precioBase = 10_000 * Math.pow(2.88, media);
+        double precioBase = 10_000 * Math.pow(2.89, media);
 
         //2. FACTOR EDAD
         double factorEdad = 1.0;
