@@ -624,7 +624,12 @@
 
         if (tipo === 'alinear') contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
         else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
-        else if (tipo === 'robar') contenido = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>`;
+        else if (tipo === 'robar') {
+    contenido = `
+        <div class="card-coste" style="margin-bottom:5px;">Valor: ${precio}</div>
+        <button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>
+    `;
+}
         else if (tipo === 'gestion') {
             contenido = `
                 <div class="card-coste">Coste: ${precio}</div>

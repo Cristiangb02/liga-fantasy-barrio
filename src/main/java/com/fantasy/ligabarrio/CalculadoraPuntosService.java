@@ -32,7 +32,7 @@ public class CalculadoraPuntosService {
                 //    - 0 goles: +7 pts (Premio portería a cero muy alto)
                 //    - <3 goles: +4 pts
                 //    - 3-6 goles: 0 pts
-                //    - >6 goles: -3 pts (Castigo)
+                //    - >6 goles: -3 pts
                 puntos += calcularGolesEncajados(a.getGolesEncajados(), 7, 4, 0, -3);
 
                 //2. Goles Marcados: ¡Premio enorme (x10) porque es muy difícil!
