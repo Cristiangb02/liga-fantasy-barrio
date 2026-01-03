@@ -1,6 +1,7 @@
 package com.fantasy.ligabarrio;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 public class Jugador {
@@ -20,6 +21,7 @@ public class Jugador {
     private int puntosAcumulados;
     private int clausula;
     private Long jornadaFichaje;
+    private LocalDate fechaFichaje;
 
     public Jugador() {
     }
@@ -98,4 +100,7 @@ public class Jugador {
     public void setClausula(int clausula) { this.clausula = clausula; }
     public Long getJornadaFichaje() { return jornadaFichaje; }
     public void setJornadaFichaje(Long jornadaFichaje) { this.jornadaFichaje = jornadaFichaje; }
+    public LocalDate getFechaFichaje() { return fechaFichaje; }
+    public void setFechaFichaje(LocalDate fechaFichaje) { this.fechaFichaje = fechaFichaje; }
+
 }

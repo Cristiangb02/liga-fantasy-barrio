@@ -563,12 +563,31 @@
         fetch('/premios-pendientes/' + usuarioId).then(r=>r.json()).then(premios => {
             const zonaPremios = document.getElementById('zona-premios');
             if (premios.length > 0) {
-                let htmlPremios = premios.map(p => `
-                    <div class="bloque-premios">
-                        <div><strong>🏆 JORNADA FINALIZADA</strong><br>Has ganado: ${p.puntos} pts</div>
+                let htmlPremios = premios.map(p => {
+                    // Lógica visual para el MVP
+                    let htmlMvp = '';
+                    let claseExtra = '';
+
+                    if (p.tieneMvp) {
+                        claseExtra = 'border: 2px solid #ffd700; background: #fffde7;'; // Borde dorado y fondo amarillo claro
+                        htmlMvp = `<div style="background:#ffd700; color:#333; padding:5px; border-radius:4px; margin-top:5px; font-size:0.9em; text-align:center;">
+                                      <strong>🏆 ¡BONUS MVP!</strong><br>
+                                      Tenías a ${p.nombreMvp}<br>
+                                      <span style="font-weight:900;">+${p.bonusFmt}</span>
+                                   </div>`;
+                    }
+
+                    return `
+                    <div class="bloque-premios" style="${claseExtra}">
+                        <div>
+                            <strong>🏁 JORNADA ${p.jornada}</strong><br>
+                            Has ganado: ${p.puntos} pts
+                            ${htmlMvp}
+                        </div>
                         <button class="btn-reclamar" onclick="reclamar(${p.idEquipo})">Reclamar ${p.dineroFmt}</button>
                     </div>
-                `).join('');
+                `;
+                }).join('');
                 zonaPremios.innerHTML = htmlPremios;
             } else { zonaPremios.innerHTML = ''; }
         });
@@ -622,14 +641,18 @@
         if (j.puntosAcumulados < 0) colorTriangulo = 'triangle-neg';
         else if (j.puntosAcumulados === 0) colorTriangulo = 'triangle-neu';
 
-        if (tipo === 'alinear') contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
-        else if (tipo === 'fichar') contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
+        if (tipo === 'alinear') {
+            contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
+        }
+        else if (tipo === 'fichar') {
+            contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
+        }
         else if (tipo === 'robar') {
-    contenido = `
-        <div class="card-coste" style="margin-bottom:5px;">Valor: ${precio}</div>
-        <button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>
-    `;
-}
+            contenido = `
+                <div class="card-coste" style="margin-bottom:5px;">Valor: ${precio}</div>
+                <button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>
+            `;
+        }
         else if (tipo === 'gestion') {
             contenido = `
                 <div class="card-coste">Coste: ${precio}</div>
