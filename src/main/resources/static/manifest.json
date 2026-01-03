@@ -1,0 +1,16 @@
+{
+  "short_name": "Fantasy",
+  "name": "Liga Fantasy Los Veteranos",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/fantasy.html",
+  "background_color": "#f0f2f5",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#1a237e"
+}
