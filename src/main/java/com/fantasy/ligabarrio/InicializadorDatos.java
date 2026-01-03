@@ -131,16 +131,15 @@ public class InicializadorDatos implements CommandLineRunner {
             System.out.println("👑 ADMIN CREADO");
         }
 
-        // 👇👇👇 AÑADE ESTE BLOQUE AQUÍ 👇👇👇
-        // 🚑 PARCHE DE EMERGENCIA PARA SEBAS
+        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (EJEMPLO CON SEBAS)
+        /*
         List<Jugador> sebasList = jugadorRepository.findByNombre("Sebas");
         if (!sebasList.isEmpty()) {
             Jugador sebas = sebasList.get(0);
             sebas.setUrlImagen("/sebastian.png");
             jugadorRepository.save(sebas);
-            System.out.println("🔧 ¡IMAGEN DE SEBAS CORREGIDA A LA FUERZA!");
         }
-        // 👆👆👆 FIN DEL PARCHE 👆👆👆
+        */
 
         System.out.println(">>> ✅ CARGA DE DATOS COMPLETADA.");
     }
