@@ -123,13 +123,24 @@ public class InicializadorDatos implements CommandLineRunner {
             jornadaRepository.save(jornada1);
         }
 
-        //4. CREAR USUARIO ADMIN
+        // 4. CREAR USUARIO ADMIN
         if (usuarioRepository.findByNombre("Cristian") == null) {
             Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
             admin.setActivo(true);
             usuarioRepository.save(admin);
             System.out.println("👑 ADMIN CREADO");
         }
+
+        // 👇👇👇 AÑADE ESTE BLOQUE AQUÍ 👇👇👇
+        // 🚑 PARCHE DE EMERGENCIA PARA SEBAS
+        List<Jugador> sebasList = jugadorRepository.findByNombre("Sebas");
+        if (!sebasList.isEmpty()) {
+            Jugador sebas = sebasList.get(0);
+            sebas.setUrlImagen("/sebastian.png");
+            jugadorRepository.save(sebas);
+            System.out.println("🔧 ¡IMAGEN DE SEBAS CORREGIDA A LA FUERZA!");
+        }
+        // 👆👆👆 FIN DEL PARCHE 👆👆👆
 
         System.out.println(">>> ✅ CARGA DE DATOS COMPLETADA.");
     }
