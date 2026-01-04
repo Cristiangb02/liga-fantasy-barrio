@@ -156,6 +156,10 @@
         .ranking-medal { font-size: 1.2em; min-width: 30px; }
         .ranking-details { display:flex; align-items:center; gap:10px; }
         .ranking-points { font-weight:900; color:#1a237e; font-size:1.1em; }
+
+        .timer-mini { font-size: 0.8em; color: #e65100; font-weight: bold; background: #fff3e0; padding: 2px 5px; border-radius: 4px;
+        margin-bottom: 5px; display: inline-block; border: 1px solid #ffb74d;
+}
     </style>
 </head>
 <body>
@@ -713,10 +717,10 @@
         let checked = alineado ? 'checked' : '';
 
         let overlay = '';
-        // 🆕 LÓGICA VISUAL BLINDAJE 🔒 (MODIFICADA PARA TEMPORIZADOR)
+
+        // LÓGICA VISUAL BLINDAJE (RIVALES)
         if (j.blindado) {
             if(tipo === 'robar') {
-                // Aquí insertamos el contenedor del temporizador y el atributo data-segundos
                 overlay = `<div class="blindado-overlay">
                                 <div class="candado-icon">🔒</div>
                                 <div class="timer-blindaje" data-segundos="${j.segundosBlindaje}">Calculando...</div>
@@ -735,11 +739,10 @@
             contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
         }
         else if (tipo === 'robar') {
-            // 🆕 Botones Robar y Ofertar
             let btnRobar = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">Fichar: ${clausula}</button>`;
             let btnOferta = `<button class="btn-card btn-ofertar" onclick="hacerOferta(${j.id}, '${j.nombre}')">🤝 Negociar</button>`;
 
-            if (j.blindado) btnRobar = ''; // Ocultar robar si blindado
+            if (j.blindado) btnRobar = '';
 
             contenido = `
                 <div class="card-coste" style="margin-bottom:5px;">Valor: ${precio}</div>
@@ -748,14 +751,24 @@
             `;
         }
         else if (tipo === 'gestion') {
+            let htmlBlindaje = '';
+            if (j.blindado) {
+                // Usamos la clase 'timer-blindaje' para que el script del reloj lo detecte automáticamente
+                // Y 'timer-mini' para que se vea pequeño
+                htmlBlindaje = `<div class="timer-blindaje timer-mini" data-segundos="${j.segundosBlindaje}">⏳ Calculando...</div>`;
+            }
+
             contenido = `
                 <div class="card-coste">Coste: ${precio}</div>
                 <div class="card-clausula">🔒 ${clausula}</div>
-                <div style="display:flex; gap:5px;"><button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button><button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button></div>`;
+                ${htmlBlindaje}
+                <div style="display:flex; gap:5px; margin-top:auto;">
+                    <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button>
+                    <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button>
+                </div>`;
         }
 
         let accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}')"`;
-
         let posClass = 'pos-' + j.posicion.toLowerCase();
 
         return `<div class="card ${extraClass}" id="card-${j.id}">
