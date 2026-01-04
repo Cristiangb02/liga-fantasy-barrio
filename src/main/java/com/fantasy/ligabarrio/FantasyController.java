@@ -62,11 +62,15 @@ public class FantasyController {
 
     private long getNumeroJornadaReal() { return getJornadaActiva().getNumero(); }
 
-    // --- UTILS HORARIO MERCADO (21:00 - 09:00 CERRADO) ---
+    // --- UTILS HORARIO MERCADO (21:30 - 01:30 CERRADO) ---
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
-        // Cerrado si es después de las 21:00 O antes de las 09:00
-        return ahora.isAfter(LocalTime.of(21, 0)) || ahora.isBefore(LocalTime.of(9, 0));
+        LocalTime inicioCierre = LocalTime.of(21, 30); // 21:30
+        LocalTime finCierre = LocalTime.of(1, 30);     // 01:30 (madrugada siguiente)
+
+        // Lógica para rango que cruza la medianoche
+        // Es cerrado si es DESPUÉS de las 21:30 ... O ... ANTES de la 01:30
+        return ahora.isAfter(inicioCierre) || ahora.isBefore(finCierre);
     }
 
     @PostMapping("/auth/registro")
