@@ -229,7 +229,7 @@ public class FantasyController {
 
         usuarioRepository.save(comprador);
         jugadorRepository.save(jugador);
-        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));
+        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ha fichado a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));
         return "✅ Fichaje realizado.";
     }
 
@@ -382,15 +382,12 @@ public class FantasyController {
 
             jugador.setPropietario(comprador);
 
-            // --- NUEVA LÓGICA DE CLÁUSULA SOLICITADA ---
-            // Si la oferta es MAYOR que la cláusula actual, se usa el precio de oferta.
-            // Si no, se usa el valor de mercado.
+            // --- LOGICA DE CLÁUSULA SEGURA ---
             if (oferta.getCantidad() > jugador.getClausula()) {
                 jugador.setClausula(oferta.getCantidad());
             } else {
                 jugador.setClausula(jugador.getValor());
             }
-            // --------------------------------------------
 
             jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
             jugador.setJornadaFichaje(getJornadaActiva().getId());
@@ -593,14 +590,25 @@ public class FantasyController {
     public String eliminarUsuario(@PathVariable Long idUsuario) {
         Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
         if(u.isEsAdmin()) return "❌ No se puede borrar al admin.";
+
+        // 1. Quitar jugadores de su propiedad
         jugadorRepository.findAll().stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(idUsuario)).forEach(j -> {
             j.setPropietario(null); j.setClausula(j.getValor()); jugadorRepository.save(j);
         });
+
+        // 2. Borrar sus alineaciones (equipos)
         equipoRepository.deleteAll(equipoRepository.findByUsuario(u));
-        ofertaRepository.deleteAll(ofertaRepository.findByVendedorAndEstado(u, "PENDIENTE"));
-        ofertaRepository.deleteAll(ofertaRepository.findByCompradorAndEstado(u, "PENDIENTE"));
+
+        // 3. Borrar TODAS las ofertas donde participe (Comprador O Vendedor), no solo las PENDIENTES.
+        // Esto evita el error de Foreign Key Constraint si existen ofertas aceptadas/rechazadas antiguas.
+        List<Oferta> ofertasRelacionadas = ofertaRepository.findAll().stream()
+                .filter(o -> o.getVendedor().getId().equals(idUsuario) || o.getComprador().getId().equals(idUsuario))
+                .collect(Collectors.toList());
+        ofertaRepository.deleteAll(ofertasRelacionadas);
+
+        // 4. Borrar usuario
         usuarioRepository.delete(u);
-        return "✅ Usuario eliminado.";
+        return "✅ Usuario eliminado correctamente.";
     }
 
     @GetMapping("/clasificacion")
