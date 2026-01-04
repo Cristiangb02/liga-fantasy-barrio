@@ -26,7 +26,7 @@ public class FantasyController {
     private final JornadaRepository jornadaRepository;
     private final ActuacionRepository actuacionRepository;
     private final NoticiaRepository noticiaRepository;
-    private final OfertaRepository ofertaRepository; // 🆕 Nuevo repo
+    private final OfertaRepository ofertaRepository;
     private final CalculadoraPuntosService calculadora;
 
     public FantasyController(EquipoRepository equipoRepository, JugadorRepository jugadorRepository, UsuarioRepository usuarioRepository, JornadaRepository jornadaRepository, ActuacionRepository actuacionRepository, NoticiaRepository noticiaRepository, OfertaRepository ofertaRepository, CalculadoraPuntosService calculadora) {
@@ -145,7 +145,7 @@ public class FantasyController {
                     "clausula", j.getClausula(),
                     "puntosAcumulados", j.getPuntosAcumulados(),
                     "urlImagen", (j.getUrlImagen() != null ? j.getUrlImagen() : ""),
-                    "propietario", (j.getPropietario() != null ? j.getPropietario() : Map.of()), // Para evitar nulls
+                    "propietario", (j.getPropietario() != null ? j.getPropietario() : Map.of()),
                     "blindado", blindado,
                     "segundosBlindaje", segundosRestantes
             );
@@ -197,12 +197,9 @@ public class FantasyController {
 
         jugador.setValor(nuevoValor);
 
-        // Actualizamos Cláusula (solo si tiene dueño, si es libre la cláusula suele ser el valor)
         if (jugador.getPropietario() != null) {
-            // La cláusula sube en la misma cantidad exacta que el valor
             jugador.setClausula(jugador.getClausula() + cambioValor);
         } else {
-            // Si es libre, cláusula = valor
             jugador.setClausula(nuevoValor);
         }
 
@@ -214,8 +211,7 @@ public class FantasyController {
 
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
-        //Cierre
-        if (isMercadoCerrado()) return "⛔ EL MERCADO ESTÁ CERRADO EN ESTOS MOMENTOS (21:00 - 09:00)";
+        if (isMercadoCerrado()) return "⛔ EL MERCADO ESTÁ CERRADO EN ESTOS MOMENTOS (21:30 - 01:30)";
 
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario comprador = usuarioRepository.findById(idUsuario).orElseThrow();
@@ -229,7 +225,6 @@ public class FantasyController {
 
         //Blindaje de 7 días
         jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
-        //Cancelar ofertas pendientes de este jugador al ser comprado
         cancelarOfertasPendientes(jugador);
 
         usuarioRepository.save(comprador);
@@ -289,7 +284,7 @@ public class FantasyController {
         Usuario vendedor = usuarioRepository.findById(idUsuario).orElseThrow();
         if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(idUsuario)) return "❌ No es tuyo.";
 
-        int ingreso = jugador.getValor() + (jugador.getClausula() - jugador.getValor()) / 2; // Recuperas mitad de inversión extra
+        int ingreso = jugador.getValor() + (jugador.getClausula() - jugador.getValor()) / 2;
         vendedor.setPresupuesto(vendedor.getPresupuesto() + ingreso);
         jugador.setPropietario(null);
         jugador.setClausula(jugador.getValor());
@@ -374,7 +369,7 @@ public class FantasyController {
             if (comprador.getPresupuesto() < oferta.getCantidad()) {
                 return "❌ El comprador ya no tiene saldo suficiente.";
             }
-            // Comprobación de propiedad (por si lo vendió mientras)
+            // Comprobación de propiedad
             if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(vendedor.getId())) {
                 oferta.setEstado("CANCELADA");
                 ofertaRepository.save(oferta);
@@ -384,8 +379,19 @@ public class FantasyController {
             // Transacción
             comprador.setPresupuesto(comprador.getPresupuesto() - oferta.getCantidad());
             vendedor.setPresupuesto(vendedor.getPresupuesto() + oferta.getCantidad());
+
             jugador.setPropietario(comprador);
-            jugador.setClausula(jugador.getValor());
+
+            // --- NUEVA LÓGICA DE CLÁUSULA SOLICITADA ---
+            // Si la oferta es MAYOR que la cláusula actual, se usa el precio de oferta.
+            // Si no, se usa el valor de mercado.
+            if (oferta.getCantidad() > jugador.getClausula()) {
+                jugador.setClausula(oferta.getCantidad());
+            } else {
+                jugador.setClausula(jugador.getValor());
+            }
+            // --------------------------------------------
+
             jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
             jugador.setJornadaFichaje(getJornadaActiva().getId());
             jugador.setFechaFichaje(LocalDate.now(ZoneId.of("Europe/Madrid")));
@@ -490,7 +496,6 @@ public class FantasyController {
                     int p = e.getPuntosTotalesJornada();
                     int dinero = (p > 0) ? p * 100_000 : 0;
 
-                    // Lógica MVP
                     int maxPuntos = actuacionRepository.findAll().stream()
                             .filter(a -> a.getJornada().getId().equals(e.getJornada().getId()))
                             .mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
@@ -577,7 +582,7 @@ public class FantasyController {
         equipoRepository.deleteAll();
         actuacionRepository.deleteAll();
         noticiaRepository.deleteAll();
-        ofertaRepository.deleteAll(); // Borrar ofertas
+        ofertaRepository.deleteAll();
         jornadaRepository.deleteAll();
         Jornada j1 = new Jornada(); j1.setNumero(1); jornadaRepository.save(j1);
         noticiaRepository.save(new Noticia("☢️ LIGA RESETEADA."));
