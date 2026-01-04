@@ -49,6 +49,10 @@
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         .card:hover .card-img { transform: scale(1.05); }
 
+        /* 🔒 Estilo Blindado */
+        .blindado-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; z-index: 5; font-weight: bold; }
+        .candado-icon { font-size: 2rem; margin-bottom: 5px; }
+
         .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; cursor: pointer; }
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -66,6 +70,7 @@
         .btn-card:active { transform: scale(0.95); }
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
+        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; } /* 🆕 Botón Oferta */
         .btn-vender { background: #ff8f00; color: white; }
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
@@ -105,6 +110,12 @@
         .text-green { color: #2e7d32; }
         .text-red { color: #d32f2f; }
         .text-orange { color: #ff9800; }
+
+        /* ESTILOS OFERTAS (NUEVO) */
+        .oferta-item { background: #fff; border: 1px solid #ddd; border-left: 5px solid #7b1fa2; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .oferta-info { font-size: 0.9em; }
+        .btn-oferta-ok { background: #2e7d32; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-oferta-ko { background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
         .solicitud-row { display: flex; justify-content: space-between; align-items: center; background: #fffde7; border: 1px solid #fbc02d; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
         .btn-aprobar { background: #43a047; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
@@ -169,7 +180,7 @@
     <button onclick="cambiarPestaña('alineacion')" id="tab-alineacion">⚽ Mi alineación</button>
     <button onclick="cambiarPestaña('mercado')" id="tab-mercado">🛒 Mercado</button>
     <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Mánagers</button>
-    <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Clasificación</button>
+    <button onclick="cambiarPestaña('ofertas')" id="tab-ofertas">🤝 Ofertas</button> <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Clasificación</button>
     <button onclick="cambiarPestaña('ranking')" id="tab-ranking">🌟 Mejores Jugadores</button>
     <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Mis jornadas </button>
     <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
@@ -197,10 +208,10 @@
 <div id="sec-mercado" class="seccion oculto">
     <div class="market-header">
         <span style="font-weight:bold; font-size:1.1rem;">Mercado Libre</span>
-        <div style="display:flex; flex-direction:column; align-items:flex-end;">
-            <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
-            <div id="market-countdown" class="timer-badge">--:--:--</div>
-        </div>
+        <div style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:00 a 09:00</div> <div style="display:flex; flex-direction:column; align-items:flex-end;">
+        <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
+        <div id="market-countdown" class="timer-badge">--:--:--</div>
+    </div>
     </div>
     <div id="grid-mercado" class="grid-jugadores">Cargando...</div>
 </div>
@@ -212,6 +223,11 @@
         <h4 id="titulo-espia">Ojeando...</h4>
         <div id="grid-rival" class="grid-jugadores"></div>
     </div>
+</div>
+
+<div id="sec-ofertas" class="seccion oculto"> <h3>🤝 Ofertas Recibidas</h3>
+    <p style="font-size:0.8em; color:#666;">Aquí verás si alguien quiere comprar a tus jugadores.</p>
+    <div id="lista-ofertas">Cargando...</div>
 </div>
 
 <div id="sec-clasificacion" class="seccion oculto">
@@ -240,6 +256,12 @@
 
 <div id="sec-admin" class="seccion oculto">
     <h3 style="color:#c62828">Panel Admin</h3>
+
+    <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
+        <h4>👮 Gestión de usuarios (Credenciales)</h4>
+        <div id="admin-lista-usuarios">Cargando...</div>
+    </div>
+
     <div style="background:white; padding:15px; border-radius:10px; border:1px solid #ffcdd2; margin-bottom: 20px;">
         <h4>📝 Gestionar Partidos</h4>
         <select id="admin-jugador" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;"><option>Cargando...</option></select>
@@ -276,10 +298,6 @@
         <div id="admin-lista-pendientes">Cargando...</div>
     </div>
 
-    <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
-        <h4>👮 Gestión de usuarios</h4>
-        <div id="admin-lista-usuarios">Cargando...</div>
-    </div>
     <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
         <h4 style="color:#b71c1c; margin-top:0;">☢️ ZONA DE PELIGRO</h4>
         <button onclick="resetearLiga()" style="background:#d32f2f; color:white; width:100%; padding:15px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">⚠️ RESETEAR LIGA COMPLETA</button>
@@ -330,9 +348,12 @@
         btnOk.className = 'btn-modal btn-modal-ok';
         btnOk.classList.remove('oculto');
 
-        if (tipo === 'input' || tipo === 'blindar') {
+        // 🆕 TIPOS NUEVOS DE MODAL (Oferta e Input numérico)
+        if (tipo === 'input' || tipo === 'blindar' || tipo === 'oferta') {
             inputContainer.classList.remove('oculto');
-            input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : "Escribe...";
+            input.placeholder = tipo === 'blindar' ? "Cantidad a invertir (sin puntos)" : (tipo === 'oferta' ? "Cantidad a ofrecer" : "Escribe...");
+            input.type = (tipo === 'oferta' || tipo === 'blindar') ? "number" : "text"; // Teclado numérico en móvil
+
             if(tipo === 'blindar') {
                 input.onkeyup = function() {
                     let val = parseInt(this.value);
@@ -352,7 +373,7 @@
 
         modalCallback = () => {
             if (tipo === 'confirm') callback();
-            else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
+            else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger' || tipo === 'oferta') callback(input.value);
             cerrarModal();
         };
     }
@@ -407,8 +428,11 @@
         if (esAdmin) {
             document.getElementById('tab-admin').classList.remove('oculto');
             cargarUsuariosAdmin();
+            pintarSelectAdmin();
         }
         cargarTodo();
+        // Recargar ofertas también
+        cargarOfertas();
         setInterval(cargarNoticias, 5000);
         iniciarContadorMercado();
     };
@@ -445,7 +469,6 @@
             // 🔴 LLAMADA AL RANKING
             pintarRanking(jugadores);
 
-            if(esAdmin) pintarSelectAdmin();
             fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
                 const idsAlineados = new Set(alineados.map(a => a.id));
                 pintarAlineacion(jugadores, idsAlineados);
@@ -602,10 +625,17 @@
 
     function reclamar(idEquipo) { post(`/reclamar-premio/${idEquipo}`, {}); }
 
+    // 🆕 GESTIÓN USUARIOS ADMIN (PASSWORD)
     function cargarUsuariosAdmin() {
-        fetch('/usuarios').then(r => r.json()).then(usuarios => {
+        fetch('/admin/usuarios-gestion').then(r => r.json()).then(usuarios => {
             document.getElementById('admin-lista-usuarios').innerHTML = usuarios.map(u => `
-                <div class="user-row"><span>${u.nombre} ${u.esAdmin ? '(ADMIN)' : ''}</span>${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}</div>
+                <div class="user-row">
+                    <div>
+                        <strong>${u.nombre}</strong> ${u.esAdmin ? '(ADMIN)' : ''}<br>
+                        <small style="color:#d32f2f;">Pass: ${u.password}</small>
+                    </div>
+                    ${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}
+                </div>
             `).join('');
         });
 
@@ -644,6 +674,19 @@
         let extraClass = alineado ? 'alineado' : '';
         let checked = alineado ? 'checked' : '';
 
+        let overlay = '';
+        // 🆕 LÓGICA VISUAL BLINDAJE 🔒
+        if (j.blindado) {
+            let tiempo = "Blindado";
+            if (j.segundosBlindaje > 0) {
+                let dias = Math.floor(j.segundosBlindaje / (3600*24));
+                tiempo = dias + " días";
+            }
+            if(tipo === 'robar') {
+                overlay = `<div class="blindado-overlay"><div class="candado-icon">🔒</div><div>${tiempo}</div></div>`;
+            }
+        }
+
         let colorTriangulo = 'triangle-pos';
         if (j.puntosAcumulados < 0) colorTriangulo = 'triangle-neg';
         else if (j.puntosAcumulados === 0) colorTriangulo = 'triangle-neu';
@@ -655,9 +698,16 @@
             contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
         }
         else if (tipo === 'robar') {
+            // 🆕 Botones Robar y Ofertar
+            let btnRobar = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">Fichar: ${clausula}</button>`;
+            let btnOferta = `<button class="btn-card btn-ofertar" onclick="hacerOferta(${j.id}, '${j.nombre}')">🤝 Negociar</button>`;
+
+            if (j.blindado) btnRobar = ''; // Ocultar robar si blindado
+
             contenido = `
                 <div class="card-coste" style="margin-bottom:5px;">Valor: ${precio}</div>
-                <button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">🔥 ${clausula}</button>
+                ${btnRobar}
+                ${btnOferta}
             `;
         }
         else if (tipo === 'gestion') {
@@ -675,7 +725,7 @@
             <div class="puntos-triangle ${colorTriangulo}"></div>
             <div class="puntos-val">${j.puntosAcumulados}</div>
             ${tipo === 'alinear' ? contenido : ''}
-            <div class="card-img-container" ${accionDetalle}><img src="${img}" class="card-img"></div>
+            <div class="card-img-container" ${accionDetalle}><img src="${img}" class="card-img">${overlay}</div>
             <div class="card-body">
                 <div ${accionDetalle}>
                     <div class="card-name">${j.nombre}</div>
@@ -715,7 +765,7 @@
     }
 
     function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
-    function robar(id, p) { mostrarModal("Clausulazo 🔥", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
+    function robar(id, p) { mostrarModal("Fichar por Cláusula", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
     function vender(id, valor, clausula) {
         let ingreso = valor + (clausula - valor) / 2;
         mostrarModal("Vender al Mercado", `Recuperarás Coste + Inversión.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso));
@@ -729,6 +779,39 @@
                 mostrarModal("⛔ Error", "Debes introducir un número válido.", 'confirm', ()=>{});
             }
         });
+    }
+
+    // 🆕 FUNCIONES OFERTAS
+    function hacerOferta(idJugador, nombreJugador) {
+        mostrarModal("Oferta por " + nombreJugador, "Introduce cantidad:", 'oferta', (cant) => {
+            if(cant > 0) {
+                const data = { idJugador: idJugador, idComprador: usuarioId, cantidad: cant };
+                post('/ofertas/crear', data);
+            }
+        });
+    }
+
+    function cargarOfertas() {
+        fetch(`/ofertas/recibidas/${usuarioId}`).then(r=>r.json()).then(ofertas => {
+            const div = document.getElementById('lista-ofertas');
+            if(ofertas.length === 0) { div.innerHTML = '<p>No tienes ofertas pendientes.</p>'; return; }
+            div.innerHTML = ofertas.map(o => `
+                <div class="oferta-item">
+                    <div class="oferta-info">
+                        <strong>${o.comprador}</strong> quiere a <strong>${o.jugador}</strong><br>
+                        Oferta: <span style="color:#2e7d32; font-weight:bold;">${o.cantidadFmt}</span>
+                    </div>
+                    <div>
+                        <button class="btn-oferta-ok" onclick="responderOferta(${o.id}, 'aceptar')">✔</button>
+                        <button class="btn-oferta-ko" onclick="responderOferta(${o.id}, 'rechazar')">✖</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    function responderOferta(idOferta, accion) {
+        post(`/ofertas/responder/${idOferta}/${accion}`, {});
     }
 
     function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
@@ -763,9 +846,9 @@
     function post(url, data, coste = 0) {
         fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
         .then(r => r.text()).then(msg => {
-            let titulo = msg.includes("❌") ? "⛔ ERROR" : "✅ Éxito";
+            let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito"; // Cambio para que "Mercado Cerrado" no salga rojo error crítico
             mostrarModal(titulo, msg, 'confirm', () => {
-                if(!msg.includes("❌")) {
+                if(!msg.includes("❌") && !msg.includes("⛔")) {
                     if(coste !== 0) {
                         presupuesto -= coste;
                         localStorage.setItem('presupuesto', presupuesto);
@@ -775,6 +858,8 @@
                         mostrarModal("⚠️ AVISO DE SALDO", "¡Estás en números rojos!\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
                     }
                     cargarTodo();
+                    cargarOfertas();
+                    if(esAdmin) cargarUsuariosAdmin();
                 }
             });
         });
@@ -811,7 +896,13 @@
 
     function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Repartir puntos y dinero?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
 
-    function cambiarPestaña(tab) { document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto')); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active')); document.getElementById('sec-' + tab).classList.remove('oculto'); document.getElementById('tab-' + tab).classList.add('active'); }
+    function cambiarPestaña(tab) {
+        document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById('sec-' + tab).classList.remove('oculto');
+        document.getElementById('tab-' + tab).classList.add('active');
+        if(tab === 'ofertas') cargarOfertas(); // Cargar ofertas al entrar
+    }
     function actualizarPresupuestoUI() { const el = document.getElementById('presupuesto-display'); el.innerText = formatoDinero.format(presupuesto); if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); } else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); } }
     function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 </script>
