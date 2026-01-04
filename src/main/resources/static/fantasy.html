@@ -50,8 +50,9 @@
         .card:hover .card-img { transform: scale(1.05); }
 
         /* 🔒 Estilo Blindado */
-        .blindado-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; z-index: 5; font-weight: bold; }
+        .blindado-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; z-index: 5; font-weight: bold; text-align: center; }
         .candado-icon { font-size: 2rem; margin-bottom: 5px; }
+        .timer-blindaje { font-family: monospace; font-size: 1.1em; color: #ffeb3b; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
         .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; cursor: pointer; }
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -211,7 +212,6 @@
         <div style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 01:30</div>
         <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
         <div id="market-countdown" class="timer-badge">--:--:--</div>
-    </div>
     </div>
     <div id="grid-mercado" class="grid-jugadores">Cargando...</div>
 </div>
@@ -435,6 +435,7 @@
         cargarOfertas();
         setInterval(cargarNoticias, 5000);
         iniciarContadorMercado();
+        iniciarRelojesBlindaje(); // 🆕 ARRANCAR RELOJES DE BLINDAJE
     };
 
     function iniciarContadorMercado() {
@@ -455,6 +456,28 @@
             }
         }
         actualizar(); setInterval(actualizar, 1000);
+    }
+
+    // 🆕 FUNCIÓN DE RELOJES BLINDAJE
+    function iniciarRelojesBlindaje() {
+        setInterval(() => {
+            document.querySelectorAll('.timer-blindaje').forEach(el => {
+                let segs = parseInt(el.getAttribute('data-segundos'));
+                if (!isNaN(segs) && segs > 0) {
+                    segs--;
+                    el.setAttribute('data-segundos', segs);
+                    // Formato Dias, Horas, Minutos, Segundos
+                    let d = Math.floor(segs / (3600 * 24));
+                    let h = Math.floor((segs % (3600 * 24)) / 3600);
+                    let m = Math.floor((segs % 3600) / 60);
+                    let s = segs % 60;
+                    el.innerText = `${d}d ${h}h ${m}m ${s}s`;
+                } else {
+                    el.innerText = "Expirado";
+                    el.style.color = "#d32f2f";
+                }
+            });
+        }, 1000);
     }
 
     function cargarTodo() {
@@ -675,15 +698,14 @@
         let checked = alineado ? 'checked' : '';
 
         let overlay = '';
-        // 🆕 LÓGICA VISUAL BLINDAJE 🔒
+        // 🆕 LÓGICA VISUAL BLINDAJE 🔒 (MODIFICADA PARA TEMPORIZADOR)
         if (j.blindado) {
-            let tiempo = "Blindado";
-            if (j.segundosBlindaje > 0) {
-                let dias = Math.floor(j.segundosBlindaje / (3600*24));
-                tiempo = dias + " días";
-            }
             if(tipo === 'robar') {
-                overlay = `<div class="blindado-overlay"><div class="candado-icon">🔒</div><div>${tiempo}</div></div>`;
+                // Aquí insertamos el contenedor del temporizador y el atributo data-segundos
+                overlay = `<div class="blindado-overlay">
+                                <div class="candado-icon">🔒</div>
+                                <div class="timer-blindaje" data-segundos="${j.segundosBlindaje}">Calculando...</div>
+                           </div>`;
             }
         }
 
