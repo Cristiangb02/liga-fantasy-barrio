@@ -385,7 +385,7 @@ public class FantasyController {
             comprador.setPresupuesto(comprador.getPresupuesto() - oferta.getCantidad());
             vendedor.setPresupuesto(vendedor.getPresupuesto() + oferta.getCantidad());
             jugador.setPropietario(comprador);
-            jugador.setClausula(oferta.getCantidad());
+            jugador.setClausula(jugador.getValor());
             jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
             jugador.setJornadaFichaje(getJornadaActiva().getId());
             jugador.setFechaFichaje(LocalDate.now(ZoneId.of("Europe/Madrid")));
