@@ -209,7 +209,7 @@
 <div id="sec-mercado" class="seccion oculto">
     <div class="market-header">
         <span style="font-weight:bold; font-size:1.1rem;">Mercado Libre</span>
-        <div style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 01:30</div>
+        <div id="msg-mercado-cerrado" class="oculto" style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 01:30</div>
         <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
         <div id="market-countdown" class="timer-badge">--:--:--</div>
     </div>
@@ -441,6 +441,21 @@
     function iniciarContadorMercado() {
         function actualizar() {
             const now = new Date();
+
+            // 1. Lógica del texto "Cerrado"
+            const minutosDia = now.getHours() * 60 + now.getMinutes();
+            // 21:30 = 1290 min, 01:30 = 90 min
+            const cerradoNoche = 1290;
+            const cerradoMadrugada = 90;
+
+            const msgCerrado = document.getElementById('msg-mercado-cerrado');
+            if (minutosDia >= cerradoNoche || minutosDia <= cerradoMadrugada) {
+                msgCerrado.classList.remove('oculto');
+            } else {
+                msgCerrado.classList.add('oculto');
+            }
+
+            // 2. Lógica del contador (existente)
             const fechaMadridStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
             const nowMadrid = new Date(fechaMadridStr);
             const midnightMadrid = new Date(nowMadrid);

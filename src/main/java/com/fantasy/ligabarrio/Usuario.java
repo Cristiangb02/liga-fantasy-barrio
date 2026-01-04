@@ -23,7 +23,6 @@ public class Usuario {
         this.password = password;
         this.presupuesto = presupuesto;
         this.esAdmin = esAdmin;
-        // Si es Admin nace activo, si no, nace inactivo (pendiente de aprobar)
         this.activo = esAdmin;
     }
 

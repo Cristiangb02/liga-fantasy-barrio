@@ -24,11 +24,7 @@ public class Jugador {
     private int clausula;
     private Long jornadaFichaje;
     private LocalDate fechaFichaje;
-
-    // --- CORRECCIÓN: CAMPO PARA EL BLINDAJE TEMPORAL ---
-    // Usamos LocalDateTime para controlar hora exacta de expiración (Req del Controller)
     private LocalDateTime fechaFinBlindaje;
-    // ---------------------------------------------------
 
     public Jugador() {
     }
@@ -41,11 +37,7 @@ public class Jugador {
         this.imagen = imagen;
         this.puntosAcumulados = 0;
         this.jornadaFichaje = 0L;
-
-        // Inicialmente sin blindaje
         this.fechaFinBlindaje = null;
-
-        // CÁLCULO DE PRECIO (TU FÓRMULA ORIGINAL)
         this.valor = calcularPrecioFinal(edad, media);
         this.clausula = this.valor;
     }
@@ -120,7 +112,6 @@ public class Jugador {
     public LocalDate getFechaFichaje() { return fechaFichaje; }
     public void setFechaFichaje(LocalDate fechaFichaje) { this.fechaFichaje = fechaFichaje; }
 
-    // --- LOS MÉTODOS QUE FALTABAN PARA EL CONTROLLER ---
     public LocalDateTime getFechaFinBlindaje() {
         return fechaFinBlindaje;
     }

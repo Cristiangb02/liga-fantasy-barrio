@@ -90,7 +90,6 @@ public class CalculadoraPuntosService {
         return puntos;
     }
 
-    // Argumentos: (golesReales, premioSiCero, premioSiPocos, premioSiNormal, castigoSiGoleada)
     private int calcularGolesEncajados(int goles, int pCero, int pMenos3, int p3a6, int pMas6) {
         if (goles == 0) return pCero;
         if (goles < 3) return pMenos3;

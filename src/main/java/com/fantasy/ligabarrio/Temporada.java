@@ -18,7 +18,6 @@ public class Temporada {
     public Temporada() {
     }
 
-    // Constructor para crearla nosotros fácil
     public Temporada(int anio) {
         this.anio = anio;
         this.nombre = "Temporada " + anio;
