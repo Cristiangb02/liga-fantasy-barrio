@@ -74,7 +74,7 @@
         .btn-card:active { transform: scale(0.95); }
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
-        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; }
+        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; } /* 🆕 Botón Oferta */
         .btn-vender { background: #ff8f00; color: white; }
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
@@ -103,6 +103,7 @@
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
+        /* NUEVOS ESTILOS HISTORIAL */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
@@ -114,6 +115,7 @@
         .text-red { color: #d32f2f; }
         .text-orange { color: #ff9800; }
 
+        /* ESTILOS OFERTAS (NUEVO) */
         .oferta-item { background: #fff; border: 1px solid #ddd; border-left: 5px solid #7b1fa2; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
         .oferta-item.enviada { border-left: 5px solid #0288d1; background: #e1f5fe; } /* Estilo diferente para enviadas */
         .oferta-info { font-size: 0.9em; }
@@ -144,6 +146,7 @@
         .btn-modal-ok { background: #1565c0; color: white; }
         .btn-modal-danger { background: #d32f2f; color: white; }
 
+        /* 🔴 NUEVOS ESTILOS PARA EL RANKING */
         .fila-ranking {
             background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center;
@@ -160,12 +163,6 @@
 
         .timer-mini { font-size: 0.8em; color: #e65100; font-weight: bold; background: #fff3e0; padding: 2px 5px; border-radius: 4px;
         margin-bottom: 5px; display: inline-block; border: 1px solid #ffb74d; }
-
-        #modal-espia-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; flex-direction: column; animation: fadeIn 0.2s; }
-        .espia-header { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .espia-titulo { margin: 0; font-size: 1.2em; color: #1a237e; font-weight: bold; }
-        .btn-cerrar-espia { background: #d32f2f; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .espia-body { flex-grow: 1; overflow-y: auto; padding: 15px; }
     </style>
 </head>
 <body>
@@ -214,7 +211,7 @@
                 <span id="contador-alineados">0</span>/7
             </span>
     </div>
-    <p style="font-size:0.8em; color:#d32f2f;" id="aviso-saldo">⚠️ Si tu saldo es negativo, harás 0 puntos en la jornada.</p>
+    <p style="font-size:0.8em; color:#d32f2f;" id="aviso-saldo">⚠️ Si tu saldo es negativo, harás 0 puntos.</p>
     <div id="grid-alineacion" class="grid-jugadores">Cargando...</div>
     <button class="btn-action-big" onclick="guardarAlineacion()">💾 GUARDAR ALINEACIÓN</button>
 </div>
@@ -222,7 +219,7 @@
 <div id="sec-mercado" class="seccion oculto">
     <div class="market-header">
         <span style="font-weight:bold; font-size:1.1rem;">Mercado Libre</span>
-        <div id="msg-mercado-cerrado" class="oculto" style="font-size:0.7em; color:#d32f2f;">⛔ Cerrado de 21:30 a 01:30</div>
+        <div id="msg-mercado-cerrado" class="oculto" style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 01:30</div>
         <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
         <div id="market-countdown" class="timer-badge">--:--:--</div>
     </div>
@@ -234,13 +231,21 @@
     <div id="lista-rivales" style="display:flex; flex-direction:column; gap:8px;">Cargando...</div>
 </div>
 
+<div id="sec-detalle-rival" class="seccion oculto">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
+        <h3 id="titulo-espia" style="margin:0; color:#1a237e;">Equipo Rival</h3>
+        <button class="btn-logout" onclick="cambiarPestaña('rivales')">🔙 Volver a Mánagers</button>
+    </div>
+    <div id="grid-rival" class="grid-jugadores">Cargando...</div>
+</div>
+
 <div id="sec-ofertas" class="seccion oculto">
     <h3>🤝 Gestión de Ofertas</h3>
 
-    <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Ofertas recibidas</h4>
+    <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Ofertas Recibidas (Te quieren comprar)</h4>
     <div id="lista-ofertas-recibidas">Cargando...</div>
 
-    <h4 style="color:#0288d1; border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">📤 Ofertas enviadas por ti</h4>
+    <h4 style="color:#0288d1; border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">📤 Ofertas Enviadas (Tú quieres comprar)</h4>
     <div id="lista-ofertas-enviadas">Cargando...</div>
 </div>
 
@@ -272,7 +277,7 @@
     <h3 style="color:#c62828">Panel Admin</h3>
 
     <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
-        <h4>👮 Gestión de usuarios </h4>
+        <h4>👮 Gestión de usuarios (Credenciales)</h4>
         <div id="admin-lista-usuarios">Cargando...</div>
     </div>
 
@@ -338,16 +343,6 @@
     </div>
 </div>
 
-<div id="modal-espia-overlay" class="oculto">
-    <div class="espia-header">
-        <h3 id="titulo-espia" class="espia-titulo">Equipo de un rival</h3>
-        <button class="btn-cerrar-espia" onclick="cerrarEspia()">CERRAR ✖</button>
-    </div>
-    <div id="body-espia" class="espia-body">
-        <div id="grid-rival" class="grid-jugadores"></div>
-    </div>
-</div>
-
 <script>
     const usuarioId = localStorage.getItem('usuarioId');
     const esAdmin = (localStorage.getItem('esAdmin') === 'true');
@@ -372,15 +367,19 @@
         btnOk.className = 'btn-modal btn-modal-ok';
         btnOk.classList.remove('oculto');
 
+        // 🆕 TIPOS NUEVOS DE MODAL (Oferta e Input numérico)
         if (tipo === 'input' || tipo === 'blindar' || tipo === 'oferta') {
             inputContainer.classList.remove('oculto');
 
+            // 🔴 Lógica para input con separador de miles
             if(tipo === 'oferta') {
                 input.placeholder = "Cantidad a ofrecer";
-                input.type = "text";
+                input.type = "text"; // Cambiado a text para permitir puntos
                 input.onkeyup = function() {
+                     // Eliminar cualquier caracter que no sea número
                     let val = this.value.replace(/\./g, '').replace(/\D/g, '');
                     if(val === "") { this.value = ""; return; }
+                    // Formatear con puntos
                     let num = parseInt(val);
                     this.value = num.toLocaleString('es-ES');
                 };
@@ -413,6 +412,7 @@
             if (tipo === 'confirm') callback();
             else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
             else if (tipo === 'oferta') {
+                // 🔴 Limpiar puntos antes de enviar
                 let valLimpio = input.value.replace(/\./g, '');
                 callback(valLimpio);
             }
@@ -477,12 +477,14 @@
         cargarOfertas();
         setInterval(cargarNoticias, 5000);
         iniciarContadorMercado();
-        iniciarRelojesBlindaje();
+        iniciarRelojesBlindaje(); // 🆕 ARRANCAR RELOJES DE BLINDAJE
     };
 
     function iniciarContadorMercado() {
         function actualizar() {
             const now = new Date();
+
+            // 1. Lógica del texto "Cerrado"
             const minutosDia = now.getHours() * 60 + now.getMinutes();
             // 21:30 = 1290 min, 01:30 = 90 min
             const cerradoNoche = 1290;
@@ -495,6 +497,7 @@
                 msgCerrado.classList.add('oculto');
             }
 
+            // 2. Lógica del contador (existente)
             const fechaMadridStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
             const nowMadrid = new Date(fechaMadridStr);
             const midnightMadrid = new Date(nowMadrid);
@@ -512,6 +515,7 @@
         actualizar(); setInterval(actualizar, 1000);
     }
 
+    // 🆕 FUNCIÓN DE RELOJES BLINDAJE
     function iniciarRelojesBlindaje() {
         setInterval(() => {
             document.querySelectorAll('.timer-blindaje').forEach(el => {
@@ -542,6 +546,7 @@
         fetch('/jugadores').then(r=>r.json()).then(jugadores => {
             window.todosLosJugadores = jugadores;
             pintarPlantilla(jugadores);
+            // 🔴 LLAMADA AL RANKING
             pintarRanking(jugadores);
 
             fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
@@ -584,6 +589,7 @@
         cargarNoticias();
     }
 
+    // 🔴 FUNCIÓN PINTAR RANKING
     function pintarRanking(jugadores) {
         let lista = [...jugadores];
         // Ordenar: Puntos DESC, luego Nombre ASC
@@ -673,7 +679,7 @@
                     let claseExtra = '';
 
                     if (p.tieneMvp) {
-                        claseExtra = 'border: 2px solid #ffd700; background: #fffde7;';
+                        claseExtra = 'border: 2px solid #ffd700; background: #fffde7;'; // Borde dorado y fondo amarillo claro
                         htmlMvp = `<div style="background:#ffd700; color:#333; padding:5px; border-radius:4px; margin-top:5px; font-size:0.9em; text-align:center;">
                                       <strong>🏆 ¡BONUS MVP!</strong><br>
                                       Tenías a ${p.nombreMvp}<br>
@@ -699,6 +705,7 @@
 
     function reclamar(idEquipo) { post(`/reclamar-premio/${idEquipo}`, {}); }
 
+    // 🆕 GESTIÓN USUARIOS ADMIN (PASSWORD)
     function cargarUsuariosAdmin() {
         fetch('/admin/usuarios-gestion').then(r => r.json()).then(usuarios => {
             document.getElementById('admin-lista-usuarios').innerHTML = usuarios.map(u => `
@@ -749,6 +756,7 @@
 
         let overlay = '';
 
+        // LÓGICA VISUAL BLINDAJE (RIVALES)
         if (j.blindado) {
             if(tipo === 'robar') {
                 overlay = `<div class="blindado-overlay">
@@ -830,14 +838,16 @@
     function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado cerrado o vacío.</p>'; }
     function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
 
+    // 🔴 NUEVA FUNCIÓN ESPIAR CON PANTALLA COMPLETA
     function espiar(id, nombre) {
+        // Ocultamos todas las secciones
+        document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
+        // Mostramos la sección espía
+        const seccionEspia = document.getElementById('sec-detalle-rival');
+        seccionEspia.classList.remove('oculto');
+
         document.getElementById('titulo-espia').innerText = "Equipo de " + nombre;
         document.getElementById('grid-rival').innerHTML = window.todosLosJugadores.filter(j => j.propietario && j.propietario.id == id).map(j => crearCarta(j, 'robar')).join('') || '<p>Sin jugadores.</p>';
-        document.getElementById('modal-espia-overlay').classList.remove('oculto');
-    }
-
-    function cerrarEspia() {
-        document.getElementById('modal-espia-overlay').classList.add('oculto');
     }
 
     function actualizarContador(checkbox) {
@@ -865,6 +875,7 @@
         });
     }
 
+    // 🆕 FUNCIONES OFERTAS
     function hacerOferta(idJugador, nombreJugador) {
         mostrarModal("Oferta por " + nombreJugador, "Introduce cantidad:", 'oferta', (cant) => {
             if(cant > 0) {
@@ -883,12 +894,14 @@
             const tabButton = document.getElementById('tab-ofertas');
             const notifBadge = document.getElementById('notif-ofertas');
 
+            // 1. GESTIONAR NOTIFICACIÓN (ROJA)
             if(data.recibidas.length > 0) {
                 tabButton.classList.add('notif-active');
             } else {
                 tabButton.classList.remove('notif-active');
             }
 
+            // 2. PINTAR RECIBIDAS
             if(data.recibidas.length === 0) {
                 divRecibidas.innerHTML = '<p style="font-size:0.9em; color:#888;">No tienes ofertas pendientes.</p>';
             } else {
@@ -906,6 +919,7 @@
                 `).join('');
             }
 
+            // 3. PINTAR ENVIADAS
             if(data.enviadas.length === 0) {
                 divEnviadas.innerHTML = '<p style="font-size:0.9em; color:#888;">No has hecho ofertas.</p>';
             } else {
@@ -958,7 +972,7 @@
     function post(url, data, coste = 0) {
         fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
         .then(r => r.text()).then(msg => {
-            let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito";
+            let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito"; // Cambio para que "Mercado Cerrado" no salga rojo error crítico
             mostrarModal(titulo, msg, 'confirm', () => {
                 if(!msg.includes("❌") && !msg.includes("⛔")) {
                     if(coste !== 0) {
@@ -999,6 +1013,7 @@
             goles: parseInt(document.getElementById('input-goles').value)||0,
             golesEncajados: parseInt(document.getElementById('input-encajados').value)||0,
             autogoles: parseInt(document.getElementById('input-autogoles').value)||0,
+            // 🔴 NUEVO CAMPO: COLOR
             equipoColor: document.getElementById('select-equipo-color').value
         };
         post('/admin/registrar', datos);
