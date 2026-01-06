@@ -62,7 +62,7 @@ public class FantasyController {
 
     private long getNumeroJornadaReal() { return getJornadaActiva().getNumero(); }
 
-    // --- HORARIO MERCADO (21:30 - 01:30 CERRADO) ---
+    // --- HORARIO DE CIERRE MERCADO (21:30 - 01:30 ) ---
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
         LocalTime inicioCierre = LocalTime.of(21, 30); // 21:30
@@ -229,7 +229,7 @@ public class FantasyController {
 
         usuarioRepository.save(comprador);
         jugadorRepository.save(jugador);
-        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ha fichado a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));
+        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));
         return "✅ Fichaje realizado.";
     }
 
@@ -319,10 +319,11 @@ public class FantasyController {
 
     // --- SISTEMA DE OFERTAS ---
 
-    @GetMapping("/ofertas/recibidas/{idUsuario}")
-    public List<Map<String, Object>> verOfertasRecibidas(@PathVariable Long idUsuario) {
-        Usuario vendedor = usuarioRepository.findById(idUsuario).orElseThrow();
-        return ofertaRepository.findByVendedorAndEstado(vendedor, "PENDIENTE").stream()
+    @GetMapping("/ofertas/mis-ofertas/{idUsuario}")
+    public Map<String, List<Map<String, Object>>> verMisOfertas(@PathVariable Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
+
+        List<Map<String, Object>> recibidas = ofertaRepository.findByVendedorAndEstado(usuario, "PENDIENTE").stream()
                 .map(o -> Map.<String, Object>of(
                         "id", o.getId(),
                         "jugador", o.getJugador().getNombre(),
@@ -330,6 +331,17 @@ public class FantasyController {
                         "cantidad", o.getCantidad(),
                         "cantidadFmt", fmtDinero(o.getCantidad())
                 )).collect(Collectors.toList());
+
+        List<Map<String, Object>> enviadas = ofertaRepository.findByCompradorAndEstado(usuario, "PENDIENTE").stream()
+                .map(o -> Map.<String, Object>of(
+                        "id", o.getId(),
+                        "jugador", o.getJugador().getNombre(),
+                        "vendedor", o.getVendedor().getNombre(),
+                        "cantidad", o.getCantidad(),
+                        "cantidadFmt", fmtDinero(o.getCantidad())
+                )).collect(Collectors.toList());
+
+        return Map.of("recibidas", recibidas, "enviadas", enviadas);
     }
 
     @PostMapping("/ofertas/crear")
@@ -365,11 +377,9 @@ public class FantasyController {
             Usuario vendedor = oferta.getVendedor();
             Jugador jugador = oferta.getJugador();
 
-            // Comprobación final de saldo
             if (comprador.getPresupuesto() < oferta.getCantidad()) {
                 return "❌ El comprador ya no tiene saldo suficiente.";
             }
-            // Comprobación de propiedad
             if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(vendedor.getId())) {
                 oferta.setEstado("CANCELADA");
                 ofertaRepository.save(oferta);
@@ -393,7 +403,6 @@ public class FantasyController {
             jugador.setJornadaFichaje(getJornadaActiva().getId());
             jugador.setFechaFichaje(LocalDate.now(ZoneId.of("Europe/Madrid")));
 
-            // Actualizar equipos alineados
             Jornada jornadaActual = getJornadaActiva();
             equipoRepository.findByUsuario(vendedor).stream()
                     .filter(e -> e.getJornada().getId().equals(jornadaActual.getId()))
@@ -409,7 +418,6 @@ public class FantasyController {
             jugadorRepository.save(jugador);
             ofertaRepository.save(oferta);
 
-            // Cancelar otras ofertas por el mismo jugador
             cancelarOfertasPendientes(jugador);
 
             noticiaRepository.save(new Noticia("🤝 ACUERDO: " + comprador.getNombre() + " compra a " + jugador.getNombre() + " de " + vendedor.getNombre() + " por " + fmtDinero(oferta.getCantidad())));
@@ -427,8 +435,6 @@ public class FantasyController {
             }
         }
     }
-
-    // --- RESTO DE ENDPOINTS ESTÁNDAR ---
 
     @PostMapping("/alinear/{usuarioId}")
     public String guardarAlineacion(@RequestBody List<Long> idsJugadores, @PathVariable Long usuarioId) {
@@ -556,12 +562,28 @@ public class FantasyController {
         return "✅ Jornada Cerrada.";
     }
 
+    private int getPesoPosicion(String pos) {
+        if (pos == null) return 5;
+        switch(pos.toUpperCase()) {
+            case "PORTERO": return 1;
+            case "DEFENSA": return 2;
+            case "MEDIO": return 3;
+            case "DELANTERO": return 4;
+            default: return 5;
+        }
+    }
+
     @GetMapping("/admin/jugadores-pendientes")
     public List<Jugador> getJugadoresPendientes() {
         Jornada actual = getJornadaActiva();
         return jugadorRepository.findAll().stream()
                 .filter(j -> actuacionRepository.findByJugadorAndJornada(j, actual).isEmpty())
-                .sorted((j1, j2) -> j1.getNombre().compareToIgnoreCase(j2.getNombre()))
+                .sorted((j1, j2) -> {
+                    int p1 = getPesoPosicion(j1.getPosicion());
+                    int p2 = getPesoPosicion(j2.getPosicion());
+                    if (p1 != p2) return Integer.compare(p1, p2); // Primero por posición
+                    return j1.getNombre().compareToIgnoreCase(j2.getNombre()); // Luego alfabético
+                })
                 .collect(Collectors.toList());
     }
 
@@ -591,22 +613,17 @@ public class FantasyController {
         Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
         if(u.isEsAdmin()) return "❌ No se puede borrar al admin.";
 
-        // 1. Quitar jugadores de su propiedad
         jugadorRepository.findAll().stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(idUsuario)).forEach(j -> {
             j.setPropietario(null); j.setClausula(j.getValor()); jugadorRepository.save(j);
         });
 
-        // 2. Borrar sus alineaciones (equipos)
         equipoRepository.deleteAll(equipoRepository.findByUsuario(u));
 
-        // 3. Borrar TODAS las ofertas donde participe (Comprador O Vendedor), no solo las PENDIENTES.
-        // Esto evita el error de Foreign Key Constraint si existen ofertas aceptadas/rechazadas antiguas.
         List<Oferta> ofertasRelacionadas = ofertaRepository.findAll().stream()
                 .filter(o -> o.getVendedor().getId().equals(idUsuario) || o.getComprador().getId().equals(idUsuario))
                 .collect(Collectors.toList());
         ofertaRepository.deleteAll(ofertasRelacionadas);
 
-        // 4. Borrar usuario
         usuarioRepository.delete(u);
         return "✅ Usuario eliminado correctamente.";
     }
