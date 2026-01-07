@@ -240,7 +240,7 @@
 </div>
 
 <div id="sec-ofertas" class="seccion oculto">
-    <h3>🤝 Gestión de Ofertas</h3>
+    <h3> Ofertas</h3>
 
     <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Ofertas Recibidas (Te quieren comprar)</h4>
     <div id="lista-ofertas-recibidas">Cargando...</div>
@@ -310,6 +310,17 @@
 
         <button onclick="registrarActa()" style="background:#c62828; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; margin-bottom:10px;">Registrar Puntos</button>
         <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA</button>
+    </div>
+
+    <div style="background:#fff3e0; padding:15px; border-radius:10px; border:1px solid #ffb74d; margin-bottom: 20px;">
+        <h4 style="color:#e65100; margin-top:0;">🚑 Corregir Errores (Resetear Jugador)</h4>
+        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Usa esto si le diste puntos a quien no debías. Borrará el acta y devolverá los puntos y valor.</p>
+
+        <select id="admin-jugador-reset" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;">
+            <option>Cargando lista...</option>
+        </select>
+
+        <button onclick="resetearPuntos()" style="background:#e65100; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">↺ RESETEAR PUNTOS JUGADOR</button>
     </div>
 
     <div style="background:#fffde7; padding:15px; border-radius:10px; border:1px solid #fbc02d; margin-bottom: 20px;">
@@ -838,6 +849,7 @@
     function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado cerrado o vacío.</p>'; }
     function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
 
+    // 🔴 NUEVA FUNCIÓN ESPIAR CON PANTALLA COMPLETA
     function espiar(id, nombre) {
         // Ocultamos todas las secciones
         document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
@@ -991,13 +1003,42 @@
     }
 
     function pintarSelectAdmin() {
+        // Carga lista para registrar
         fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
             const select = document.getElementById('admin-jugador');
             if (jugadores.length === 0) {
                 select.innerHTML = '<option>Todos puntuados</option>';
-                return;
+            } else {
+                select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
             }
-            select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
+        });
+
+        // 🔴 Carga lista para RESETEAR
+        cargarJugadoresPuntuados();
+    }
+
+    // 🔴 NUEVA FUNCIÓN PARA LLENAR EL DESPLEGABLE DE RESET
+    function cargarJugadoresPuntuados() {
+        fetch('/admin/jugadores-puntuados').then(r=>r.json()).then(jugadores => {
+            const select = document.getElementById('admin-jugador-reset');
+            if (jugadores.length === 0) {
+                select.innerHTML = '<option>Nadie ha puntuado aún</option>';
+            } else {
+                select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
+            }
+        });
+    }
+
+    function resetearPuntos() {
+        const idJugador = document.getElementById('admin-jugador-reset').value;
+        if (!idJugador || isNaN(idJugador)) {
+            mostrarModal("Error", "Selecciona un jugador válido.", 'confirm', ()=>{});
+            return;
+        }
+
+        mostrarModal("⚠️ Confirmar Reset", "¿Seguro que quieres borrar los puntos de este jugador? Se revertirá su valor y cláusula.", 'confirm', () => {
+            post(`/admin/reset-puntos/${idJugador}`, {});
+            setTimeout(pintarSelectAdmin, 500);
         });
     }
 
@@ -1012,6 +1053,7 @@
             goles: parseInt(document.getElementById('input-goles').value)||0,
             golesEncajados: parseInt(document.getElementById('input-encajados').value)||0,
             autogoles: parseInt(document.getElementById('input-autogoles').value)||0,
+            // 🔴 NUEVO CAMPO: COLOR
             equipoColor: document.getElementById('select-equipo-color').value
         };
         post('/admin/registrar', datos);

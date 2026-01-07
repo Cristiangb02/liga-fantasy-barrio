@@ -65,10 +65,9 @@ public class FantasyController {
     // --- HORARIO MERCADO (21:30 - 10:00 CERRADO) ---
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
-        LocalTime inicioCierre = LocalTime.of(21, 30); //21:30
-        LocalTime finCierre = LocalTime.of(10, 00); //10:00
+        LocalTime inicioCierre = LocalTime.of(21, 30); // 21:30
+        LocalTime finCierre = LocalTime.of(10, 00);
 
-        //Está cerrado si es DESPUÉS de las 21:30 o ANTES de la 01:30
         return ahora.isAfter(inicioCierre) || ahora.isBefore(finCierre);
     }
 
@@ -211,7 +210,7 @@ public class FantasyController {
 
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
-        if (isMercadoCerrado()) return "⛔ EL MERCADO ESTÁ CERRADO EN ESTOS MOMENTOS (21:30 - 10:00)";
+        if (isMercadoCerrado()) return "⛔ EL MERCADO ESTÁ CERRADO EN ESTOS MOMENTOS (21:30 - 01:30)";
 
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario comprador = usuarioRepository.findById(idUsuario).orElseThrow();
@@ -584,10 +583,57 @@ public class FantasyController {
                 .sorted((j1, j2) -> {
                     int p1 = getPesoPosicion(j1.getPosicion());
                     int p2 = getPesoPosicion(j2.getPosicion());
-                    if (p1 != p2) return Integer.compare(p1, p2); // Primero por posición
-                    return j1.getNombre().compareToIgnoreCase(j2.getNombre()); // Luego alfabético
+                    if (p1 != p2) return Integer.compare(p1, p2);
+                    return j1.getNombre().compareToIgnoreCase(j2.getNombre());
                 })
                 .collect(Collectors.toList());
+    }
+
+    // 🔴🔴🔴 NUEVO ENDPOINT PARA LLENAR EL DESPLEGABLE DE CORRECCIÓN (Jugadores YA puntuados)
+    @GetMapping("/admin/jugadores-puntuados")
+    public List<Jugador> getJugadoresPuntuados() {
+        Jornada actual = getJornadaActiva();
+        return jugadorRepository.findAll().stream()
+                .filter(j -> actuacionRepository.findByJugadorAndJornada(j, actual).isPresent()) // Solo los que SÍ tienen acta
+                .sorted((j1, j2) -> {
+                    int p1 = getPesoPosicion(j1.getPosicion());
+                    int p2 = getPesoPosicion(j2.getPosicion());
+                    if (p1 != p2) return Integer.compare(p1, p2);
+                    return j1.getNombre().compareToIgnoreCase(j2.getNombre());
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 🔴🔴🔴 NUEVO ENDPOINT DE PÁNICO: RESETEAR PUNTOS DE UN JUGADOR
+    @PostMapping("/admin/reset-puntos/{idJugador}")
+    public String resetearPuntosJugador(@PathVariable Long idJugador) {
+        Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
+        Jornada jornada = getJornadaActiva();
+
+        Optional<Actuacion> actaOpt = actuacionRepository.findByJugadorAndJornada(jugador, jornada);
+
+        if (actaOpt.isEmpty()) {
+            return "❌ Este jugador no tiene puntos registrados en esta jornada.";
+        }
+
+        Actuacion acta = actaOpt.get();
+        int puntosRestar = acta.getPuntosTotales();
+        int valorRestar = puntosRestar * 100_000;
+
+        // 1. Revertir puntos acumulados
+        jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() - puntosRestar);
+
+        // 2. Revertir valor de mercado (asegurando no bajar del mínimo si fuera el caso, aunque aquí revertimos la subida)
+        jugador.setValor(jugador.getValor() - valorRestar);
+
+        // 3. Revertir cláusula (misma lógica que la subida)
+        jugador.setClausula(jugador.getClausula() - valorRestar);
+
+        // 4. Borrar el acta
+        actuacionRepository.delete(acta);
+        jugadorRepository.save(jugador);
+
+        return "✅ CORREGIDO: Puntos de " + jugador.getNombre() + " reseteados. (Restados " + puntosRestar + " pts y " + fmtDinero(valorRestar) + " valor)";
     }
 
     @PostMapping("/admin/reset-liga")
