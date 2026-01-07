@@ -838,7 +838,6 @@
     function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado cerrado o vacío.</p>'; }
     function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
 
-    // 🔴 NUEVA FUNCIÓN ESPIAR CON PANTALLA COMPLETA
     function espiar(id, nombre) {
         // Ocultamos todas las secciones
         document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
@@ -1013,7 +1012,6 @@
             goles: parseInt(document.getElementById('input-goles').value)||0,
             golesEncajados: parseInt(document.getElementById('input-encajados').value)||0,
             autogoles: parseInt(document.getElementById('input-autogoles').value)||0,
-            // 🔴 NUEVO CAMPO: COLOR
             equipoColor: document.getElementById('select-equipo-color').value
         };
         post('/admin/registrar', datos);

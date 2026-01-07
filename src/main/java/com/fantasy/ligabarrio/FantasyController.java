@@ -62,11 +62,11 @@ public class FantasyController {
 
     private long getNumeroJornadaReal() { return getJornadaActiva().getNumero(); }
 
-    // --- HORARIO MERCADO (21:30 - 01:30 CERRADO) ---
+    // --- HORARIO MERCADO (21:30 - 10:00 CERRADO) ---
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
-        LocalTime inicioCierre = LocalTime.of(21, 30); // 21:30
-        LocalTime finCierre = LocalTime.of(1, 30);     // 01:30 (madrugada siguiente)
+        LocalTime inicioCierre = LocalTime.of(21, 30); //21:30
+        LocalTime finCierre = LocalTime.of(10, 00); //10:00
 
         //Está cerrado si es DESPUÉS de las 21:30 o ANTES de la 01:30
         return ahora.isAfter(inicioCierre) || ahora.isBefore(finCierre);
@@ -211,7 +211,7 @@ public class FantasyController {
 
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
-        if (isMercadoCerrado()) return "⛔ EL MERCADO ESTÁ CERRADO EN ESTOS MOMENTOS (21:30 - 01:30)";
+        if (isMercadoCerrado()) return "⛔ EL MERCADO ESTÁ CERRADO EN ESTOS MOMENTOS (21:30 - 10:00)";
 
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario comprador = usuarioRepository.findById(idUsuario).orElseThrow();
@@ -576,7 +576,6 @@ public class FantasyController {
         }
     }
 
-    // 🔴 CAMBIO AQUÍ: Lista de jugadores ordenados por Posición y luego por Nombre
     @GetMapping("/admin/jugadores-pendientes")
     public List<Jugador> getJugadoresPendientes() {
         Jornada actual = getJornadaActiva();
