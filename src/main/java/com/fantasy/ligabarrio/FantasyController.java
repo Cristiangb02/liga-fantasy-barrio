@@ -66,8 +66,7 @@ public class FantasyController {
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
         LocalTime inicioCierre = LocalTime.of(21, 30); // 21:30
-        LocalTime finCierre = LocalTime.of(10, 00);
-
+        LocalTime finCierre = LocalTime.of(10, 00);     // 10:00
         return ahora.isAfter(inicioCierre) || ahora.isBefore(finCierre);
     }
 
@@ -210,7 +209,7 @@ public class FantasyController {
 
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
-        if (isMercadoCerrado()) return "⛔ EL MERCADO ESTÁ CERRADO EN ESTOS MOMENTOS (21:30 - 01:30)";
+        if (isMercadoCerrado()) return "⛔ MERCADO CERRADO EN ESTOS MOMENTOS ⛔";
 
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario comprador = usuarioRepository.findById(idUsuario).orElseThrow();
@@ -246,7 +245,7 @@ public class FantasyController {
         }
 
         int precioRobo = jugador.getClausula();
-        if (ladron.getPresupuesto() < precioRobo) return "❌ No tienes suficiente dinero para el clausulazo.";
+        if (ladron.getPresupuesto() < precioRobo) return "❌ No tienes suficiente dinero. No puedes quedarte en negativo robando jugadores.";
 
         ladron.setPresupuesto(ladron.getPresupuesto() - precioRobo);
         victima.setPresupuesto(victima.getPresupuesto() + precioRobo);
@@ -254,8 +253,6 @@ public class FantasyController {
         jugador.setClausula(precioRobo);
         jugador.setJornadaFichaje(getJornadaActiva().getId());
         jugador.setFechaFichaje(LocalDate.now(ZoneId.of("Europe/Madrid")));
-
-        //BLINDAJE 7 DÍAS
         jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
 
         Jornada jornadaActual = getJornadaActiva();
@@ -308,9 +305,10 @@ public class FantasyController {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Usuario propietario = jugador.getPropietario();
         if (cantidad <= 0) return "❌ Cantidad inválida.";
+
+        if (propietario.getPresupuesto() - cantidad < 0) return "❌ No tienes saldo suficiente. No puedes quedarte en negativo al subir cláusula.";
         propietario.setPresupuesto(propietario.getPresupuesto() - cantidad);
         jugador.setClausula(jugador.getClausula() + (cantidad * 2));
-
         usuarioRepository.save(propietario);
         jugadorRepository.save(jugador);
         return "✅ Cláusula subida a " + fmtDinero(jugador.getClausula());
@@ -385,7 +383,6 @@ public class FantasyController {
                 return "❌ El jugador ya no pertenece a este usuario.";
             }
 
-            // Transacción
             comprador.setPresupuesto(comprador.getPresupuesto() - oferta.getCantidad());
             vendedor.setPresupuesto(vendedor.getPresupuesto() + oferta.getCantidad());
 
@@ -464,7 +461,20 @@ public class FantasyController {
     }
 
     @GetMapping("/noticias")
-    public List<Noticia> verNoticias() { return noticiaRepository.findAllByOrderByFechaDesc(); }
+    public List<Noticia> verNoticias() {
+        LocalDateTime limite = LocalDateTime.now(ZoneId.of("Europe/Madrid")).minusDays(7);
+        // Obtenemos todas y borramos las viejas antes de devolver
+        List<Noticia> todas = noticiaRepository.findAll();
+        List<Noticia> paraBorrar = todas.stream()
+                .filter(n -> n.getFecha().isBefore(limite))
+                .collect(Collectors.toList());
+
+        if(!paraBorrar.isEmpty()) {
+            noticiaRepository.deleteAll(paraBorrar);
+        }
+
+        return noticiaRepository.findAllByOrderByFechaDesc();
+    }
 
     @GetMapping("/historial/{usuarioId}")
     public List<Map<String, Object>> getHistorialUsuario(@PathVariable Long usuarioId) {
@@ -589,12 +599,11 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
-    // 🔴🔴🔴 NUEVO ENDPOINT PARA LLENAR EL DESPLEGABLE DE CORRECCIÓN (Jugadores YA puntuados)
     @GetMapping("/admin/jugadores-puntuados")
     public List<Jugador> getJugadoresPuntuados() {
         Jornada actual = getJornadaActiva();
         return jugadorRepository.findAll().stream()
-                .filter(j -> actuacionRepository.findByJugadorAndJornada(j, actual).isPresent()) // Solo los que SÍ tienen acta
+                .filter(j -> actuacionRepository.findByJugadorAndJornada(j, actual).isPresent())
                 .sorted((j1, j2) -> {
                     int p1 = getPesoPosicion(j1.getPosicion());
                     int p2 = getPesoPosicion(j2.getPosicion());
@@ -604,7 +613,6 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
-    // 🔴🔴🔴 NUEVO ENDPOINT DE PÁNICO: RESETEAR PUNTOS DE UN JUGADOR
     @PostMapping("/admin/reset-puntos/{idJugador}")
     public String resetearPuntosJugador(@PathVariable Long idJugador) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
@@ -620,16 +628,10 @@ public class FantasyController {
         int puntosRestar = acta.getPuntosTotales();
         int valorRestar = puntosRestar * 100_000;
 
-        // 1. Revertir puntos acumulados
         jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() - puntosRestar);
-
-        // 2. Revertir valor de mercado (asegurando no bajar del mínimo si fuera el caso, aunque aquí revertimos la subida)
         jugador.setValor(jugador.getValor() - valorRestar);
-
-        // 3. Revertir cláusula (misma lógica que la subida)
         jugador.setClausula(jugador.getClausula() - valorRestar);
 
-        // 4. Borrar el acta
         actuacionRepository.delete(acta);
         jugadorRepository.save(jugador);
 

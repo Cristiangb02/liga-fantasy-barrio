@@ -74,7 +74,7 @@
         .btn-card:active { transform: scale(0.95); }
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
-        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; } /* 🆕 Botón Oferta */
+        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; }
         .btn-vender { background: #ff8f00; color: white; }
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
@@ -146,7 +146,6 @@
         .btn-modal-ok { background: #1565c0; color: white; }
         .btn-modal-danger { background: #d32f2f; color: white; }
 
-        /* 🔴 NUEVOS ESTILOS PARA EL RANKING */
         .fila-ranking {
             background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center;
@@ -163,6 +162,8 @@
 
         .timer-mini { font-size: 0.8em; color: #e65100; font-weight: bold; background: #fff3e0; padding: 2px 5px; border-radius: 4px;
         margin-bottom: 5px; display: inline-block; border: 1px solid #ffb74d; }
+
+        .btn-back-red { background: #d32f2f; border: 1px solid #b71c1c; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -219,7 +220,7 @@
 <div id="sec-mercado" class="seccion oculto">
     <div class="market-header">
         <span style="font-weight:bold; font-size:1.1rem;">Mercado Libre</span>
-        <div id="msg-mercado-cerrado" class="oculto" style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 01:30</div>
+        <div id="msg-mercado-cerrado" class="oculto" style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 10:00</div>
         <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
         <div id="market-countdown" class="timer-badge">--:--:--</div>
     </div>
@@ -234,18 +235,18 @@
 <div id="sec-detalle-rival" class="seccion oculto">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #ddd; padding-bottom:10px;">
         <h3 id="titulo-espia" style="margin:0; color:#1a237e;">Equipo Rival</h3>
-        <button class="btn-logout" onclick="cambiarPestaña('rivales')">🔙 Volver a Mánagers</button>
+        <button class="btn-back-red" onclick="cambiarPestaña('rivales')"> Volver </button>
     </div>
     <div id="grid-rival" class="grid-jugadores">Cargando...</div>
 </div>
 
 <div id="sec-ofertas" class="seccion oculto">
-    <h3> Ofertas</h3>
+    <h3>🤝 Gestión de Ofertas</h3>
 
-    <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Ofertas Recibidas (Te quieren comprar)</h4>
+    <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Ofertas Recibidas</h4>
     <div id="lista-ofertas-recibidas">Cargando...</div>
 
-    <h4 style="color:#0288d1; border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">📤 Ofertas Enviadas (Tú quieres comprar)</h4>
+    <h4 style="color:#0288d1; border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">📤 Ofertas Enviadas </h4>
     <div id="lista-ofertas-enviadas">Cargando...</div>
 </div>
 
@@ -378,11 +379,9 @@
         btnOk.className = 'btn-modal btn-modal-ok';
         btnOk.classList.remove('oculto');
 
-        // 🆕 TIPOS NUEVOS DE MODAL (Oferta e Input numérico)
         if (tipo === 'input' || tipo === 'blindar' || tipo === 'oferta') {
             inputContainer.classList.remove('oculto');
 
-            // 🔴 Lógica para input con separador de miles
             if(tipo === 'oferta') {
                 input.placeholder = "Cantidad a ofrecer";
                 input.type = "text"; // Cambiado a text para permitir puntos
@@ -423,7 +422,6 @@
             if (tipo === 'confirm') callback();
             else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
             else if (tipo === 'oferta') {
-                // 🔴 Limpiar puntos antes de enviar
                 let valLimpio = input.value.replace(/\./g, '');
                 callback(valLimpio);
             }
@@ -488,7 +486,7 @@
         cargarOfertas();
         setInterval(cargarNoticias, 5000);
         iniciarContadorMercado();
-        iniciarRelojesBlindaje(); // 🆕 ARRANCAR RELOJES DE BLINDAJE
+        iniciarRelojesBlindaje();
     };
 
     function iniciarContadorMercado() {
@@ -526,7 +524,6 @@
         actualizar(); setInterval(actualizar, 1000);
     }
 
-    // 🆕 FUNCIÓN DE RELOJES BLINDAJE
     function iniciarRelojesBlindaje() {
         setInterval(() => {
             document.querySelectorAll('.timer-blindaje').forEach(el => {
@@ -557,7 +554,6 @@
         fetch('/jugadores').then(r=>r.json()).then(jugadores => {
             window.todosLosJugadores = jugadores;
             pintarPlantilla(jugadores);
-            // 🔴 LLAMADA AL RANKING
             pintarRanking(jugadores);
 
             fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
@@ -600,7 +596,6 @@
         cargarNoticias();
     }
 
-    // 🔴 FUNCIÓN PINTAR RANKING
     function pintarRanking(jugadores) {
         let lista = [...jugadores];
         // Ordenar: Puntos DESC, luego Nombre ASC
@@ -849,7 +844,6 @@
     function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado cerrado o vacío.</p>'; }
     function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
 
-    // 🔴 NUEVA FUNCIÓN ESPIAR CON PANTALLA COMPLETA
     function espiar(id, nombre) {
         // Ocultamos todas las secciones
         document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
@@ -1012,12 +1006,9 @@
                 select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
             }
         });
-
-        // 🔴 Carga lista para RESETEAR
         cargarJugadoresPuntuados();
     }
 
-    // 🔴 NUEVA FUNCIÓN PARA LLENAR EL DESPLEGABLE DE RESET
     function cargarJugadoresPuntuados() {
         fetch('/admin/jugadores-puntuados').then(r=>r.json()).then(jugadores => {
             const select = document.getElementById('admin-jugador-reset');
@@ -1053,7 +1044,6 @@
             goles: parseInt(document.getElementById('input-goles').value)||0,
             golesEncajados: parseInt(document.getElementById('input-encajados').value)||0,
             autogoles: parseInt(document.getElementById('input-autogoles').value)||0,
-            // 🔴 NUEVO CAMPO: COLOR
             equipoColor: document.getElementById('select-equipo-color').value
         };
         post('/admin/registrar', datos);

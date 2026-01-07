@@ -43,8 +43,8 @@ public class Jugador {
     }
 
     private int calcularPrecioFinal(int edad, double media) {
-        // 1. BASE EXPONENCIAL (Potencia 2.89)
-        double precioBase = 10_000 * Math.pow(2.89, media);
+        // 1. BASE EXPONENCIAL (Potencia 2.88)
+        double precioBase = 10_000 * Math.pow(2.88, media);
 
         // 2. FACTOR EDAD
         double factorEdad = 1.0;
@@ -53,12 +53,12 @@ public class Jugador {
             // JUVENTUD: +16% por año
             factorEdad += (27 - edad) * 0.16;
         } else if (edad <= 40) {
-            // MADUREZ: -1.5% suave por año.
-            factorEdad -= (edad - 27) * 0.015;
+            // MADUREZ: -1.2% suave por cada año.
+            factorEdad -= (edad - 27) * 0.012;
         } else {
             // DECLIVE:
             double bajadaSuave = (40 - 27) * 0.02;
-            double bajadaFuerte = (edad - 40) * 0.05;
+            double bajadaFuerte = (edad - 40) * 0.04;
             factorEdad -= (bajadaSuave + bajadaFuerte);
         }
 
