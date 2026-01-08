@@ -66,7 +66,7 @@ public class FantasyController {
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
         LocalTime inicioCierre = LocalTime.of(21, 30); // 21:30
-        LocalTime finCierre = LocalTime.of(10, 00);     // 10:00
+        LocalTime finCierre = LocalTime.of(10, 0);     // 10:00
         return ahora.isAfter(inicioCierre) || ahora.isBefore(finCierre);
     }
 
