@@ -489,18 +489,23 @@
         iniciarRelojesBlindaje();
     };
 
-    function iniciarContadorMercado() {
+   function iniciarContadorMercado() {
         function actualizar() {
             const now = new Date();
 
             // 1. Lógica del texto "Cerrado"
             const minutosDia = now.getHours() * 60 + now.getMinutes();
-            // 21:30 = 1290 min, 01:30 = 90 min
+
+            // 21:30 = 1290 minutos
             const cerradoNoche = 1290;
-            const cerradoMadrugada = 90;
+
+            // 10:00 = 600 minutos (ANTES PONÍA 90, POR ESO NO SALÍA A LAS 7:40)
+            const cerradoMadrugada = 600;
 
             const msgCerrado = document.getElementById('msg-mercado-cerrado');
-            if (minutosDia >= cerradoNoche || minutosDia <= cerradoMadrugada) {
+
+            // Si es más tarde de las 21:30 O más temprano de las 10:00 -> Muestra mensaje
+            if (minutosDia >= cerradoNoche || minutosDia < cerradoMadrugada) {
                 msgCerrado.classList.remove('oculto');
             } else {
                 msgCerrado.classList.add('oculto');
