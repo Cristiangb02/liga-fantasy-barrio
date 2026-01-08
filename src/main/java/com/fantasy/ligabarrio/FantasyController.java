@@ -226,6 +226,101 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
+    // 🔴 NUEVO: Endpoint para la vista de CAMPO DE FÚTBOL (Partido real)
+    @GetMapping("/jornada/{numero}/resumen-partido")
+    public Map<String, Object> getResumenPartido(@PathVariable int numero) {
+        // Buscar la jornada por número
+        Optional<Jornada> jOpt = jornadaRepository.findAll().stream()
+                .filter(j -> j.getNumero() == numero)
+                .findFirst();
+
+        if (jOpt.isEmpty()) return Map.of("error", "Jornada no encontrada");
+
+        Jornada jornada = jOpt.get();
+        List<Actuacion> actuaciones = actuacionRepository.findAll().stream()
+                .filter(a -> a.getJornada().getId().equals(jornada.getId()))
+                .collect(Collectors.toList());
+
+        if (actuaciones.isEmpty()) return Map.of("error", "Sin datos en esta jornada");
+
+        // Calcular MVP global de la jornada (máxima puntuación)
+        int maxPuntos = actuaciones.stream().mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
+
+        // Agrupar por colores (ej: ROJO vs AZUL)
+        Map<String, List<Map<String, Object>>> porColores = new ArrayList<>();
+        // Usamos un mapa temporal para agrupar
+        Map<String, List<Actuacion>> grupos = actuaciones.stream()
+                .filter(a -> a.getEquipoColor() != null)
+                .collect(Collectors.groupingBy(Actuacion::getEquipoColor));
+
+        List<String> colores = new ArrayList<>(grupos.keySet());
+
+        // Preparamos la respuesta (Equipo A y Equipo B)
+        String colorA = colores.isEmpty() ? "BLANCO" : colores.get(0);
+        String colorB = colores.size() > 1 ? colores.get(1) : "RIVAL"; // Por si solo hay 1 equipo registrado aun
+
+        List<Map<String, Object>> equipoA = mapJugadoresCampo(grupos.getOrDefault(colorA, List.of()), maxPuntos);
+        List<Map<String, Object>> equipoB = mapJugadoresCampo(grupos.getOrDefault(colorB, List.of()), maxPuntos);
+
+        return Map.of(
+                "colorA", colorA,
+                "colorB", colorB,
+                "equipoA", equipoA,
+                "equipoB", equipoB
+        );
+    }
+
+    // Helper para formatear datos para el campo
+    private List<Map<String, Object>> mapJugadoresCampo(List<Actuacion> acts, int maxPuntos) {
+        return acts.stream().map(a -> {
+            Jugador j = a.getJugador();
+            return Map.<String, Object>of(
+                    "nombre", j.getNombre(),
+                    "posicion", j.getPosicion(),
+                    "puntos", a.getPuntosTotales(),
+                    "imagen", (j.getUrlImagen() != null ? j.getUrlImagen() : ""),
+                    "mvp", (a.getPuntosTotales() == maxPuntos && maxPuntos > 0)
+            );
+        }).collect(Collectors.toList());
+    }
+
+    // 🔴 MANTENEMOS EL DE LA LISTA DE MÁNAGERS (pero parametrizado por número)
+    @GetMapping("/jornada/{numero}/resumen-managers")
+    public List<Map<String, Object>> verResumenManagers(@PathVariable int numero) {
+        Optional<Jornada> jOpt = jornadaRepository.findAll().stream()
+                .filter(j -> j.getNumero() == numero)
+                .findFirst();
+
+        if (jOpt.isEmpty()) return new ArrayList<>();
+        Jornada jornada = jOpt.get();
+
+        List<Equipo> equipos = equipoRepository.findByJornada(jornada);
+
+        return equipos.stream().map(e -> {
+                    List<Map<String, Object>> jugadores = new ArrayList<>();
+                    for (Jugador j : e.getJugadoresAlineados()) {
+                        int pts = actuacionRepository.findByJugadorAndJornada(j, jornada)
+                                .map(Actuacion::getPuntosTotales).orElse(0);
+
+                        jugadores.add(Map.of(
+                                "nombre", j.getNombre(),
+                                "posicion", j.getPosicion(),
+                                "puntos", pts
+                        ));
+                    }
+                    // Ordenar por posición
+                    jugadores.sort((a,b) -> Integer.compare(getPesoPosicion((String)a.get("posicion")), getPesoPosicion((String)b.get("posicion"))));
+
+                    return Map.<String, Object>of(
+                            "manager", e.getUsuario().getNombre(),
+                            "puntosTotal", e.getPuntosTotalesJornada(),
+                            "jugadores", jugadores
+                    );
+                })
+                .sorted((a,b) -> Integer.compare((int)b.get("puntosTotal"), (int)a.get("puntosTotal")))
+                .collect(Collectors.toList());
+    }
+
     // --- USUARIOS ONLINE ---
     @PostMapping("/usuarios/ping/{idUsuario}")
     public List<String> pingUsuario(@PathVariable Long idUsuario) {
