@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Comparator;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -28,6 +30,7 @@ public class FantasyController {
     private final NoticiaRepository noticiaRepository;
     private final OfertaRepository ofertaRepository;
     private final CalculadoraPuntosService calculadora;
+    private final Map<Long, LocalDateTime> usuariosOnline = new ConcurrentHashMap<>();
 
     public FantasyController(EquipoRepository equipoRepository, JugadorRepository jugadorRepository, UsuarioRepository usuarioRepository, JornadaRepository jornadaRepository, ActuacionRepository actuacionRepository, NoticiaRepository noticiaRepository, OfertaRepository ofertaRepository, CalculadoraPuntosService calculadora) {
         this.equipoRepository = equipoRepository;
@@ -160,20 +163,40 @@ public class FantasyController {
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
         List<Jugador> todos = jugadorRepository.findAll();
-        List<Jugador> candidatosHoy = new ArrayList<>();
-        LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
 
-        for (Jugador j : todos) {
-            boolean esLibre = (j.getPropietario() == null);
-            boolean fichadoHoy = (j.getPropietario() != null && j.getFechaFichaje() != null && j.getFechaFichaje().equals(hoy));
-            if (esLibre || fichadoHoy) candidatosHoy.add(j);
-        }
-        candidatosHoy.sort((j1, j2) -> Long.compare(j1.getId(), j2.getId()));
+        // 1. Ordenar siempre por ID primero para garantizar consistencia antes de barajar
+        todos.sort(Comparator.comparing(Jugador::getId));
+
+        // 2. Semilla basada en el DÍA. Esto asegura que el orden aleatorio sea EL MISMO para todos hoy.
+        LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
         long seed = hoy.toEpochDay();
-        Collections.shuffle(candidatosHoy, new Random(seed));
-        int limite = Math.min(candidatosHoy.size(), 14);
-        List<Jugador> escaparateFijo = candidatosHoy.subList(0, limite);
-        return escaparateFijo.stream().filter(j -> j.getPropietario() == null).collect(Collectors.toList());
+
+        // 3. Barajar TODOS los jugadores con esa semilla fija
+        Collections.shuffle(todos, new Random(seed));
+
+        return todos.stream()
+                .filter(j -> j.getPropietario() == null) // Solo libres
+                .limit(14) // Máximo 14 en el mercado
+                .collect(Collectors.toList());
+    }
+
+    // --- USUARIOS ONLINE ---
+    @PostMapping("/usuarios/ping/{idUsuario}")
+    public List<String> pingUsuario(@PathVariable Long idUsuario) {
+        // 1. Registrar que este usuario está online AHORA
+        usuariosOnline.put(idUsuario, LocalDateTime.now());
+
+        // 2. Limpiar y devolver quién ha estado activo en los últimos 5 minutos
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(5);
+        List<String> nombresOnline = new ArrayList<>();
+
+        usuariosOnline.forEach((id, fecha) -> {
+            if (fecha.isAfter(limite)) {
+                usuarioRepository.findById(id).ifPresent(u -> nombresOnline.add(u.getNombre()));
+            }
+        });
+
+        return nombresOnline;
     }
 
     @PostMapping("/admin/registrar")

@@ -75,7 +75,10 @@
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
         .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; }
-        .btn-vender { background: #ff8f00; color: white; }
+
+        /* 🔴 CAMBIO: Botón Vender ROJO */
+        .btn-vender { background: #d32f2f; color: white; }
+
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
 
@@ -146,6 +149,7 @@
         .btn-modal-ok { background: #1565c0; color: white; }
         .btn-modal-danger { background: #d32f2f; color: white; }
 
+        /* 🔴 NUEVOS ESTILOS PARA EL RANKING */
         .fila-ranking {
             background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center;
@@ -164,6 +168,25 @@
         margin-bottom: 5px; display: inline-block; border: 1px solid #ffb74d; }
 
         .btn-back-red { background: #d32f2f; border: 1px solid #b71c1c; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
+
+        /* 🔴 ESTILOS BARRA ONLINE */
+        .online-bar {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #bbdefb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .online-dot { height: 8px; width: 8px; background-color: #4caf50; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px #4caf50; }
     </style>
 </head>
 <body>
@@ -183,6 +206,10 @@
         <button class="btn-logout" onclick="logout()">Salir</button>
     </div>
 </header>
+
+<div id="bar-online" class="online-bar" onclick="verQuienEstaOnline()">
+    <span class="online-dot"></span> En línea: <span id="num-online">1</span>
+</div>
 
 <nav>
     <button onclick="cambiarPestaña('plantilla')" id="tab-plantilla" class="active">👥 Plantilla</button>
@@ -361,6 +388,9 @@
     let presupuesto = parseInt(localStorage.getItem('presupuesto') || 0);
     const formatoDinero = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
+    // Variable global para guardar los nombres
+    let listaUsuariosOnline = [];
+
     let modalCallback = null;
 
     function mostrarModal(titulo, mensaje, tipo, callback) {
@@ -487,6 +517,10 @@
         setInterval(cargarNoticias, 5000);
         iniciarContadorMercado();
         iniciarRelojesBlindaje();
+
+        // 🔴 Arrancar el ping de usuarios online
+        setInterval(pingOnline, 5000); // Cada 5 segundos
+        pingOnline(); // Primera llamada inmediata
     };
 
    function iniciarContadorMercado() {
@@ -811,9 +845,9 @@
                 <div class="card-coste">Coste: ${precio}</div>
                 <div class="card-clausula">🔒 ${clausula}</div>
                 ${htmlBlindaje}
-                <div style="display:flex; gap:5px; margin-top:auto;">
-                    <button class="btn-card btn-vender" style="flex:1" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button>
-                    <button class="btn-card btn-blindar" style="flex:1" onclick="blindar(${j.id})">Subir 🔒</button>
+                <div style="display:flex; gap:5px; margin-top:auto; width:100%;">
+                    <button class="btn-card btn-vender" style="flex:1;" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button>
+                    <button class="btn-card btn-blindar" style="flex:1;" onclick="blindar(${j.id})">Subir 🔒</button>
                 </div>`;
         }
 
@@ -896,53 +930,21 @@
     }
 
     function cargarOfertas() {
-        // 🔴 CAMBIO: Ahora llama a 'mis-ofertas' que devuelve {recibidas:[], enviadas:[]}
-        fetch(`/ofertas/mis-ofertas/${usuarioId}`).then(r=>r.json()).then(data => {
-
-            const divRecibidas = document.getElementById('lista-ofertas-recibidas');
-            const divEnviadas = document.getElementById('lista-ofertas-enviadas');
-            const tabButton = document.getElementById('tab-ofertas');
-            const notifBadge = document.getElementById('notif-ofertas');
-
-            // 1. GESTIONAR NOTIFICACIÓN (ROJA)
-            if(data.recibidas.length > 0) {
-                tabButton.classList.add('notif-active');
-            } else {
-                tabButton.classList.remove('notif-active');
-            }
-
-            // 2. PINTAR RECIBIDAS
-            if(data.recibidas.length === 0) {
-                divRecibidas.innerHTML = '<p style="font-size:0.9em; color:#888;">No tienes ofertas pendientes.</p>';
-            } else {
-                divRecibidas.innerHTML = data.recibidas.map(o => `
-                    <div class="oferta-item">
-                        <div class="oferta-info">
-                            <strong>${o.comprador}</strong> quiere a <strong>${o.jugador}</strong><br>
-                            Oferta: <span style="color:#2e7d32; font-weight:bold;">${o.cantidadFmt}</span>
-                        </div>
-                        <div>
-                            <button class="btn-oferta-ok" onclick="responderOferta(${o.id}, 'aceptar')">✔</button>
-                            <button class="btn-oferta-ko" onclick="responderOferta(${o.id}, 'rechazar')">✖</button>
-                        </div>
+        fetch(`/ofertas/recibidas/${usuarioId}`).then(r=>r.json()).then(ofertas => {
+            const div = document.getElementById('lista-ofertas');
+            if(ofertas.length === 0) { div.innerHTML = '<p>No tienes ofertas pendientes.</p>'; return; }
+            div.innerHTML = ofertas.map(o => `
+                <div class="oferta-item">
+                    <div class="oferta-info">
+                        <strong>${o.comprador}</strong> quiere a <strong>${o.jugador}</strong><br>
+                        Oferta: <span style="color:#2e7d32; font-weight:bold;">${o.cantidadFmt}</span>
                     </div>
-                `).join('');
-            }
-
-            // 3. PINTAR ENVIADAS
-            if(data.enviadas.length === 0) {
-                divEnviadas.innerHTML = '<p style="font-size:0.9em; color:#888;">No has hecho ofertas.</p>';
-            } else {
-                divEnviadas.innerHTML = data.enviadas.map(o => `
-                    <div class="oferta-item enviada">
-                        <div class="oferta-info">
-                            Quieres a <strong>${o.jugador}</strong> (de ${o.vendedor})<br>
-                            Tu oferta: <span style="color:#0277bd; font-weight:bold;">${o.cantidadFmt}</span>
-                        </div>
-                        <div style="font-size:0.8em; color:#666; font-style:italic;">Pendiente...</div>
+                    <div>
+                        <button class="btn-oferta-ok" onclick="responderOferta(${o.id}, 'aceptar')">✔</button>
+                        <button class="btn-oferta-ko" onclick="responderOferta(${o.id}, 'rechazar')">✖</button>
                     </div>
-                `).join('');
-            }
+                </div>
+            `).join('');
         });
     }
 
@@ -1002,14 +1004,13 @@
     }
 
     function pintarSelectAdmin() {
-        // Carga lista para registrar
         fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
             const select = document.getElementById('admin-jugador');
             if (jugadores.length === 0) {
                 select.innerHTML = '<option>Todos puntuados</option>';
-            } else {
-                select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
+                return;
             }
+            select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
         });
         cargarJugadoresPuntuados();
     }
@@ -1066,6 +1067,25 @@
     }
     function actualizarPresupuestoUI() { const el = document.getElementById('presupuesto-display'); el.innerText = formatoDinero.format(presupuesto); if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); } else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); } }
     function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+    // 🔴 NUEVA LÓGICA DE USUARIOS ONLINE
+    function pingOnline() {
+        if(!usuarioId) return;
+        fetch(`/usuarios/ping/${usuarioId}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(nombres => {
+                listaUsuariosOnline = nombres;
+                document.getElementById('num-online').innerText = nombres.length;
+            });
+    }
+
+    function verQuienEstaOnline() {
+        if(listaUsuariosOnline.length === 0) return;
+        let listaHTML = listaUsuariosOnline.map(n => `<li>👤 ${n}</li>`).join('');
+        // Usamos el modal de info pero inyectando HTML
+        document.getElementById('modal-mensaje').innerHTML = `<ul style="list-style:none; padding:0; font-size:1.1em;">${listaHTML}</ul>`;
+        mostrarModal("En línea 🟢", "", 'info', ()=>{});
+    }
 </script>
 </body>
 </html>
