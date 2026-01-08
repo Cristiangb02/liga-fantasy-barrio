@@ -2,183 +2,165 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <title>Resumen Jornada - Fantasy</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1a237e">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resumen de las jornadas</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: white; margin: 0; padding: 20px; text-align: center; }
-        h1 { color: #ffd700; text-transform: uppercase; margin-bottom: 5px; }
-        
-        /* CAMPO DE FÚTBOL */
-        .campo {
-            background: linear-gradient(to bottom, #4caf50, #388e3c);
-            width: 100%; max-width: 600px; height: 900px;
-            margin: 20px auto; border: 5px solid white; border-radius: 10px;
-            position: relative; display: flex; flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .linea-medio { position: absolute; top: 50%; width: 100%; height: 4px; background: rgba(255,255,255,0.6); }
-        .circulo-central { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 4px solid rgba(255,255,255,0.6); border-radius: 50%; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; color: #333; }
 
-        /* ÁREAS DE EQUIPOS */
-        .equipo-area { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; padding: 20px 0; }
-        .equipo-top { flex-direction: column; } 
-        .equipo-bottom { flex-direction: column-reverse; }
-
-        .linea-jugadores { display: flex; justify-content: center; gap: 15px; }
-
-        /* CARTA DE JUGADOR */
-        .jugador-card { width: 70px; text-align: center; position: relative; }
-        .jugador-img {
-            width: 50px; height: 50px; border-radius: 50%;
-            border: 4px solid #333; /* Borde por defecto */
-            background: #fff; object-fit: cover;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        
-        /* COLORES DE CAMISETAS (Bordes dinámicos) */
-        .camiseta-ROJO .jugador-img { border-color: #ff4444; }
-        .camiseta-AZUL .jugador-img { border-color: #2196f3; }
-        .camiseta-AMARILLO .jugador-img { border-color: #ffeb3b; }
-        .camiseta-BLANCO .jugador-img { border-color: #ffffff; }
-
-        .puntos-badge {
-            position: absolute; top: -5px; right: -5px;
-            background: #333; color: white;
-            font-weight: bold; font-size: 12px; width: 24px; height: 24px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            border: 2px solid white;
-        }
-        .jugador-nombre { font-size: 10px; background: rgba(0,0,0,0.7); padding: 2px 5px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mvp .jugador-img { box-shadow: 0 0 15px #ffd700; transform: scale(1.1); }
-        
-        .marcador { font-size: 24px; font-weight: bold; margin: 10px 0; background: #333; padding: 10px 20px; border-radius: 10px; display: inline-block; border: 2px solid #555; }
-        .texto-equipo { font-size: 18px; font-weight: bold; text-transform: uppercase; margin: 0 10px; }
-        
-        /* Colores texto marcador */
-        .texto-ROJO { color: #ff4444; }
-        .texto-AZUL { color: #2196f3; }
-        .texto-AMARILLO { color: #ffeb3b; }
-        .texto-BLANCO { color: #ffffff; }
-
-        .controls { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        input { padding: 10px; border-radius: 5px; border: none; text-align: center; width: 250px; font-size: 0.9em; }
-        button { padding: 10px 20px; background: #ffd700; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 200px; }
-        
-        /* 🔴 BOTÓN VOLVER ROJO Y VISTOSO */
-        .btn-volver {
-            background-color: #d32f2f;
+        /* Cabecera con botón volver */
+        .header-resumen {
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
             color: white;
-            padding: 10px 20px;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .btn-volver {
+            background: rgba(255,255,255,0.2);
+            color: white;
             text-decoration: none;
-            border-radius: 5px;
+            padding: 8px 15px;
+            border-radius: 20px;
             font-weight: bold;
-            display: inline-block;
-            transition: 0.3s;
-            width: 200px;
-            box-sizing: border-box;
+            font-size: 0.9em;
         }
-        .btn-volver:hover {
-            background-color: #b71c1c;
-            transform: scale(1.05);
+
+        /* Tarjeta de cada Mánager */
+        .manager-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            animation: fadeIn 0.5s;
         }
+        .manager-header {
+            background: #eceff1;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .manager-name { font-weight: 800; color: #1a237e; font-size: 1.1em; }
+        .manager-points {
+            background: #1a237e;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        /* Lista de Jugadores */
+        .players-list { padding: 10px; }
+        .player-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .player-row:last-child { border-bottom: none; }
+
+        .player-info { display: flex; align-items: center; gap: 10px; }
+        .pos-badge {
+            font-size: 0.7em;
+            font-weight: 900;
+            padding: 3px 6px;
+            border-radius: 4px;
+            color: white;
+            width: 25px;
+            text-align: center;
+        }
+        /* Colores Posiciones */
+        .pos-portero { background: #7b1fa2; }
+        .pos-defensa { background: #d32f2f; }
+        .pos-medio { background: #f57c00; }
+        .pos-delantero { background: #388e3c; }
+
+        /* Colores Puntos (Lo que pediste) */
+        .pts-box { font-weight: 900; font-size: 1.1em; }
+        .pts-green { color: #2e7d32; }   /* Positivo */
+        .pts-orange { color: #ff9800; }  /* Cero */
+        .pts-red { color: #d32f2f; }     /* Negativo */
+
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+        .no-data { text-align: center; color: #666; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-    <h1>Resumen de las jornadas</h1>
-    
-    <div class="controls">
-        <input type="number" id="numJornada" placeholder="Escriba la jornada de la que desea ver el resumen" value="1">
-        
-        <button onclick="cargarResumen()">🔍 Ver Jornada</button>
-        
-        <a href="fantasy.html" class="btn-volver">⬅ Volver al Menú</a>
-    </div>
+<div class="header-resumen">
+    <h2 style="margin:0;">🏁 Resultados J-Anterior</h2>
+    <a href="fantasy.html" class="btn-volver">🔙 Volver</a>
+</div>
 
-    <div id="marcador" class="marcador">Esperando datos...</div>
+<div id="contenedor-resumen">
+    <div style="text-align:center; padding:20px;">Cargando resultados...</div>
+</div>
 
-    <div class="campo">
-        <div class="linea-medio"></div>
-        <div class="circulo-central"></div>
+<script>
+    // 1. Obtener datos al cargar
+    window.onload = function() {
+        fetch('/jornada/resumen')
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('contenedor-resumen');
 
-        <div class="equipo-area equipo-top" id="area-equipo-a"></div>
-
-        <div class="equipo-area equipo-bottom" id="area-equipo-b"></div>
-    </div>
-
-    <script>
-        const API_URL = "https://fantasy-veteranos.onrender.com"; 
-
-        async function cargarResumen() {
-            const num = document.getElementById("numJornada").value;
-            try {
-                const response = await fetch(`${API_URL}/jornada/${num}/resumen-partido`);
-                const data = await response.json();
-
-                if(data.error) {
-                    document.getElementById("marcador").innerText = "⚠️ " + data.error;
-                    document.getElementById("area-equipo-a").innerHTML = "";
-                    document.getElementById("area-equipo-b").innerHTML = "";
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <h3>🤷‍♂️ No hay datos disponibles</h3>
+                            <p>O bien es la primera jornada, o aún no se ha cerrado la jornada anterior.</p>
+                        </div>`;
                     return;
                 }
 
-                // Calcular Puntos Totales
-                const puntosA = data.equipoA.reduce((acc, j) => acc + j.puntos, 0);
-                const puntosB = data.equipoB.reduce((acc, j) => acc + j.puntos, 0);
+                container.innerHTML = data.map(m => {
+                    // Generar lista de jugadores
+                    let htmlJugadores = m.jugadores.map(j => {
+                        // Lógica de colores para los puntos
+                        let colorClass = 'pts-orange'; // Por defecto 0
+                        if (j.puntos > 0) colorClass = 'pts-green';
+                        if (j.puntos < 0) colorClass = 'pts-red';
 
-                // Pintar Marcador con colores dinámicos
-                const htmlMarcador = `
-                    <span class="texto-equipo texto-${data.colorA}">${data.colorA}: ${puntosA}</span> 
-                    - 
-                    <span class="texto-equipo texto-${data.colorB}">${data.colorB}: ${puntosB}</span>
-                `;
-                document.getElementById("marcador").innerHTML = htmlMarcador;
+                        let posClass = 'pos-' + (j.posicion ? j.posicion.toLowerCase() : 'medio');
 
-                renderEquipo("area-equipo-a", data.equipoA, data.colorA);
-                renderEquipo("area-equipo-b", data.equipoB, data.colorB);
-
-            } catch (e) {
-                console.error(e);
-                alert("Error cargando datos. Revisa la consola.");
-            }
-        }
-
-        function renderEquipo(elementId, jugadores, color) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = "";
-            
-            // Agrupar por líneas
-            const lineas = { PORTERO: [], DEFENSA: [], MEDIO: [], DELANTERO: [] };
-            jugadores.forEach(j => {
-                if(lineas[j.posicion]) lineas[j.posicion].push(j);
-                else lineas.MEDIO.push(j); // Default
-            });
-
-            // Orden de pintado: POR -> DEF -> MED -> DEL
-            // El CSS flex-direction se encarga de invertirlo para el equipo de abajo
-            const orden = ["PORTERO", "DEFENSA", "MEDIO", "DELANTERO"];
-
-            orden.forEach(pos => {
-                const fila = document.createElement("div");
-                fila.className = "linea-jugadores";
-                
-                if (lineas[pos].length > 0) {
-                    lineas[pos].forEach(jug => {
-                        fila.innerHTML += `
-                            <div class="jugador-card camiseta-${color}">
-                                <div class="puntos-badge">${jug.puntos}</div>
-                                <img src="${API_URL}${jug.imagen || '/user.png'}" class="jugador-img ${jug.mvp ? 'mvp' : ''}">
-                                <div class="jugador-nombre">${jug.nombre}</div>
+                        return `
+                        <div class="player-row">
+                            <div class="player-info">
+                                <span class="pos-badge ${posClass}">${j.posicion ? j.posicion.substring(0,3).toUpperCase() : '???'}</span>
+                                <span style="font-weight:600; color:#333;">${j.nombre}</span>
                             </div>
-                        `;
-                    });
-                    container.appendChild(fila);
-                }
-            });
-        }
+                            <div class="pts-box ${colorClass}">${j.puntos}</div>
+                        </div>`;
+                    }).join('');
 
-        // Cargar jornada 1 al entrar
-        window.onload = cargarResumen;
-    </script>
+                    return `
+                    <div class="manager-card">
+                        <div class="manager-header">
+                            <span class="manager-name">👤 ${m.manager}</span>
+                            <span class="manager-points">${m.puntosTotal} pts</span>
+                        </div>
+                        <div class="players-list">
+                            ${htmlJugadores}
+                        </div>
+                    </div>`;
+                }).join('');
+            })
+            .catch(err => {
+                document.getElementById('contenedor-resumen').innerHTML = '<p style="text-align:center; color:red;">Error al cargar resultados.</p>';
+                console.error(err);
+            });
+    };
+</script>
+
 </body>
 </html>

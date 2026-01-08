@@ -180,6 +180,52 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/jornada/resumen")
+    public List<Map<String, Object>> verResumenJornadaAnterior() {
+        Jornada actual = getJornadaActiva();
+        int numAnterior = actual.getNumero() - 1;
+
+        // Si estamos en la jornada 1 y no se ha cerrado ninguna, devolvemos lista vacía
+        if (numAnterior < 1) return new ArrayList<>();
+
+        // Buscamos la jornada anterior
+        Optional<Jornada> jOpt = jornadaRepository.findAll().stream()
+                .filter(j -> j.getNumero() == numAnterior)
+                .findFirst();
+
+        if (jOpt.isEmpty()) return new ArrayList<>();
+        Jornada anterior = jOpt.get();
+
+        List<Equipo> equipos = equipoRepository.findByJornada(anterior);
+
+        return equipos.stream().map(e -> {
+                    List<Map<String, Object>> jugadores = new ArrayList<>();
+                    for (Jugador j : e.getJugadoresAlineados()) {
+                        int pts = actuacionRepository.findByJugadorAndJornada(j, anterior)
+                                .map(Actuacion::getPuntosTotales).orElse(0);
+
+                        jugadores.add(Map.of(
+                                "nombre", j.getNombre(),
+                                "posicion", j.getPosicion(),
+                                "puntos", pts,
+                                "urlImagen", (j.getUrlImagen() != null ? j.getUrlImagen() : "")
+                        ));
+                    }
+
+                    // Ordenamos los jugadores por posición para que salgan bonitos (Portero -> Delantero)
+                    jugadores.sort((a,b) -> Integer.compare(getPesoPosicion((String)a.get("posicion")), getPesoPosicion((String)b.get("posicion"))));
+
+                    return Map.<String, Object>of(
+                            "manager", e.getUsuario().getNombre(),
+                            "puntosTotal", e.getPuntosTotalesJornada(),
+                            "jugadores", jugadores
+                    );
+                })
+                // Ordenamos a los mánagers: el que más puntos hizo primero
+                .sorted((a,b) -> Integer.compare((int)b.get("puntosTotal"), (int)a.get("puntosTotal")))
+                .collect(Collectors.toList());
+    }
+
     // --- USUARIOS ONLINE ---
     @PostMapping("/usuarios/ping/{idUsuario}")
     public List<String> pingUsuario(@PathVariable Long idUsuario) {

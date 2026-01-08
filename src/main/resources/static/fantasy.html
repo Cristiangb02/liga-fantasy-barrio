@@ -14,14 +14,75 @@
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0 auto; color: #333; max-width: 1000px; }
 
-        header { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1a237e, #0d47a1); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .jornada-badge { background: #ffd600; color: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; margin-left: 10px; }
-        .presupuesto-box { font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; white-space: nowrap;}
-        .presupuesto-negativo { background: #d32f2f; color: white; }
-        .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em; }
+        /* HEADER MODIFICADO PARA ALOJAR DINERO DEBAJO */
+        header {
+            display: flex;
+            justify-content: center; /* Centrado o flex-start según gusto, al quitar el botón salir queda mejor así o left */
+            align-items: center;
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
 
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .avatar-header { width: 45px; height: 45px; border-radius: 50%; background: #e0e0e0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border: 2px solid white; }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%; /* Ocupa todo para manejar el layout interno */
+        }
+
+        .avatar-header {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:1.8rem;
+            border: 2px solid white;
+            flex-shrink: 0; /* Que no se aplaste el avatar */
+        }
+
+        /* Estilos para nombre y dinero apilados */
+        .user-details-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden; /* Para que el texto largo no rompa */
+        }
+
+        .user-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #titulo-web {
+            margin: 0;
+            font-size: 1.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px; /* Si el nombre es muy largo, pone ... */
+        }
+
+        .jornada-badge { background: #ffd600; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; flex-shrink: 0; }
+
+        .presupuesto-box {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #b3e5fc; /* Un azul muy clarito para que destaque sobre el fondo oscuro */
+            margin-top: 2px;
+            /* Quitamos el fondo caja para que quede más limpio debajo del nombre, o lo dejamos sutil */
+            /* background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; display:inline-block; align-self: flex-start; */
+        }
+        .presupuesto-negativo { color: #ff8a80 !important; } /* Rojo claro para que se lea sobre fondo oscuro */
+
+        /* ELIMINADO .btn-logout PUES YA NO EXISTE */
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { position: relative; flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
@@ -74,8 +135,10 @@
         .btn-card:active { transform: scale(0.95); }
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
-        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; } /* 🆕 Botón Oferta */
-        .btn-vender { background: #ff8f00; color: white; }
+        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; }
+
+        .btn-vender { background: #d32f2f; color: white; }
+
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
 
@@ -146,7 +209,6 @@
         .btn-modal-ok { background: #1565c0; color: white; }
         .btn-modal-danger { background: #d32f2f; color: white; }
 
-        /* 🔴 NUEVOS ESTILOS PARA EL RANKING */
         .fila-ranking {
             background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center;
@@ -191,16 +253,13 @@
 <header>
     <div class="user-info">
         <div class="avatar-header">👤</div>
-        <div style="display:flex; flex-direction:column;">
-            <div style="display:flex; align-items:center;">
-                <h1 id="titulo-web" style="margin:0; font-size:1.4rem;">Fantasy</h1>
+        <div class="user-details-col">
+            <div class="user-name-row">
+                <h1 id="titulo-web">Fantasy</h1>
                 <span id="badge-jornada" class="jornada-badge">J-</span>
             </div>
+            <div id="presupuesto-display" class="presupuesto-box">0 €</div>
         </div>
-    </div>
-    <div style="display:flex; align-items:center; gap: 10px;">
-        <div id="presupuesto-display" class="presupuesto-box">0 €</div>
-        <button class="btn-logout" onclick="logout()">Salir</button>
     </div>
 </header>
 
@@ -1098,7 +1157,6 @@
     function actualizarPresupuestoUI() { const el = document.getElementById('presupuesto-display'); el.innerText = formatoDinero.format(presupuesto); if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); } else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); } }
     function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
-    // 🔴 NUEVA LÓGICA DE USUARIOS ONLINE
     function pingOnline() {
         if(!usuarioId) return;
         fetch(`/usuarios/ping/${usuarioId}`, { method: 'POST' })
