@@ -74,11 +74,8 @@
         .btn-card:active { transform: scale(0.95); }
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
-        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; }
-
-        /* 🔴 CAMBIO: Botón Vender ROJO */
-        .btn-vender { background: #d32f2f; color: white; }
-
+        .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; } /* 🆕 Botón Oferta */
+        .btn-vender { background: #ff8f00; color: white; }
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
 
@@ -930,21 +927,53 @@
     }
 
     function cargarOfertas() {
-        fetch(`/ofertas/recibidas/${usuarioId}`).then(r=>r.json()).then(ofertas => {
-            const div = document.getElementById('lista-ofertas');
-            if(ofertas.length === 0) { div.innerHTML = '<p>No tienes ofertas pendientes.</p>'; return; }
-            div.innerHTML = ofertas.map(o => `
-                <div class="oferta-item">
-                    <div class="oferta-info">
-                        <strong>${o.comprador}</strong> quiere a <strong>${o.jugador}</strong><br>
-                        Oferta: <span style="color:#2e7d32; font-weight:bold;">${o.cantidadFmt}</span>
+        // 🔴 CAMBIO: Ahora llama a 'mis-ofertas' que devuelve {recibidas:[], enviadas:[]}
+        fetch(`/ofertas/mis-ofertas/${usuarioId}`).then(r=>r.json()).then(data => {
+
+            const divRecibidas = document.getElementById('lista-ofertas-recibidas');
+            const divEnviadas = document.getElementById('lista-ofertas-enviadas');
+            const tabButton = document.getElementById('tab-ofertas');
+            const notifBadge = document.getElementById('notif-ofertas');
+
+            // 1. GESTIONAR NOTIFICACIÓN (ROJA)
+            if(data.recibidas.length > 0) {
+                tabButton.classList.add('notif-active');
+            } else {
+                tabButton.classList.remove('notif-active');
+            }
+
+            // 2. PINTAR RECIBIDAS
+            if(data.recibidas.length === 0) {
+                divRecibidas.innerHTML = '<p style="font-size:0.9em; color:#888;">No tienes ofertas pendientes.</p>';
+            } else {
+                divRecibidas.innerHTML = data.recibidas.map(o => `
+                    <div class="oferta-item">
+                        <div class="oferta-info">
+                            <strong>${o.comprador}</strong> quiere a <strong>${o.jugador}</strong><br>
+                            Oferta: <span style="color:#2e7d32; font-weight:bold;">${o.cantidadFmt}</span>
+                        </div>
+                        <div>
+                            <button class="btn-oferta-ok" onclick="responderOferta(${o.id}, 'aceptar')">✔</button>
+                            <button class="btn-oferta-ko" onclick="responderOferta(${o.id}, 'rechazar')">✖</button>
+                        </div>
                     </div>
-                    <div>
-                        <button class="btn-oferta-ok" onclick="responderOferta(${o.id}, 'aceptar')">✔</button>
-                        <button class="btn-oferta-ko" onclick="responderOferta(${o.id}, 'rechazar')">✖</button>
+                `).join('');
+            }
+
+            // 3. PINTAR ENVIADAS
+            if(data.enviadas.length === 0) {
+                divEnviadas.innerHTML = '<p style="font-size:0.9em; color:#888;">No has hecho ofertas.</p>';
+            } else {
+                divEnviadas.innerHTML = data.enviadas.map(o => `
+                    <div class="oferta-item enviada">
+                        <div class="oferta-info">
+                            Quieres a <strong>${o.jugador}</strong> (de ${o.vendedor})<br>
+                            Tu oferta: <span style="color:#0277bd; font-weight:bold;">${o.cantidadFmt}</span>
+                        </div>
+                        <div style="font-size:0.8em; color:#666; font-style:italic;">Pendiente...</div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
         });
     }
 
@@ -1004,13 +1033,14 @@
     }
 
     function pintarSelectAdmin() {
+        // Carga lista para registrar
         fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
             const select = document.getElementById('admin-jugador');
             if (jugadores.length === 0) {
                 select.innerHTML = '<option>Todos puntuados</option>';
-                return;
+            } else {
+                select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
             }
-            select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
         });
         cargarJugadoresPuntuados();
     }
@@ -1081,10 +1111,13 @@
 
     function verQuienEstaOnline() {
         if(listaUsuariosOnline.length === 0) return;
-        let listaHTML = listaUsuariosOnline.map(n => `<li>👤 ${n}</li>`).join('');
-        // Usamos el modal de info pero inyectando HTML
-        document.getElementById('modal-mensaje').innerHTML = `<ul style="list-style:none; padding:0; font-size:1.1em;">${listaHTML}</ul>`;
-        mostrarModal("En línea 🟢", "", 'info', ()=>{});
+
+        // 1. Mostrar el modal primero (esto borra el contenido anterior y pone el título)
+        mostrarModal("Usuarios en línea 🟢", "", 'info', ()=>{});
+
+        // 2. Y LUEGO inyectamos la lista HTML (para que no se borre)
+        let listaHTML = listaUsuariosOnline.map(n => `<li style="margin-bottom:5px;">👤 ${n}</li>`).join('');
+        document.getElementById('modal-mensaje').innerHTML = `<ul style="list-style:none; padding:0; font-size:1.1em; text-align:left;">${listaHTML}</ul>`;
     }
 </script>
 </body>
