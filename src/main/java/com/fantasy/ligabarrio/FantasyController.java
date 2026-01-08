@@ -66,7 +66,6 @@ public class FantasyController {
     private long getNumeroJornadaReal() { return getJornadaActiva().getNumero(); }
 
     // --- HORARIO MERCADO (21:30 - 10:00 CERRADO) ---
-    // --- HORARIO MERCADO (21:30 - 10:00 CERRADO) ---
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
 
@@ -246,8 +245,6 @@ public class FantasyController {
         // Calcular MVP global de la jornada (máxima puntuación)
         int maxPuntos = actuaciones.stream().mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
 
-        // Agrupar por colores (ej: ROJO vs AZUL)
-        Map<String, List<Map<String, Object>>> porColores = new ArrayList<>();
         // Usamos un mapa temporal para agrupar
         Map<String, List<Actuacion>> grupos = actuaciones.stream()
                 .filter(a -> a.getEquipoColor() != null)
