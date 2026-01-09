@@ -158,6 +158,7 @@
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
+        .btn-edit-user { background: #0288d1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; margin-right: 5px; }
 
         .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .timer-badge { background: #1a237e; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em; letter-spacing: 1px; }
@@ -806,16 +807,19 @@
 
     function reclamar(idEquipo) { post(`/reclamar-premio/${idEquipo}`, {}); }
 
-    // 🆕 GESTIÓN USUARIOS ADMIN (PASSWORD)
     function cargarUsuariosAdmin() {
         fetch('/admin/usuarios-gestion').then(r => r.json()).then(usuarios => {
             document.getElementById('admin-lista-usuarios').innerHTML = usuarios.map(u => `
                 <div class="user-row">
-                    <div>
+                    <div style="overflow:hidden; text-overflow:ellipsis;">
                         <strong>${u.nombre}</strong> ${u.esAdmin ? '(ADMIN)' : ''}<br>
-                        <small style="color:#d32f2f;">Pass: ${u.password}</small>
+                        <small style="color:#666;">Pass: ${u.password}</small>
                     </div>
-                    ${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}
+                    <div style="flex-shrink:0;">
+                        <button class="btn-edit-user" onclick="editarUsuario(${u.id}, '${u.nombre}')">✏️</button>
+
+                        ${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}
+                    </div>
                 </div>
             `).join('');
         });
@@ -857,7 +861,6 @@
 
         let overlay = '';
 
-        // LÓGICA VISUAL BLINDAJE (RIVALES)
         if (j.blindado) {
             if(tipo === 'robar') {
                 overlay = `<div class="blindado-overlay">
@@ -1054,6 +1057,15 @@
                 });
             } else {
                 mostrarModal("Error","Código mal.",'confirm',()=>{});
+            }
+        });
+    }
+
+    function editarUsuario(id, nombreActual) {
+        mostrarModal("Cambiar Nombre", "Introduce el nuevo nombre para " + nombreActual + ":", 'input', (nuevoNombre) => {
+            if (nuevoNombre && nuevoNombre.trim() !== "") {
+                post(`/admin/editar-usuario/${id}`, { nombre: nuevoNombre.trim() });
+                setTimeout(cargarUsuariosAdmin, 1000);
             }
         });
     }

@@ -124,6 +124,25 @@ public class FantasyController {
         return "✅ Usuario aprobado.";
     }
 
+    @PostMapping("/admin/editar-usuario/{idUsuario}")
+    public String editarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
+        String nuevoNombre = datos.get("nombre");
+        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) return "❌ El nombre no puede estar vacío.";
+
+        // Comprobar si el nombre ya existe (y no es el suyo propio)
+        Usuario existente = usuarioRepository.findByNombre(nuevoNombre);
+        if (existente != null && !existente.getId().equals(idUsuario)) {
+            return "❌ Ese nombre ya está en uso por otro jugador.";
+        }
+
+        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
+        String antiguo = u.getNombre();
+        u.setNombre(nuevoNombre);
+        usuarioRepository.save(u);
+
+        return "✅ Nombre cambiado: " + antiguo + " ➝ " + nuevoNombre;
+    }
+
     @DeleteMapping("/admin/rechazar/{idUsuario}")
     public String rechazarUsuario(@PathVariable Long idUsuario) {
         usuarioRepository.deleteById(idUsuario);
