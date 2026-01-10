@@ -873,6 +873,27 @@ public class FantasyController {
         return "✅ Mercado renovado con éxito.";
     }
 
+    // --- LIMPIEZA DE JUGADORES FANTASMA ---
+    @PostMapping("/admin/eliminar-jonas")
+    public String eliminarJonas() {
+        // Buscamos todos los jugadores
+        List<Jugador> todos = jugadorRepository.findAll();
+
+        // Filtramos solo los que se llamen "Jona" (sin H)
+        List<Jugador> fantasmas = todos.stream()
+                .filter(j -> j.getNombre().equalsIgnoreCase("Jona"))
+                .collect(Collectors.toList());
+
+        if (fantasmas.isEmpty()) {
+            return "❌ No encontré ningún 'Jona' para borrar.";
+        }
+
+        // Los borramos
+        jugadorRepository.deleteAll(fantasmas);
+
+        return "👻 ¡Listo! Eliminados " + fantasmas.size() + " jugadores llamados 'Jona'.";
+    }
+
     @GetMapping("/clasificacion")
     public List<Map<String, Object>> verClasificacion() {
         List<Usuario> usuarios = usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList());
