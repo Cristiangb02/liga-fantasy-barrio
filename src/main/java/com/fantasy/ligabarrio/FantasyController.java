@@ -31,6 +31,7 @@ public class FantasyController {
     private final OfertaRepository ofertaRepository;
     private final CalculadoraPuntosService calculadora;
     private final Map<Long, LocalDateTime> usuariosOnline = new ConcurrentHashMap<>();
+    private static long seedOffset = 0;
 
     public FantasyController(EquipoRepository equipoRepository, JugadorRepository jugadorRepository, UsuarioRepository usuarioRepository, JornadaRepository jornadaRepository, ActuacionRepository actuacionRepository, NoticiaRepository noticiaRepository, OfertaRepository ofertaRepository, CalculadoraPuntosService calculadora) {
         this.equipoRepository = equipoRepository;
@@ -185,11 +186,11 @@ public class FantasyController {
         // 1. Ordenar siempre por ID primero para garantizar consistencia antes de barajar
         todos.sort(Comparator.comparing(Jugador::getId));
 
-        // 2. Semilla basada en el DÍA. Esto asegura que el orden aleatorio sea EL MISMO para todos hoy.
+        // 2. Semilla basada en el DÍA + el offset del admin
         LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
-        long seed = hoy.toEpochDay();
+        long seed = hoy.toEpochDay() + seedOffset; // <--- AQUÍ ESTÁ EL CAMBIO
 
-        // 3. Barajar TODOS los jugadores con esa semilla fija
+        // 3. Barajar TODOS los jugadores con esa semilla modificada
         Collections.shuffle(todos, new Random(seed));
 
         return todos.stream()
@@ -864,6 +865,12 @@ public class FantasyController {
 
         usuarioRepository.delete(u);
         return "✅ Usuario eliminado correctamente.";
+    }
+
+    @PostMapping("/admin/reset-mercado")
+    public String resetMercado() {
+        seedOffset++; // Cambiamos la semilla para que el azar sea distinto
+        return "✅ Mercado renovado con éxito.";
     }
 
     @GetMapping("/clasificacion")

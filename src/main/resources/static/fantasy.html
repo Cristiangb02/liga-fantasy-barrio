@@ -397,6 +397,12 @@
         <button onclick="cerrarJornada()" style="background:#37474f; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold;">🔄 CERRAR JORNADA</button>
     </div>
 
+    <div style="background:#e1f5fe; padding:15px; border-radius:10px; border:1px solid #81d4fa; margin-bottom: 20px;">
+        <h4 style="color:#0277bd; margin-top:0;">🛒 Gestión de Mercado</h4>
+        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Fuerza la aparición de nuevos jugadores inmediatamente.</p>
+        <button onclick="resetearMercado()" style="background:#0288d1; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">🔄 GENERAR NUEVO MERCADO</button>
+    </div>
+
     <div style="background:#fff3e0; padding:15px; border-radius:10px; border:1px solid #ffb74d; margin-bottom: 20px;">
         <h4 style="color:#e65100; margin-top:0;">🚑 Corregir Errores (Resetear Jugador)</h4>
         <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Usa esto si le diste puntos a quien no debías. Borrará el acta y devolverá los puntos y valor.</p>
@@ -1188,6 +1194,12 @@
         // 2. Y LUEGO inyectamos la lista HTML (para que no se borre)
         let listaHTML = listaUsuariosOnline.map(n => `<li style="margin-bottom:5px;">👤 ${n}</li>`).join('');
         document.getElementById('modal-mensaje').innerHTML = `<ul style="list-style:none; padding:0; font-size:1.1em; text-align:left;">${listaHTML}</ul>`;
+    }
+
+    function resetearMercado() {
+        mostrarModal("Resetear Mercado", "¿Seguro que quieres cambiar los jugadores del mercado actual?", 'confirm', () => {
+            post('/admin/reset-mercado', {});
+        });
     }
 </script>
 </body>
