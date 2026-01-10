@@ -69,6 +69,7 @@ public class FantasyController {
 
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
+        // Cierre de 21:30 a 10:00
         boolean cerradoNoche = ahora.isAfter(LocalTime.of(21, 30)) || ahora.equals(LocalTime.of(21, 30));
         boolean cerradoManana = ahora.isBefore(LocalTime.of(10, 0));
         return cerradoNoche || cerradoManana;
@@ -85,16 +86,16 @@ public class FantasyController {
         }
     }
 
-    // 🔥 MÉTODO CLAVE PARA EVITAR EL BUCLE INFINITO 🔥
-    // Convierte un Jugador en un Mapa seguro de datos
+    // 🔥 ESTA FUNCIÓN ES LA SALVACIÓN 🔥
+    // Convierte el Jugador en un mapa de datos simple para evitar el bucle infinito
     private Map<String, Object> mapJugadorToDto(Jugador j) {
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("Europe/Madrid"));
         boolean blindado = j.getFechaFinBlindaje() != null && j.getFechaFinBlindaje().isAfter(ahora);
         long segundosRestantes = blindado ? ChronoUnit.SECONDS.between(ahora, j.getFechaFinBlindaje()) : 0;
 
-        // Convertimos el propietario a un mapa simple (sin sus listas de jugadores)
         Map<String, Object> propMap = null;
         if(j.getPropietario() != null) {
+            // SOLO guardamos ID y Nombre, NO el objeto Usuario entero
             propMap = Map.of("id", j.getPropietario().getId(), "nombre", j.getPropietario().getNombre());
         }
 
@@ -106,7 +107,7 @@ public class FantasyController {
                 "clausula", j.getClausula(),
                 "puntosAcumulados", j.getPuntosAcumulados(),
                 "urlImagen", (j.getUrlImagen() != null ? j.getUrlImagen() : ""),
-                "propietario", (propMap != null ? propMap : Map.of()), // Evitamos null
+                "propietario", (propMap != null ? propMap : Map.of()), // Evita null
                 "blindado", blindado,
                 "segundosBlindaje", segundosRestantes
         );
@@ -138,9 +139,8 @@ public class FantasyController {
         return Map.of("id", user.getId(), "nombre", user.getNombre(), "esAdmin", user.isEsAdmin(), "presupuesto", user.getPresupuesto());
     }
 
-    // --- ADMIN USUARIOS ---
+    // --- ADMIN USUARIOS (CORREGIDO: Devuelve Mapas) ---
 
-    // 🔴 CORREGIDO: Devuelve Mapas, no Usuarios
     @GetMapping("/admin/usuarios-gestion")
     public List<Map<String, Object>> getUsuariosGestion() {
         return usuarioRepository.findAll().stream().map(u -> Map.<String, Object>of(
@@ -151,7 +151,6 @@ public class FantasyController {
         )).collect(Collectors.toList());
     }
 
-    // 🔴 CORREGIDO: Devuelve Mapas
     @GetMapping("/admin/pendientes")
     public List<Map<String, Object>> verUsuariosPendientes() {
         return usuarioRepository.findAll().stream()
@@ -190,12 +189,11 @@ public class FantasyController {
         return "🗑️ Solicitud rechazada.";
     }
 
-    // --- DATOS PRINCIPALES ---
+    // --- JUGADORES Y MERCADO (CORREGIDO: Usa mapJugadorToDto) ---
 
     @GetMapping("/jornada/actual")
     public long getNumeroJornadaActualEndpoint() { return getNumeroJornadaReal(); }
 
-    // 🔴 CORREGIDO: Devuelve Mapas
     @GetMapping("/usuarios")
     public List<Map<String, Object>> verRivales() {
         return usuarioRepository.findAll().stream()
@@ -204,7 +202,6 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
-    // 🔴 CORREGIDO: Usa mapJugadorToDto
     @GetMapping("/jugadores")
     public List<Map<String, Object>> verTodosLosJugadores() {
         return jugadorRepository.findAll().stream()
@@ -212,7 +209,6 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
-    // 🔴 CORREGIDO: Usa mapJugadorToDto
     @GetMapping("/mercado-diario")
     public List<Map<String, Object>> getMercadoDiario() {
         List<Jugador> todos = jugadorRepository.findAll();
@@ -226,11 +222,10 @@ public class FantasyController {
         return todos.stream()
                 .filter(j -> j.getPropietario() == null)
                 .limit(14)
-                .map(this::mapJugadorToDto)
+                .map(this::mapJugadorToDto) // USA EL DTO SEGURO
                 .collect(Collectors.toList());
     }
 
-    // 🔴 CORREGIDO: Usa mapJugadorToDto
     @GetMapping("/alineacion/{usuarioId}")
     public List<Map<String, Object>> getAlineacion(@PathVariable Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
@@ -242,13 +237,12 @@ public class FantasyController {
         if(equipo.isEmpty()) return new ArrayList<>();
 
         return equipo.get().getJugadoresAlineados().stream()
-                .map(this::mapJugadorToDto)
+                .map(this::mapJugadorToDto) // USA EL DTO SEGURO
                 .collect(Collectors.toList());
     }
 
-    // --- GESTIÓN ADMIN JUGADORES ---
+    // --- GESTIÓN ADMIN JUGADORES (CORREGIDO) ---
 
-    // 🔴 CORREGIDO: Usa mapJugadorToDto
     @GetMapping("/admin/jugadores-pendientes")
     public List<Map<String, Object>> getJugadoresPendientes() {
         Jornada actual = getJornadaActiva();
@@ -260,11 +254,10 @@ public class FantasyController {
                     if (p1 != p2) return Integer.compare(p1, p2);
                     return j1.getNombre().compareToIgnoreCase(j2.getNombre());
                 })
-                .map(this::mapJugadorToDto)
+                .map(this::mapJugadorToDto) // USA EL DTO SEGURO
                 .collect(Collectors.toList());
     }
 
-    // 🔴 CORREGIDO: Usa mapJugadorToDto
     @GetMapping("/admin/jugadores-puntuados")
     public List<Map<String, Object>> getJugadoresPuntuados() {
         Jornada actual = getJornadaActiva();
@@ -276,7 +269,7 @@ public class FantasyController {
                     if (p1 != p2) return Integer.compare(p1, p2);
                     return j1.getNombre().compareToIgnoreCase(j2.getNombre());
                 })
-                .map(this::mapJugadorToDto)
+                .map(this::mapJugadorToDto) // USA EL DTO SEGURO
                 .collect(Collectors.toList());
     }
 
@@ -287,7 +280,6 @@ public class FantasyController {
         Jugador jugador = jugadorRepository.findById(datos.idJugador).orElseThrow();
         Jornada jornada = getJornadaActiva();
         Actuacion actuacion = actuacionRepository.findByJugadorAndJornada(jugador, jornada).orElse(new Actuacion(jugador, jornada));
-
         actuacion.setJugado(datos.jugado);
         actuacion.setVictoria(datos.victoria);
         actuacion.setDerrota(datos.derrota);
@@ -725,101 +717,6 @@ public class FantasyController {
         }).sorted((m1, m2) -> {
             int cmp = Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos"));
             return cmp != 0 ? cmp : Integer.compare((int)m2.get("valorPlantilla"), (int)m1.get("valorPlantilla"));
-        }).collect(Collectors.toList());
-    }
-
-    // --- OTROS ---
-    @GetMapping("/jornada/resumen")
-    public List<Map<String, Object>> verResumenJornadaAnterior() {
-        Jornada actual = getJornadaActiva();
-        int numAnterior = actual.getNumero() - 1;
-        if (numAnterior < 1) return new ArrayList<>();
-
-        Optional<Jornada> jOpt = jornadaRepository.findAll().stream()
-                .filter(j -> j.getNumero() == numAnterior)
-                .findFirst();
-
-        if (jOpt.isEmpty()) return new ArrayList<>();
-        Jornada anterior = jOpt.get();
-        List<Equipo> equipos = equipoRepository.findByJornada(anterior);
-
-        return equipos.stream().map(e -> {
-            List<Map<String, Object>> jugadores = new ArrayList<>();
-            for (Jugador j : e.getJugadoresAlineados()) {
-                int pts = actuacionRepository.findByJugadorAndJornada(j, anterior)
-                        .map(Actuacion::getPuntosTotales).orElse(0);
-                jugadores.add(Map.of(
-                        "nombre", j.getNombre(),
-                        "posicion", j.getPosicion(),
-                        "puntos", pts,
-                        "urlImagen", (j.getUrlImagen() != null ? j.getUrlImagen() : "")
-                ));
-            }
-            jugadores.sort((a,b) -> Integer.compare(getPesoPosicion((String)a.get("posicion")), getPesoPosicion((String)b.get("posicion"))));
-            return Map.<String, Object>of(
-                    "manager", e.getUsuario().getNombre(),
-                    "puntosTotal", e.getPuntosTotalesJornada(),
-                    "jugadores", jugadores
-            );
-        }).sorted((a,b) -> Integer.compare((int)b.get("puntosTotal"), (int)a.get("puntosTotal"))).collect(Collectors.toList());
-    }
-
-    @GetMapping("/jornada/{numero}/resumen-partido")
-    public Map<String, Object> getResumenPartido(@PathVariable int numero) {
-        Optional<Jornada> jOpt = jornadaRepository.findAll().stream().filter(j -> j.getNumero() == numero).findFirst();
-        if (jOpt.isEmpty()) return Map.of("error", "Jornada no encontrada");
-
-        Jornada jornada = jOpt.get();
-        List<Actuacion> actuaciones = actuacionRepository.findAll().stream()
-                .filter(a -> a.getJornada().getId().equals(jornada.getId()))
-                .collect(Collectors.toList());
-        if (actuaciones.isEmpty()) return Map.of("error", "Sin datos en esta jornada");
-
-        int maxPuntos = actuaciones.stream().mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
-
-        Map<String, List<Actuacion>> grupos = actuaciones.stream()
-                .filter(a -> a.getEquipoColor() != null)
-                .collect(Collectors.groupingBy(Actuacion::getEquipoColor));
-
-        List<String> colores = new ArrayList<>(grupos.keySet());
-        String colorA = colores.isEmpty() ? "BLANCO" : colores.get(0);
-        String colorB = colores.size() > 1 ? colores.get(1) : "RIVAL";
-
-        List<Map<String, Object>> equipoA = mapJugadoresCampo(grupos.getOrDefault(colorA, List.of()), maxPuntos);
-        List<Map<String, Object>> equipoB = mapJugadoresCampo(grupos.getOrDefault(colorB, List.of()), maxPuntos);
-
-        return Map.of("colorA", colorA, "colorB", colorB, "equipoA", equipoA, "equipoB", equipoB);
-    }
-
-    @GetMapping("/jornada/{numero}/resumen-managers")
-    public List<Map<String, Object>> verResumenManagers(@PathVariable int numero) {
-        Optional<Jornada> jOpt = jornadaRepository.findAll().stream().filter(j -> j.getNumero() == numero).findFirst();
-        if (jOpt.isEmpty()) return new ArrayList<>();
-
-        Jornada jornada = jOpt.get();
-        List<Equipo> equipos = equipoRepository.findByJornada(jornada);
-
-        return equipos.stream().map(e -> {
-            List<Map<String, Object>> jugadores = new ArrayList<>();
-            for (Jugador j : e.getJugadoresAlineados()) {
-                int pts = actuacionRepository.findByJugadorAndJornada(j, jornada).map(Actuacion::getPuntosTotales).orElse(0);
-                jugadores.add(Map.of("nombre", j.getNombre(), "posicion", j.getPosicion(), "puntos", pts));
-            }
-            jugadores.sort((a,b) -> Integer.compare(getPesoPosicion((String)a.get("posicion")), getPesoPosicion((String)b.get("posicion"))));
-            return Map.<String, Object>of("manager", e.getUsuario().getNombre(), "puntosTotal", e.getPuntosTotalesJornada(), "jugadores", jugadores);
-        }).sorted((a,b) -> Integer.compare((int)b.get("puntosTotal"), (int)a.get("puntosTotal"))).collect(Collectors.toList());
-    }
-
-    private List<Map<String, Object>> mapJugadoresCampo(List<Actuacion> acts, int maxPuntos) {
-        return acts.stream().map(a -> {
-            Jugador j = a.getJugador();
-            return Map.<String, Object>of(
-                    "nombre", j.getNombre(),
-                    "posicion", j.getPosicion(),
-                    "puntos", a.getPuntosTotales(),
-                    "imagen", (j.getUrlImagen() != null ? j.getUrlImagen() : ""),
-                    "mvp", (a.getPuntosTotales() == maxPuntos && maxPuntos > 0)
-            );
         }).collect(Collectors.toList());
     }
 
