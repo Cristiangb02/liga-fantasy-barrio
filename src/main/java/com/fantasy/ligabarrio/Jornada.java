@@ -9,7 +9,6 @@ public class Jornada {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private int numero;
     private LocalDate fecha;
 
@@ -28,12 +27,10 @@ public class Jornada {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    
     public int getNumero() { return numero; }
     public void setNumero(int numero) { this.numero = numero; }
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
-    
     public Temporada getTemporada() { return temporada; }
     public void setTemporada(Temporada temporada) { this.temporada = temporada; }
 }

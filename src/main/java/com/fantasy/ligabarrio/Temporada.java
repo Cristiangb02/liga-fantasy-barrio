@@ -1,6 +1,6 @@
 package com.fantasy.ligabarrio;
 
-import jakarta.persistence.*; // Importa las herramientas de base de datos
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity

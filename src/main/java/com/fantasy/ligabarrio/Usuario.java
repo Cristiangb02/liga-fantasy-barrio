@@ -8,7 +8,6 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nombre;
     private String password;
     private int presupuesto;
@@ -35,7 +34,6 @@ public class Usuario {
     public void setPresupuesto(int presupuesto) { this.presupuesto = presupuesto; }
     public boolean isEsAdmin() { return esAdmin; }
     public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
-    
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
 }
