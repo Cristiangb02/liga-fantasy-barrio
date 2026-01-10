@@ -718,7 +718,6 @@ public class FantasyController {
         }).collect(Collectors.toList());
     }
 
-    // --- USUARIOS ONLINE ---
     @PostMapping("/usuarios/ping/{idUsuario}")
     public List<String> pingUsuario(@PathVariable Long idUsuario) {
         usuariosOnline.put(idUsuario, LocalDateTime.now());
