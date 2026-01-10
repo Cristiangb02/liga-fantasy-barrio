@@ -87,13 +87,15 @@ public class FantasyController {
         }
     }
 
-    // 🔥 LA CLAVE DEL ÉXITO: Transforma Jugador a Mapa para evitar bucles infinitos 🔥
+    // 🔥 LA HERRAMIENTA QUE ARREGLA EL PROBLEMA 🔥
+    // Convierte el Jugador en DATOS SUELTOS (Map) para que Java no se vuelva loco
     private Map<String, Object> mapJugadorToDto(Jugador j) {
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("Europe/Madrid"));
         boolean blindado = j.getFechaFinBlindaje() != null && j.getFechaFinBlindaje().isAfter(ahora);
         long segundosRestantes = blindado ? ChronoUnit.SECONDS.between(ahora, j.getFechaFinBlindaje()) : 0;
 
-        // Aquí rompemos el bucle: en vez de meter el objeto Usuario entero, metemos solo ID y Nombre
+        // AQUÍ ESTÁ LA CORRECCIÓN CLAVE:
+        // En vez de pasar el objeto Usuario entero, creamos un mapa pequeño solo con lo necesario.
         Map<String, Object> propMap = null;
         if(j.getPropietario() != null) {
             propMap = Map.of("id", j.getPropietario().getId(), "nombre", j.getPropietario().getNombre());
@@ -113,7 +115,7 @@ public class FantasyController {
         );
     }
 
-    // --- AUTENTICACIÓN ---
+    // --- AUTH ---
 
     @PostMapping("/auth/registro")
     public String registrarUsuario(@RequestBody Usuario datos) {
@@ -143,6 +145,7 @@ public class FantasyController {
 
     @GetMapping("/admin/usuarios-gestion")
     public List<Map<String, Object>> getUsuariosGestion() {
+        // Devolvemos mapa manual, no el objeto Usuario
         return usuarioRepository.findAll().stream().map(u -> Map.<String, Object>of(
                 "id", u.getId(),
                 "nombre", u.getNombre(),
@@ -195,6 +198,7 @@ public class FantasyController {
 
     @GetMapping("/usuarios")
     public List<Map<String, Object>> verRivales() {
+        // Devolvemos mapa manual
         return usuarioRepository.findAll().stream()
                 .filter(Usuario::isActivo)
                 .map(u -> Map.<String, Object>of("id", u.getId(), "nombre", u.getNombre(), "presupuesto", u.getPresupuesto()))
@@ -317,9 +321,11 @@ public class FantasyController {
         jugador.setClausula(jugador.getValor());
         jugador.setJornadaFichaje(getJornadaActiva().getId());
         jugador.setFechaFichaje(LocalDate.now(ZoneId.of("Europe/Madrid")));
-        jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
 
+        //Blindaje de 7 días
+        jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
         cancelarOfertasPendientes(jugador);
+
         usuarioRepository.save(comprador);
         jugadorRepository.save(jugador);
         noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ficha a " + jugador.getNombre() + " por " + fmtDinero(jugador.getValor())));
@@ -718,6 +724,7 @@ public class FantasyController {
         }).collect(Collectors.toList());
     }
 
+    // --- USUARIOS ONLINE ---
     @PostMapping("/usuarios/ping/{idUsuario}")
     public List<String> pingUsuario(@PathVariable Long idUsuario) {
         usuariosOnline.put(idUsuario, LocalDateTime.now());
