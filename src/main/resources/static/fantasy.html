@@ -14,7 +14,6 @@
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0 auto; color: #333; max-width: 1000px; }
 
-        /* HEADER MODIFICADO PARA ALOJAR DINERO DEBAJO */
         header {
             display: flex;
             justify-content: center; /* Centrado o flex-start según gusto, al quitar el botón salir queda mejor así o left */
@@ -31,7 +30,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            width: 100%; /* Ocupa todo para manejar el layout interno */
+            width: 100%;
         }
 
         .avatar-header {
@@ -44,7 +43,7 @@
             justify-content:center;
             font-size:1.8rem;
             border: 2px solid white;
-            flex-shrink: 0; /* Que no se aplaste el avatar */
+            flex-shrink: 0;
         }
 
         /* Estilos para nombre y dinero apilados */
@@ -52,7 +51,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            overflow: hidden; /* Para que el texto largo no rompa */
+            overflow: hidden;
         }
 
         .user-name-row {
@@ -67,7 +66,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px; /* Si el nombre es muy largo, pone ... */
+            max-width: 200px;
         }
 
         .jornada-badge { background: #ffd600; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; flex-shrink: 0; }
@@ -75,14 +74,12 @@
         .presupuesto-box {
             font-size: 0.95rem;
             font-weight: bold;
-            color: #b3e5fc; /* Un azul muy clarito para que destaque sobre el fondo oscuro */
+            color: #b3e5fc;
             margin-top: 2px;
             /* Quitamos el fondo caja para que quede más limpio debajo del nombre, o lo dejamos sutil */
             /* background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; display:inline-block; align-self: flex-start; */
         }
         .presupuesto-negativo { color: #ff8a80 !important; } /* Rojo claro para que se lea sobre fondo oscuro */
-
-        /* ELIMINADO .btn-logout PUES YA NO EXISTE */
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { position: relative; flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
@@ -136,9 +133,7 @@
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
         .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; }
-
         .btn-vender { background: #d32f2f; color: white; }
-
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
 
@@ -167,7 +162,6 @@
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
-        /* NUEVOS ESTILOS HISTORIAL */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
@@ -179,7 +173,6 @@
         .text-red { color: #d32f2f; }
         .text-orange { color: #ff9800; }
 
-        /* ESTILOS OFERTAS (NUEVO) */
         .oferta-item { background: #fff; border: 1px solid #ddd; border-left: 5px solid #7b1fa2; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
         .oferta-item.enviada { border-left: 5px solid #0288d1; background: #e1f5fe; } /* Estilo diferente para enviadas */
         .oferta-info { font-size: 0.9em; }
@@ -229,7 +222,6 @@
 
         .btn-back-red { background: #d32f2f; border: 1px solid #b71c1c; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
 
-        /* 🔴 ESTILOS BARRA ONLINE */
         .online-bar {
             background: #e3f2fd;
             color: #1565c0;
@@ -277,7 +269,7 @@
         🤝 Ofertas
         <div id="notif-ofertas" class="notif-badge"></div> </button>
     <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Clasificación</button>
-    <button onclick="cambiarPestaña('ranking')" id="tab-ranking">🌟 Mejores Jugadores</button>
+    <button onclick="cambiarPestaña('ranking')" id="tab-ranking">👑 Mejores Jugadores</button>
     <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Mis jornadas </button>
     <button onclick="cambiarPestaña('noticias')" id="tab-noticias">📰 Noticias</button>
     <button onclick="window.location.href='resumen.html'" class="btn-partido">🏟️ Partidos</button>
@@ -305,7 +297,7 @@
     <div class="market-header">
         <span style="font-weight:bold; font-size:1.1rem;">Mercado Libre</span>
         <div id="msg-mercado-cerrado" class="oculto" style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 10:00</div>
-        <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
+        <span style="font-size:0.7em; color:#666;">Se renueva en:</span>
         <div id="market-countdown" class="timer-badge">--:--:--</div>
     </div>
     <div id="grid-mercado" class="grid-jugadores">Cargando...</div>
@@ -325,7 +317,9 @@
 </div>
 
 <div id="sec-ofertas" class="seccion oculto">
-    <h3>🤝 Gestión de Ofertas</h3>
+    <h3>Ofertas</h3>
+
+    <div id="lista-avisos" style="margin-bottom: 20px;"></div>
 
     <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Ofertas Recibidas</h4>
     <div id="lista-ofertas-recibidas">Cargando...</div>
@@ -362,7 +356,7 @@
     <h3 style="color:#c62828">Panel Admin</h3>
 
     <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
-        <h4>👮 Gestión de usuarios (Credenciales)</h4>
+        <h4>👮 Gestión de usuarios</h4>
         <div id="admin-lista-usuarios">Cargando...</div>
     </div>
 
@@ -381,8 +375,8 @@
         <div style="display:flex; gap:15px; margin-bottom:15px; align-items:center; background:#f5f5f5; padding:10px; border-radius:6px;">
             <label style="font-weight:bold; cursor:pointer;"><input type="checkbox" id="check-jugado" checked> ¿Jugó?</label>
             <select id="select-resultado" style="padding:5px; border-radius:4px;">
-                <option value="empate">Empate </option>
                 <option value="victoria">Victoria </option>
+                <option value="empate">Empate </option>
                 <option value="derrota">Derrota </option>
             </select>
         </div>
@@ -447,7 +441,6 @@
 
     // Variable global para guardar los nombres
     let listaUsuariosOnline = [];
-
     let modalCallback = null;
 
     function mostrarModal(titulo, mensaje, tipo, callback) {
@@ -534,7 +527,7 @@
         fetch(`/jugador/${id}/historial-puntos`).then(r=>r.json()).then(stats => {
             document.getElementById('stats-loading').style.display = 'none';
             const content = document.getElementById('stats-content');
-            if(stats.length === 0) content.innerHTML = '<p>Sin puntos registrados.</p>';
+            if(stats.length === 0) content.innerHTML = '<p>Este jugador aún no ha hecho puntos.</p>';
             else {
                 content.innerHTML = stats.map(s => {
                     let colorClass = s.puntos > 0 ? 'bg-green' : (s.puntos < 0 ? 'bg-red' : 'bg-orange');
@@ -569,40 +562,34 @@
             pintarSelectAdmin();
         }
         cargarTodo();
-        // Recargar ofertas también
         cargarOfertas();
         setInterval(cargarNoticias, 5000);
         iniciarContadorMercado();
         iniciarRelojesBlindaje();
 
-        // 🔴 Arrancar el ping de usuarios online
         setInterval(pingOnline, 5000); // Cada 5 segundos
-        pingOnline(); // Primera llamada inmediata
+        pingOnline();
     };
 
    function iniciarContadorMercado() {
         function actualizar() {
             const now = new Date();
-
-            // 1. Lógica del texto "Cerrado"
             const minutosDia = now.getHours() * 60 + now.getMinutes();
 
             // 21:30 = 1290 minutos
             const cerradoNoche = 1290;
 
-            // 10:00 = 600 minutos (ANTES PONÍA 90, POR ESO NO SALÍA A LAS 7:40)
+            // 10:00 = 600 minutos
             const cerradoMadrugada = 600;
-
             const msgCerrado = document.getElementById('msg-mercado-cerrado');
 
-            // Si es más tarde de las 21:30 O más temprano de las 10:00 -> Muestra mensaje
+            // Si es más tarde de las 21:30 O más temprano de las 10:00: Muestra mensaje
             if (minutosDia >= cerradoNoche || minutosDia < cerradoMadrugada) {
                 msgCerrado.classList.remove('oculto');
             } else {
                 msgCerrado.classList.add('oculto');
             }
 
-            // 2. Lógica del contador (existente)
             const fechaMadridStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
             const nowMadrid = new Date(fechaMadridStr);
             const midnightMadrid = new Date(nowMadrid);
@@ -627,7 +614,7 @@
                 if (!isNaN(segs) && segs > 0) {
                     segs--;
                     el.setAttribute('data-segundos', segs);
-                    // Formato Dias, Horas, Minutos, Segundos
+
                     let d = Math.floor(segs / (3600 * 24));
                     let h = Math.floor((segs % (3600 * 24)) / 3600);
                     let m = Math.floor((segs % 3600) / 60);
@@ -643,7 +630,7 @@
 
     function cargarTodo() {
         fetch('/jornada/actual').then(r=>r.json()).then(n => {
-            document.getElementById('badge-jornada').innerText = "J-" + n;
+            document.getElementById('badge-jornada').innerText = "Jornada " + n;
             document.getElementById('num-jornada-alineacion').innerText = n;
         });
 
@@ -681,7 +668,7 @@
                         <strong>${fila.nombre}</strong>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
+                        <div style="font-weight:bold; color:#1a237e;">${fila.puntos} puntos</div>
                         <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
                     </div>
                 </div>`).join('');
@@ -776,7 +763,6 @@
             const zonaPremios = document.getElementById('zona-premios');
             if (premios.length > 0) {
                 let htmlPremios = premios.map(p => {
-                    // Lógica visual para el MVP
                     let htmlMvp = '';
                     let claseExtra = '';
 
@@ -943,9 +929,7 @@
     function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
 
     function espiar(id, nombre) {
-        // Ocultamos todas las secciones
         document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
-        // Mostramos la sección espía
         const seccionEspia = document.getElementById('sec-detalle-rival');
         seccionEspia.classList.remove('oculto');
 
@@ -978,7 +962,6 @@
         });
     }
 
-    // 🆕 FUNCIONES OFERTAS
     function hacerOferta(idJugador, nombreJugador) {
         mostrarModal("Oferta por " + nombreJugador, "Introduce cantidad:", 'oferta', (cant) => {
             if(cant > 0) {
@@ -989,22 +972,35 @@
     }
 
     function cargarOfertas() {
-        // 🔴 CAMBIO: Ahora llama a 'mis-ofertas' que devuelve {recibidas:[], enviadas:[]}
+        // Ahora devuelve {recibidas:[], enviadas:[], avisos:[]}
         fetch(`/ofertas/mis-ofertas/${usuarioId}`).then(r=>r.json()).then(data => {
 
+            const divAvisos = document.getElementById('lista-avisos');
             const divRecibidas = document.getElementById('lista-ofertas-recibidas');
             const divEnviadas = document.getElementById('lista-ofertas-enviadas');
             const tabButton = document.getElementById('tab-ofertas');
             const notifBadge = document.getElementById('notif-ofertas');
 
-            // 1. GESTIONAR NOTIFICACIÓN (ROJA)
             if(data.recibidas.length > 0) {
                 tabButton.classList.add('notif-active');
             } else {
                 tabButton.classList.remove('notif-active');
             }
 
-            // 2. PINTAR RECIBIDAS
+            if (data.avisos && data.avisos.length > 0) {
+                divAvisos.innerHTML = data.avisos.map(a => {
+                    // Estilo diferente según si fue aceptada o rechazada
+                    let bg = a.estado === 'ACEPTADA' ? '#e8f5e9' : '#ffebee';
+                    let border = a.estado === 'ACEPTADA' ? '#43a047' : '#e53935';
+                    return `<div style="background:${bg}; border-left:4px solid ${border}; padding:10px; margin-bottom:5px; border-radius:4px; font-size:0.9em; color:#333;">
+                        ${a.mensaje}
+                    </div>`;
+                }).join('');
+            } else {
+                divAvisos.innerHTML = ''; // Limpiar si no hay nada
+            }
+
+            // 3. PINTAR RECIBIDAS
             if(data.recibidas.length === 0) {
                 divRecibidas.innerHTML = '<p style="font-size:0.9em; color:#888;">No tienes ofertas pendientes.</p>';
             } else {
@@ -1022,7 +1018,7 @@
                 `).join('');
             }
 
-            // 3. PINTAR ENVIADAS
+            // 4. PINTAR ENVIADAS
             if(data.enviadas.length === 0) {
                 divEnviadas.innerHTML = '<p style="font-size:0.9em; color:#888;">No has hecho ofertas.</p>';
             } else {
@@ -1084,8 +1080,7 @@
     function post(url, data, coste = 0) {
         fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
         .then(r => r.text()).then(msg => {
-            let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito"; // Cambio para que "Mercado Cerrado" no salga rojo error crítico
-            mostrarModal(titulo, msg, 'confirm', () => {
+            let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito";
                 if(!msg.includes("❌") && !msg.includes("⛔")) {
                     if(coste !== 0) {
                         presupuesto -= coste;
@@ -1181,11 +1176,7 @@
 
     function verQuienEstaOnline() {
         if(listaUsuariosOnline.length === 0) return;
-
-        // 1. Mostrar el modal primero (esto borra el contenido anterior y pone el título)
         mostrarModal("Usuarios en línea 🟢", "", 'info', ()=>{});
-
-        // 2. Y LUEGO inyectamos la lista HTML (para que no se borre)
         let listaHTML = listaUsuariosOnline.map(n => `<li style="margin-bottom:5px;">👤 ${n}</li>`).join('');
         document.getElementById('modal-mensaje').innerHTML = `<ul style="list-style:none; padding:0; font-size:1.1em; text-align:left;">${listaHTML}</ul>`;
     }

@@ -31,6 +31,7 @@ public class FantasyController {
     private final OfertaRepository ofertaRepository;
     private final CalculadoraPuntosService calculadora;
     private final Map<Long, LocalDateTime> usuariosOnline = new ConcurrentHashMap<>();
+    private long getNumeroJornadaReal() { return getJornadaActiva().getNumero(); }
 
     public FantasyController(EquipoRepository equipoRepository, JugadorRepository jugadorRepository, UsuarioRepository usuarioRepository, JornadaRepository jornadaRepository, ActuacionRepository actuacionRepository, NoticiaRepository noticiaRepository, OfertaRepository ofertaRepository, CalculadoraPuntosService calculadora) {
         this.equipoRepository = equipoRepository;
@@ -63,8 +64,6 @@ public class FantasyController {
         return activa;
     }
 
-    private long getNumeroJornadaReal() { return getJornadaActiva().getNumero(); }
-
     // --- HORARIO MERCADO (21:30 - 10:00 CERRADO) ---
     private boolean isMercadoCerrado() {
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
@@ -79,32 +78,7 @@ public class FantasyController {
         return cerradoNoche || cerradoManana;
     }
 
-    @PostMapping("/auth/registro")
-    public String registrarUsuario(@RequestBody Usuario datos) {
-        if (usuarioRepository.findByNombre(datos.getNombre()) != null) return "❌ El nombre ya existe.";
-        boolean esPrimero = usuarioRepository.count() == 0;
-        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, esPrimero);
-        nuevo.setActivo(esPrimero);
-        usuarioRepository.save(nuevo);
-
-        if (esPrimero) {
-            noticiaRepository.save(new Noticia("👑 FUNDADOR: " + datos.getNombre() + " ha inaugurado la liga como Admin."));
-            return "✅ ¡Liga inaugurada! Eres el Admin.";
-        } else {
-            noticiaRepository.save(new Noticia("🔔 SOLICITUD: " + datos.getNombre() + " quiere entrar en la liga."));
-            return "✅ Solicitud enviada. Contacta con el creador de la app por Whatsapp para que te acepte y luego pulsa el botón 'Entrar'.";
-        }
-    }
-
-    @PostMapping("/auth/login")
-    public Map<String, Object> login(@RequestBody Usuario datos) {
-        Usuario user = usuarioRepository.findByNombre(datos.getNombre());
-        if (user == null || !user.getPassword().equals(datos.getPassword())) return Map.of("error", "Credenciales incorrectas.");
-        if (!user.isActivo()) return Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
-        return Map.of("id", user.getId(), "nombre", user.getNombre(), "esAdmin", user.isEsAdmin(), "presupuesto", user.getPresupuesto());
-    }
-
-    // --- ADMIN USUARIOS (CON CONTRASEÑAS VISIBLES 🕵️) ---
+    // --- ADMIN USUARIOS (CON CONTRASEÑAS VISIBLES) ---
     @GetMapping("/admin/usuarios-gestion")
     public List<Usuario> getUsuariosGestion() {
         return usuarioRepository.findAll();
@@ -115,41 +89,6 @@ public class FantasyController {
         return usuarioRepository.findAll().stream().filter(u -> !u.isActivo()).collect(Collectors.toList());
     }
 
-    @PostMapping("/admin/aprobar/{idUsuario}")
-    public String aprobarUsuario(@PathVariable Long idUsuario) {
-        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
-        u.setActivo(true);
-        usuarioRepository.save(u);
-        noticiaRepository.save(new Noticia("👋 BIENVENIDA: " + u.getNombre() + " ha entrado a la liga."));
-        return "✅ Usuario aprobado.";
-    }
-
-    @PostMapping("/admin/editar-usuario/{idUsuario}")
-    public String editarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
-        String nuevoNombre = datos.get("nombre");
-        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) return "❌ El nombre no puede estar vacío.";
-
-        // Comprobar si el nombre ya existe (y no es el suyo propio)
-        Usuario existente = usuarioRepository.findByNombre(nuevoNombre);
-        if (existente != null && !existente.getId().equals(idUsuario)) {
-            return "❌ Ese nombre ya está en uso por otro jugador.";
-        }
-
-        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
-        String antiguo = u.getNombre();
-        u.setNombre(nuevoNombre);
-        usuarioRepository.save(u);
-
-        return "✅ Nombre cambiado: " + antiguo + " ➝ " + nuevoNombre;
-    }
-
-    @DeleteMapping("/admin/rechazar/{idUsuario}")
-    public String rechazarUsuario(@PathVariable Long idUsuario) {
-        usuarioRepository.deleteById(idUsuario);
-        return "🗑️ Solicitud rechazada.";
-    }
-
-    // --- DATOS GLOBALES Y JUGADORES ---
     @GetMapping("/jornada/actual")
     public long getNumeroJornadaActualEndpoint() { return getNumeroJornadaReal(); }
 
@@ -244,7 +183,6 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
-    // 🔴 NUEVO: Endpoint para la vista de CAMPO DE FÚTBOL (Partido real)
     @GetMapping("/jornada/{numero}/resumen-partido")
     public Map<String, Object> getResumenPartido(@PathVariable int numero) {
         // Buscar la jornada por número
@@ -264,14 +202,12 @@ public class FantasyController {
         // Calcular MVP global de la jornada (máxima puntuación)
         int maxPuntos = actuaciones.stream().mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
 
-        // Usamos un mapa temporal para agrupar
         Map<String, List<Actuacion>> grupos = actuaciones.stream()
                 .filter(a -> a.getEquipoColor() != null)
                 .collect(Collectors.groupingBy(Actuacion::getEquipoColor));
 
         List<String> colores = new ArrayList<>(grupos.keySet());
 
-        // Preparamos la respuesta (Equipo A y Equipo B)
         String colorA = colores.isEmpty() ? "BLANCO" : colores.get(0);
         String colorB = colores.size() > 1 ? colores.get(1) : "RIVAL"; // Por si solo hay 1 equipo registrado aun
 
@@ -286,7 +222,65 @@ public class FantasyController {
         );
     }
 
-    // Helper para formatear datos para el campo
+    @PostMapping("/auth/registro")
+    public String registrarUsuario(@RequestBody Usuario datos) {
+        if (usuarioRepository.findByNombre(datos.getNombre()) != null) return "❌ El nombre ya existe.";
+        boolean esPrimero = usuarioRepository.count() == 0;
+        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, esPrimero);
+        nuevo.setActivo(esPrimero);
+        usuarioRepository.save(nuevo);
+
+        if (esPrimero) {
+            noticiaRepository.save(new Noticia("👑 FUNDADOR: " + datos.getNombre() + " ha inaugurado la liga como Admin."));
+            return "✅ ¡Liga inaugurada! Eres el Admin.";
+        } else {
+            noticiaRepository.save(new Noticia("🔔 SOLICITUD: " + datos.getNombre() + " quiere entrar en la liga."));
+            return "✅ Solicitud enviada. Contacta con el creador de la app por Whatsapp para que te acepte y luego pulsa el botón 'Entrar'.";
+        }
+    }
+
+    @PostMapping("/auth/login")
+    public Map<String, Object> login(@RequestBody Usuario datos) {
+        Usuario user = usuarioRepository.findByNombre(datos.getNombre());
+        if (user == null || !user.getPassword().equals(datos.getPassword())) return Map.of("error", "Credenciales incorrectas.");
+        if (!user.isActivo()) return Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
+        return Map.of("id", user.getId(), "nombre", user.getNombre(), "esAdmin", user.isEsAdmin(), "presupuesto", user.getPresupuesto());
+    }
+
+    @PostMapping("/admin/aprobar/{idUsuario}")
+    public String aprobarUsuario(@PathVariable Long idUsuario) {
+        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
+        u.setActivo(true);
+        usuarioRepository.save(u);
+        noticiaRepository.save(new Noticia("👋 BIENVENIDA: " + u.getNombre() + " ha entrado a la liga."));
+        return "✅ Usuario aprobado.";
+    }
+
+    @PostMapping("/admin/editar-usuario/{idUsuario}")
+    public String editarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
+        String nuevoNombre = datos.get("nombre");
+        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) return "❌ El nombre no puede estar vacío.";
+
+        // Comprobar si el nombre ya existe (y no es el suyo propio)
+        Usuario existente = usuarioRepository.findByNombre(nuevoNombre);
+        if (existente != null && !existente.getId().equals(idUsuario)) {
+            return "❌ Ese nombre ya está en uso por otro jugador.";
+        }
+
+        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
+        String antiguo = u.getNombre();
+        u.setNombre(nuevoNombre);
+        usuarioRepository.save(u);
+
+        return "✅ Nombre cambiado: " + antiguo + " ➝ " + nuevoNombre;
+    }
+
+    @DeleteMapping("/admin/rechazar/{idUsuario}")
+    public String rechazarUsuario(@PathVariable Long idUsuario) {
+        usuarioRepository.deleteById(idUsuario);
+        return "🗑️ Solicitud rechazada.";
+    }
+
     private List<Map<String, Object>> mapJugadoresCampo(List<Actuacion> acts, int maxPuntos) {
         return acts.stream().map(a -> {
             Jugador j = a.getJugador();
@@ -300,7 +294,6 @@ public class FantasyController {
         }).collect(Collectors.toList());
     }
 
-    // 🔴 MANTENEMOS EL DE LA LISTA DE MÁNAGERS (pero parametrizado por número)
     @GetMapping("/jornada/{numero}/resumen-managers")
     public List<Map<String, Object>> verResumenManagers(@PathVariable int numero) {
         Optional<Jornada> jOpt = jornadaRepository.findAll().stream()
@@ -361,7 +354,6 @@ public class FantasyController {
         Jugador jugador = jugadorRepository.findById(datos.idJugador).orElseThrow();
         Jornada jornada = getJornadaActiva();
         Actuacion actuacion = actuacionRepository.findByJugadorAndJornada(jugador, jornada).orElse(new Actuacion(jugador, jornada));
-
         actuacion.setJugado(datos.jugado);
         actuacion.setVictoria(datos.victoria);
         actuacion.setDerrota(datos.derrota);
@@ -393,7 +385,6 @@ public class FantasyController {
     }
 
     // --- OPERACIONES DE MERCADO ---
-
     @PostMapping("/mercado/comprar/{idJugador}/{idUsuario}")
     public String comprarJugadorLibre(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
         if (isMercadoCerrado()) return "⛔ MERCADO CERRADO EN ESTOS MOMENTOS ⛔";
@@ -507,6 +498,7 @@ public class FantasyController {
     public Map<String, List<Map<String, Object>>> verMisOfertas(@PathVariable Long idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
 
+        // 1. Recibidas (Pendientes)
         List<Map<String, Object>> recibidas = ofertaRepository.findByVendedorAndEstado(usuario, "PENDIENTE").stream()
                 .map(o -> Map.<String, Object>of(
                         "id", o.getId(),
@@ -516,6 +508,7 @@ public class FantasyController {
                         "cantidadFmt", fmtDinero(o.getCantidad())
                 )).collect(Collectors.toList());
 
+        // 2. Enviadas (Pendientes)
         List<Map<String, Object>> enviadas = ofertaRepository.findByCompradorAndEstado(usuario, "PENDIENTE").stream()
                 .map(o -> Map.<String, Object>of(
                         "id", o.getId(),
@@ -525,7 +518,28 @@ public class FantasyController {
                         "cantidadFmt", fmtDinero(o.getCantidad())
                 )).collect(Collectors.toList());
 
-        return Map.of("recibidas", recibidas, "enviadas", enviadas);
+        List<Map<String, Object>> avisos = ofertaRepository.findAll().stream()
+                .filter(o -> (o.getComprador().getId().equals(idUsuario) || o.getVendedor().getId().equals(idUsuario))) // Soy parte
+                .filter(o -> o.getEstado().equals("ACEPTADA") || o.getEstado().equals("RECHAZADA")) // Ya finalizaron
+                .sorted((a, b) -> Long.compare(b.getId(), a.getId())) // Las nuevas primero
+                .limit(5) // Solo las 5 últimas para no llenar la pantalla
+                .map(o -> {
+                    boolean soyComprador = o.getComprador().getId().equals(idUsuario);
+                    String otroUser = soyComprador ? o.getVendedor().getNombre() : o.getComprador().getNombre();
+                    String accion = o.getEstado().equals("ACEPTADA") ? "aceptó" : "rechazó";
+                    String icono = o.getEstado().equals("ACEPTADA") ? "✅" : "❌";
+
+                    String mensaje = String.format("%s %s %s la oferta por %s (%s)",
+                            icono,
+                            otroUser,
+                            accion,
+                            o.getJugador().getNombre(),
+                            fmtDinero(o.getCantidad()));
+
+                    return Map.<String, Object>of("mensaje", mensaje, "estado", o.getEstado());
+                }).collect(Collectors.toList());
+
+        return Map.of("recibidas", recibidas, "enviadas", enviadas, "avisos", avisos);
     }
 
     @PostMapping("/ofertas/crear")
@@ -618,8 +632,6 @@ public class FantasyController {
             }
         }
     }
-
-    // --- RESTO DE ENDPOINTS ESTÁNDAR ---
 
     @PostMapping("/alinear/{usuarioId}")
     public String guardarAlineacion(@RequestBody List<Long> idsJugadores, @PathVariable Long usuarioId) {
@@ -760,7 +772,6 @@ public class FantasyController {
         return "✅ Jornada Cerrada.";
     }
 
-    // --- MÉTODO HELPER PARA ORDENAR POR POSICIÓN ---
     private int getPesoPosicion(String pos) {
         if (pos == null) return 5;
         switch(pos.toUpperCase()) {

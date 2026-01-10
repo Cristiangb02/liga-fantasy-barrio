@@ -45,7 +45,6 @@ public class Equipo {
     public void setJugadoresAlineados(java.util.List<Jugador> jugadoresAlineados) { this.jugadoresAlineados = jugadoresAlineados; }
     public int getPuntosTotalesJornada() { return puntosTotalesJornada; }
     public void setPuntosTotalesJornada(int puntosTotalesJornada) { this.puntosTotalesJornada = puntosTotalesJornada; }
-    
     public boolean isReclamado() { return reclamado; }
     public void setReclamado(boolean reclamado) { this.reclamado = reclamado; }
 }

@@ -23,7 +23,7 @@ public class CalculadoraPuntosService {
             puntos -= 2;
             puntos += random.nextInt(2);
         } else {
-            puntos += random.nextInt(2); //+0 o +1 como mucho
+            puntos += random.nextInt(2); //0 o +1 como mucho
         }
 
         switch (pos) {
@@ -35,7 +35,7 @@ public class CalculadoraPuntosService {
                 //    - >6 goles: -3 pts
                 puntos += calcularGolesEncajados(a.getGolesEncajados(), 7, 4, 0, -3);
 
-                //2. Goles Marcados: ¡Premio enorme (x10) porque es muy difícil!
+                //2. Goles Marcados:
                 puntos += (a.getGolesMarcados() * 10);
 
                 //3. Autogoles: (-3)
@@ -50,7 +50,7 @@ public class CalculadoraPuntosService {
                 //    - >6 goles: -3 pts
                 puntos += calcularGolesEncajados(a.getGolesEncajados(), 5, 3, -1, -3);
 
-                //2. Goles Marcados: Buen premio (x6)
+                //2. Goles Marcados:
                 puntos += (a.getGolesMarcados() * 6);
 
                 //3. Autogoles: (-4)
@@ -65,10 +65,10 @@ public class CalculadoraPuntosService {
                 //    - >6 goles: -4 pts
                 puntos += calcularGolesEncajados(a.getGolesEncajados(), 4, 3, 0, -4);
 
-                //2. Goles Marcados: Valor normal (x5)
+                //2. Goles Marcados:
                 puntos += (a.getGolesMarcados() * 5);
 
-                //3. Autogoles: Castigo medio (-3)
+                //3. Autogoles:
                 puntos += (a.getAutogoles() * -3);
                 break;
 

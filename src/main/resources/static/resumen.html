@@ -7,30 +7,17 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: white; margin: 0; padding: 10px; text-align: center; }
 
-        /* CONTROLES SUPERIORES */
         .controls {
-            background: #333;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
+            background: #333; padding: 15px; border-radius: 12px; margin-bottom: 20px;
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         input { padding: 10px; border-radius: 5px; border: none; text-align: center; width: 60px; font-weight: bold; font-size: 1rem; }
         button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-buscar { background: #ffd700; color: #333; }
         .btn-toggle { background: #2196f3; color: white; }
+        .btn-volver { background-color: #d32f2f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; }
 
-        /* BOTÓN VOLVER ROJO */
-        .btn-volver {
-            background-color: #d32f2f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;
-        }
-
-        /* --- VISTA CAMPO --- */
         .campo {
             background: linear-gradient(to bottom, #4caf50, #388e3c);
             width: 100%; max-width: 600px; height: 850px;
@@ -60,25 +47,40 @@
 
         .puntos-badge {
             position: absolute; top: -5px; right: 0;
-            background: #333; color: white;
-            font-weight: bold; font-size: 11px; width: 20px; height: 20px;
+            color: white; font-weight: bold; font-size: 11px; width: 20px; height: 20px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            border: 2px solid white;
+            border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
+
+        .badge-green { background-color: #2e7d32; }
+        .badge-red { background-color: #d32f2f; }
+        .badge-orange { background-color: #f57c00; color: white; }
+
         .jugador-nombre { font-size: 9px; background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; }
-        .mvp .jugador-img { box-shadow: 0 0 15px #ffd700; transform: scale(1.15); border-color: #ffd700 !important; }
+
+        .mvp .jugador-img {
+            box-shadow: 0 0 15px 5px #ffd700;
+            transform: scale(1.2);
+            border-color: #ffd700 !important;
+            z-index: 10;
+        }
+        .mvp-crown {
+            position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+            font-size: 16px; text-shadow: 0 2px 2px rgba(0,0,0,0.5); z-index: 11;
+        }
 
         .marcador { font-size: 1.5rem; font-weight: bold; margin: 10px 0; background: #333; padding: 10px 20px; border-radius: 10px; display: inline-block; border: 1px solid #555; }
 
-        /* --- VISTA LISTA MÁNAGERS --- */
         .vista-lista { max-width: 600px; margin: 0 auto; text-align: left; }
         .manager-card { background: white; color: #333; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
         .manager-header { background: #eceff1; padding: 10px; display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #ddd; }
         .pts-badge { background: #1a237e; color: white; padding: 2px 8px; border-radius: 10px; }
         .player-row { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
-        .pts-green { color: #2e7d32; font-weight: bold; }
-        .pts-red { color: #d32f2f; font-weight: bold; }
-        .pts-orange { color: #f57c00; font-weight: bold; }
+
+        /* Colores Texto Lista */
+        .text-green { color: #2e7d32; font-weight: bold; }
+        .text-red { color: #d32f2f; font-weight: bold; }
+        .text-orange { color: #f57c00; font-weight: bold; }
 
         .oculto { display: none !important; }
     </style>
@@ -110,7 +112,7 @@
 </div>
 
 <script>
-    let vistaActual = 'campo'; // 'campo' o 'lista'
+    let vistaActual = 'campo';
 
     function alternarVista() {
         if (vistaActual === 'campo') {
@@ -132,7 +134,6 @@
 
     async function cargarCampo(num) {
         try {
-            // LLAMADA AL NUEVO ENDPOINT DEL CONTROLADOR
             const response = await fetch(`/jornada/${num}/resumen-partido`);
             const data = await response.json();
 
@@ -143,11 +144,9 @@
                 return;
             }
 
-            // Sumar puntos
             const puntosA = data.equipoA.reduce((acc, j) => acc + j.puntos, 0);
             const puntosB = data.equipoB.reduce((acc, j) => acc + j.puntos, 0);
 
-            // Marcador
             document.getElementById("marcador").innerHTML = `
                 <span style="color:${getColorCode(data.colorA)}">${data.colorA} ${puntosA}</span>
                 -
@@ -173,9 +172,9 @@
 
             container.innerHTML = data.map(m => {
                 let htmlJugadores = m.jugadores.map(j => {
-                    let colorClass = 'pts-orange';
-                    if (j.puntos > 0) colorClass = 'pts-green';
-                    if (j.puntos < 0) colorClass = 'pts-red';
+                    let colorClass = 'text-orange';
+                    if (j.puntos > 0) colorClass = 'text-green';
+                    if (j.puntos < 0) colorClass = 'text-red';
                     return `
                     <div class="player-row">
                         <span>${j.nombre} <small>(${j.posicion.substring(0,3)})</small></span>
@@ -213,14 +212,21 @@
                 const fila = document.createElement("div");
                 fila.className = "linea-jugadores";
                 lineas[pos].forEach(jug => {
-                    // Si la imagen es relativa, aseguramos que cargue bien
                     let imgUrl = jug.imagen && jug.imagen.startsWith('/') ? jug.imagen : '/icon.png';
                     if(jug.imagen && jug.imagen.startsWith('http')) imgUrl = jug.imagen;
 
+                    let badgeClass = 'badge-orange';
+                    if(jug.puntos > 0) badgeClass = 'badge-green';
+                    if(jug.puntos < 0) badgeClass = 'badge-red';
+
+                    // Corona si es MVP
+                    let crownHtml = jug.mvp ? '<div class="mvp-crown">👑</div>' : '';
+
                     fila.innerHTML += `
-                        <div class="jugador-card camiseta-${color}">
-                            <div class="puntos-badge">${jug.puntos}</div>
-                            <img src="${imgUrl}" class="jugador-img ${jug.mvp ? 'mvp' : ''}">
+                        <div class="jugador-card camiseta-${color} ${jug.mvp ? 'mvp' : ''}">
+                            ${crownHtml}
+                            <div class="puntos-badge ${badgeClass}">${jug.puntos}</div>
+                            <img src="${imgUrl}" class="jugador-img">
                             <div class="jugador-nombre">${jug.nombre}</div>
                         </div>
                     `;

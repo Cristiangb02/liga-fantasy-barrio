@@ -10,7 +10,6 @@ public class Noticia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String mensaje;
     private LocalDateTime fecha;
 

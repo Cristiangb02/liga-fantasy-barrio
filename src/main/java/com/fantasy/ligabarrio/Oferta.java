@@ -33,7 +33,6 @@ public class Oferta {
         this.fecha = LocalDateTime.now();
     }
 
-    // Getters y Setters básicos
     public Long getId() { return id; }
     public Jugador getJugador() { return jugador; }
     public Usuario getComprador() { return comprador; }

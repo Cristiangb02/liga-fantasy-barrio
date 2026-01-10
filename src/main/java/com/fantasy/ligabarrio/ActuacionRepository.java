@@ -7,7 +7,6 @@ import java.util.List;
 public interface ActuacionRepository extends JpaRepository<Actuacion, Long> {
     
     Optional<Actuacion> findByJugadorAndJornada(Jugador jugador, Jornada jornada);
-    
     List<Actuacion> findByJugador(Jugador jugador);
 }
 

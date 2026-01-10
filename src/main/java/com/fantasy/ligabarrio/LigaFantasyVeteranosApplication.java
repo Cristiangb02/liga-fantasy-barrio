@@ -11,7 +11,7 @@ import java.util.TimeZone; // 🔴 IMPORTANTE
 public class LigaFantasyVeteranosApplication {
 
     public static void main(String[] args) {
-        //HORA ESPAÑOLA (EUROPE/MADRID)
+
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Madrid"));
         SpringApplication.run(LigaFantasyVeteranosApplication.class, args);
     }
