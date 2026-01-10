@@ -53,7 +53,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Cristian", "PORTERO", 24, 7.26, "/cristian.png"));
         lista.add(new Jugador("Diego", "PORTERO", 49, 7.23, "/diego.png"));
         lista.add(new Jugador("Fran", "PORTERO", 53, 6.47, "/franportero.png"));
-        lista.add(new Jugador("Jona", "PORTERO", 48, 8.06, "/jhona.png"));
+        lista.add(new Jugador("Jhona", "PORTERO", 48, 8.06, "/jhona.png"));
         lista.add(new Jugador("Juanlu", "PORTERO", 56, 5.98, "/juanlu.png"));
         lista.add(new Jugador("Sergio", "PORTERO", 34, 6.56, "/sergio.png"));
 
@@ -69,7 +69,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Javier", "DEFENSA", 58, 6.06, "/javier.png"));
         lista.add(new Jugador("Javier M.", "DEFENSA", 54, 5.88, "/javierm.png"));
         lista.add(new Jugador("Jesús Jr", "DEFENSA", 25, 6.62, "/jesusjr.png"));
-        lista.add(new Jugador("Jona", "DEFENSA", 48, 6.29, "/jhona.png"));
+        lista.add(new Jugador("Jhona", "DEFENSA", 48, 6.29, "/jhona.png"));
         lista.add(new Jugador("Jose", "DEFENSA", 45, 7.03, "/jose.png"));
         lista.add(new Jugador("Juan", "DEFENSA", 45, 6.04, "/juan.png"));
         lista.add(new Jugador("Juanlu", "DEFENSA", 56, 6.89, "/juanlu.png"));
@@ -108,7 +108,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Felipe", "DELANTERO", 31, 7.79, "/felipe.png"));
         lista.add(new Jugador("Jesus", "DELANTERO", 42, 7.53, "/jesus.png"));
         lista.add(new Jugador("Jesús Jr", "DELANTERO", 25, 6.53, "/jesusjr.png"));
-        lista.add(new Jugador("Jona", "DELANTERO", 48, 6.16, "/jhona.png"));
+        lista.add(new Jugador("Jhona", "DELANTERO", 48, 6.16, "/jhona.png"));
         lista.add(new Jugador("Juan", "DELANTERO", 45, 5.97, "/juan.png"));
         lista.add(new Jugador("Juanlu", "DELANTERO", 56, 5.89, "/juanlu.png"));
         lista.add(new Jugador("Pepe", "DELANTERO", 67, 7.02, "/pepe.png"));
