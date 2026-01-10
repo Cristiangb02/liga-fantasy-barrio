@@ -280,7 +280,7 @@ public class FantasyController {
                 .collect(Collectors.toList());
     }
 
-    // --- REGISTRAR / COMPRAR / VENDER ---
+    // --- ACCIONES Y TRANSACCIONES ---
 
     @PostMapping("/admin/registrar")
     public String registrarPartido(@RequestBody DatosPartido datos) {
