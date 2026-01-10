@@ -134,16 +134,26 @@ public class FantasyController {
         return Map.of("id", user.getId(), "nombre", user.getNombre(), "esAdmin", user.isEsAdmin(), "presupuesto", user.getPresupuesto());
     }
 
-    // --- ADMIN ---
+    // --- ADMIN USUARIOS (CORREGIDO: Devuelve Mapas, no Usuarios) ---
 
     @GetMapping("/admin/usuarios-gestion")
-    public List<Usuario> getUsuariosGestion() {
-        return usuarioRepository.findAll();
+    public List<Map<String, Object>> getUsuariosGestion() {
+        return usuarioRepository.findAll().stream().map(u -> Map.<String, Object>of(
+                "id", u.getId(),
+                "nombre", u.getNombre(),
+                "password", u.getPassword(),
+                "esAdmin", u.isEsAdmin()
+        )).collect(Collectors.toList());
     }
 
     @GetMapping("/admin/pendientes")
-    public List<Usuario> verUsuariosPendientes() {
-        return usuarioRepository.findAll().stream().filter(u -> !u.isActivo()).collect(Collectors.toList());
+    public List<Map<String, Object>> verUsuariosPendientes() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> !u.isActivo())
+                .map(u -> Map.<String, Object>of(
+                        "id", u.getId(),
+                        "nombre", u.getNombre()
+                )).collect(Collectors.toList());
     }
 
     @PostMapping("/admin/aprobar/{idUsuario}")
@@ -176,18 +186,27 @@ public class FantasyController {
         return "🗑️ Solicitud rechazada.";
     }
 
-    // --- JUGADORES Y MERCADO (CORREGIDOS PARA EVITAR BUCLE INFINITO) ---
+    // --- JUGADORES Y MERCADO ---
 
     @GetMapping("/jornada/actual")
     public long getNumeroJornadaActualEndpoint() { return getNumeroJornadaReal(); }
 
+    // 🔴 CORREGIDO: Devuelve Mapas, no Usuarios
     @GetMapping("/usuarios")
-    public List<Usuario> verRivales() { return usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList()); }
+    public List<Map<String, Object>> verRivales() {
+        return usuarioRepository.findAll().stream()
+                .filter(Usuario::isActivo)
+                .map(u -> Map.<String, Object>of(
+                        "id", u.getId(),
+                        "nombre", u.getNombre(),
+                        "presupuesto", u.getPresupuesto()
+                )).collect(Collectors.toList());
+    }
 
     @GetMapping("/jugadores")
     public List<Map<String, Object>> verTodosLosJugadores() {
         return jugadorRepository.findAll().stream()
-                .map(this::mapJugadorToDto) // Usamos el método seguro
+                .map(this::mapJugadorToDto)
                 .collect(Collectors.toList());
     }
 
@@ -202,7 +221,7 @@ public class FantasyController {
         return todos.stream()
                 .filter(j -> j.getPropietario() == null)
                 .limit(14)
-                .map(this::mapJugadorToDto) // Mapeado seguro
+                .map(this::mapJugadorToDto)
                 .collect(Collectors.toList());
     }
 
@@ -215,11 +234,11 @@ public class FantasyController {
         if(equipo.isEmpty()) return new ArrayList<>();
 
         return equipo.get().getJugadoresAlineados().stream()
-                .map(this::mapJugadorToDto) // Mapeado seguro
+                .map(this::mapJugadorToDto)
                 .collect(Collectors.toList());
     }
 
-    // --- ADMINISTRACIÓN DE JUGADORES (CORREGIDOS) ---
+    // --- ADMINISTRACIÓN DE JUGADORES ---
 
     @GetMapping("/admin/jugadores-pendientes")
     public List<Map<String, Object>> getJugadoresPendientes() {
@@ -232,7 +251,7 @@ public class FantasyController {
                     if (p1 != p2) return Integer.compare(p1, p2);
                     return j1.getNombre().compareToIgnoreCase(j2.getNombre());
                 })
-                .map(this::mapJugadorToDto) // Mapeado seguro
+                .map(this::mapJugadorToDto)
                 .collect(Collectors.toList());
     }
 
@@ -247,7 +266,7 @@ public class FantasyController {
                     if (p1 != p2) return Integer.compare(p1, p2);
                     return j1.getNombre().compareToIgnoreCase(j2.getNombre());
                 })
-                .map(this::mapJugadorToDto) // Mapeado seguro
+                .map(this::mapJugadorToDto)
                 .collect(Collectors.toList());
     }
 
