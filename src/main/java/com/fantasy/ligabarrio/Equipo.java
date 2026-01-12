@@ -1,6 +1,8 @@
 package com.fantasy.ligabarrio;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Equipo {
@@ -16,7 +18,7 @@ public class Equipo {
     private Jornada jornada;
 
     @ManyToMany
-    private java.util.List<Jugador> jugadoresAlineados;
+    private List<Jugador> jugadoresAlineados;
     private int puntosTotalesJornada;    
     private boolean reclamado;
 
@@ -31,7 +33,7 @@ public class Equipo {
 
     public void alinearJugador(Jugador jugador) {
         if (this.jugadoresAlineados == null) {
-            this.jugadoresAlineados = new java.util.ArrayList<>();
+            this.jugadoresAlineados = new ArrayList<>();
         }
         this.jugadoresAlineados.add(jugador);
     }
@@ -41,8 +43,8 @@ public class Equipo {
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
     public Jornada getJornada() { return jornada; }
     public void setJornada(Jornada jornada) { this.jornada = jornada; }
-    public java.util.List<Jugador> getJugadoresAlineados() { return jugadoresAlineados; }
-    public void setJugadoresAlineados(java.util.List<Jugador> jugadoresAlineados) { this.jugadoresAlineados = jugadoresAlineados; }
+    public List<Jugador> getJugadoresAlineados() { return jugadoresAlineados; }
+    public void setJugadoresAlineados(List<Jugador> jugadoresAlineados) { this.jugadoresAlineados = jugadoresAlineados; }
     public int getPuntosTotalesJornada() { return puntosTotalesJornada; }
     public void setPuntosTotalesJornada(int puntosTotalesJornada) { this.puntosTotalesJornada = puntosTotalesJornada; }
     public boolean isReclamado() { return reclamado; }

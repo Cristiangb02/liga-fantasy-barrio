@@ -16,11 +16,11 @@ public class Jornada {
     private Temporada temporada;
 
     public Jornada() {
-        this.numero = 1; //Por defecto siempre será la 1, nunca la 0
+        this.numero = 1;
     }
 
     public Jornada(int numero, LocalDate fecha, Temporada temporada) {
-        this.numero = (numero <= 0) ? 1 : numero; //SEGURIDAD: Si intentan poner 0, ponemos 1
+        this.numero = (numero <= 0) ? 1 : numero;
         this.fecha = fecha;
         this.temporada = temporada;
     }

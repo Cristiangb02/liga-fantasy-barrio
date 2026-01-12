@@ -17,8 +17,7 @@ public class InicializadorDatos implements CommandLineRunner {
     private final ActuacionRepository actuacionRepository;
     private final NoticiaRepository noticiaRepository;
 
-    public InicializadorDatos(JugadorRepository jugadorRepository,
-                              TemporadaRepository temporadaRepository,
+    public InicializadorDatos(JugadorRepository jugadorRepository, TemporadaRepository temporadaRepository,
                               JornadaRepository jornadaRepository,
                               UsuarioRepository usuarioRepository,
                               EquipoRepository equipoRepository,
@@ -36,7 +35,6 @@ public class InicializadorDatos implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        //TEMPORADA
         Temporada t2026;
         if (temporadaRepository.count() == 0) {
             t2026 = new Temporada(2026);
@@ -47,7 +45,7 @@ public class InicializadorDatos implements CommandLineRunner {
 
         List<Jugador> lista = new ArrayList<>();
 
-        // --- PORTEROS ---
+        //PORTEROS
         lista.add(new Jugador("Carlos", "PORTERO", 52, 6.8, "/carlos.png"));
         lista.add(new Jugador("Carmelo", "PORTERO", 54, 6.26, "/carmelo.png"));
         lista.add(new Jugador("Cristian", "PORTERO", 24, 7.26, "/cristian.png"));
@@ -57,7 +55,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Juanlu", "PORTERO", 56, 5.98, "/juanlu.png"));
         lista.add(new Jugador("Sergio", "PORTERO", 34, 6.56, "/sergio.png"));
 
-        // --- DEFENSAS  ---
+        //DEFENSAS
         lista.add(new Jugador("Alejandro", "DEFENSA", 32, 6.63, "/alejandro.png"));
         lista.add(new Jugador("Alejandro G.", "DEFENSA", 30, 6.58, "/alejandrogarrocho.png"));
         lista.add(new Jugador("Andrés", "DEFENSA", 52, 4.72, "/andres.png"));
@@ -81,7 +79,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Sebas", "DEFENSA", 33, 6.13, "/sebastian.png"));
         lista.add(new Jugador("Sergio", "DEFENSA", 34, 6.98, "/sergio.png"));
 
-        // --- MEDIOS ---
+        //MEDIOS
         lista.add(new Jugador("Alberto", "MEDIO", 39, 8.06, "/alberto.png"));
         lista.add(new Jugador("Alejandro", "MEDIO", 32, 8.16, "/alejandro.png"));
         lista.add(new Jugador("Alejandro G.", "MEDIO", 30, 8.52, "/alejandrogarrocho.png"));
@@ -102,7 +100,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Sebas", "MEDIO", 33, 8.13, "/sebastian.png"));
         lista.add(new Jugador("Sergio", "MEDIO", 34, 8.88, "/sergio.png"));
 
-        // --- DELANTEROS ---
+        //DELANTEROS
         lista.add(new Jugador("Alejandro", "DELANTERO", 32, 6.1, "/alejandro.png"));
         lista.add(new Jugador("Cristian", "DELANTERO", 24, 7.96, "/cristian.png"));
         lista.add(new Jugador("Felipe", "DELANTERO", 31, 7.79, "/felipe.png"));
@@ -129,7 +127,7 @@ public class InicializadorDatos implements CommandLineRunner {
             jornadaRepository.save(jornada1);
         }
 
-        //CREAR USUARIO ADMIN
+        //Administrador
         if (usuarioRepository.findByNombre("Cristian") == null) {
             Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
             admin.setActivo(true);

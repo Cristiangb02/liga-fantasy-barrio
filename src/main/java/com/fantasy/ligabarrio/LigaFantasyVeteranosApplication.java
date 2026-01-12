@@ -11,7 +11,6 @@ import java.util.TimeZone; // 🔴 IMPORTANTE
 public class LigaFantasyVeteranosApplication {
 
     public static void main(String[] args) {
-
         TimeZone.setDefault(TimeZone.getTimeZone("Europe/Madrid"));
         SpringApplication.run(LigaFantasyVeteranosApplication.class, args);
     }
@@ -19,13 +18,12 @@ public class LigaFantasyVeteranosApplication {
     @Bean
     public CommandLineRunner initData(UsuarioRepository usuarioRepository, JornadaRepository jornadaRepository) {
         return args -> {
-            //1. INICIALIZAR JORNADA
             if (jornadaRepository.count() == 0) {
                 jornadaRepository.save(new Jornada());
                 System.out.println(">>> ✅ Jornada 1 creada.");
             }
 
-            // 2. ASEGURAR ADMIN CRISTIAN
+            //Aseguramos el admin
             Usuario admin = usuarioRepository.findByNombre("Cristian");
             
             if (admin == null) {
@@ -36,10 +34,9 @@ public class LigaFantasyVeteranosApplication {
                 System.out.println(">>> 🆕 Creando usuario 'Cristian'...");
             } 
 
-            //3. ASEGURAR CONTRASEÑA
+            //Aseguramos la contraseña
             admin.setPassword("Huelvamolamazo");
             usuarioRepository.save(admin);
-            
             System.out.println(">>> 👑 ADMIN 'Cristian' asegurado.");
         };
     }

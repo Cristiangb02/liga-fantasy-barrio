@@ -13,8 +13,7 @@ public class Noticia {
     private String mensaje;
     private LocalDateTime fecha;
 
-    public Noticia() {
-    }
+    public Noticia() {}
 
     public Noticia(String mensaje) {
         this.mensaje = mensaje;

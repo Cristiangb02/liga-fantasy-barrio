@@ -42,38 +42,34 @@ public class Jugador {
     }
 
     private int calcularPrecioFinal(int edad, double media) {
-        // 1. BASE EXPONENCIAL (Potencia 2.88)
+        //1. Base exponencial (Potencia 2.88)
         double precioBase = 10_000 * Math.pow(2.88, media);
 
-        // 2. FACTOR EDAD
+        //2. Factor edad
         double factorEdad = 1.0;
 
         if (edad < 27) {
-            // JUVENTUD: +16% por año
+            //JUVENTUD: +16% por año
             factorEdad += (27 - edad) * 0.16;
         } else if (edad <= 40) {
-            // MADUREZ: -1.2% suave por cada año.
+            //MADUREZ: -1.2% suave por cada año.
             factorEdad -= (edad - 27) * 0.012;
         } else {
-            // DECLIVE:
+            //VEJEZ:
             double bajadaSuave = (40 - 27) * 0.02;
             double bajadaFuerte = (edad - 40) * 0.04;
             factorEdad -= (bajadaSuave + bajadaFuerte);
         }
 
-        // Suelo para veteranos cracks
+        //Suelo para veteranos cracks
         if (factorEdad < 0.25) factorEdad = 0.24;
 
-        // 3. CÁLCULO FINAL
+        //3. Cálculo final
         double precioFinal = precioBase * factorEdad;
-
-        // Mínimo absoluto
         if (precioFinal < 250_000) precioFinal = 250_000;
 
         return (int) precioFinal;
     }
-
-    // --- GETTERS Y SETTERS ---
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

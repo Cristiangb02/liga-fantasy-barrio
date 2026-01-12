@@ -15,13 +15,13 @@ public class CalculadoraPuntosService {
         int puntos = 1; //Por jugar el partido, +1
         String pos = a.getJugador().getPosicion().toUpperCase();
 
-        // --- RESULTADO DEL PARTIDO ---
+        //Puntos por el resultado del partido
         if (a.isVictoria()) {
             puntos += 2;
-            puntos += random.nextInt(4);
+            puntos += random.nextInt(4); //Extras
         } else if (a.isDerrota()) {
             puntos -= 2;
-            puntos += random.nextInt(2);
+            puntos += random.nextInt(2); //0 o 1 punto extra
         } else {
             puntos += random.nextInt(2); //0 o +1 como mucho
         }
@@ -29,7 +29,7 @@ public class CalculadoraPuntosService {
         switch (pos) {
             case "PORTERO":
                 //1. Goles Encajados:
-                //    - 0 goles: +7 pts (Premio portería a cero muy alto)
+                //    - 0 goles: +7 pts
                 //    - <3 goles: +4 pts
                 //    - 3-6 goles: 0 pts
                 //    - >6 goles: -3 pts
@@ -48,7 +48,7 @@ public class CalculadoraPuntosService {
                 //    - <3 goles: +3 pts
                 //    - 3-6 goles: -1 pt
                 //    - >6 goles: -3 pts
-                puntos += calcularGolesEncajados(a.getGolesEncajados(), 5, 3, -1, -3);
+                puntos += calcularGolesEncajados(a.getGolesEncajados(), 5, 3, -1, -4);
 
                 //2. Goles Marcados:
                 puntos += (a.getGolesMarcados() * 6);
@@ -63,7 +63,7 @@ public class CalculadoraPuntosService {
                 //    - <3 goles: +3 pts
                 //    - 3-6 goles: 0 pts
                 //    - >6 goles: -4 pts
-                puntos += calcularGolesEncajados(a.getGolesEncajados(), 4, 3, 0, -4);
+                puntos += calcularGolesEncajados(a.getGolesEncajados(), 4, 3, 0, -3);
 
                 //2. Goles Marcados:
                 puntos += (a.getGolesMarcados() * 5);
