@@ -32,33 +32,42 @@
         .equipo-bottom { flex-direction: column-reverse; }
         .linea-jugadores { display: flex; justify-content: center; gap: 8px; }
         .jugador-card { width: 65px; text-align: center; position: relative; }
+
         .jugador-img {
             width: 45px; height: 45px; border-radius: 50%;
             border: 3px solid #333; background: #fff; object-fit: cover;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: relative;
         }
 
         .camiseta-ROJO .jugador-img { border-color: #d32f2f; }
         .camiseta-AZUL .jugador-img { border-color: #1976d2; }
         .camiseta-AMARILLO .jugador-img { border-color: #fbc02d; }
         .camiseta-BLANCO .jugador-img { border-color: #ffffff; }
+
+        /* CORRECCIÓN: Z-Index 20 para estar encima del MVP */
         .puntos-badge {
             position: absolute; top: -5px; right: 0;
             color: white; font-weight: bold; font-size: 11px; width: 20px; height: 20px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 20;
         }
 
         .badge-green { background-color: #2e7d32; }
         .badge-red { background-color: #d32f2f; }
         .badge-orange { background-color: #f57c00; color: white; }
+
         .jugador-nombre { font-size: 9px; background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; }
+
+        /* El MVP tiene z-index 10, así que el badge (20) gana */
         .mvp .jugador-img {
             box-shadow: 0 0 15px 5px #ffd700;
             transform: scale(1.2);
             border-color: #ffd700 !important;
             z-index: 10;
         }
+
         .mvp-crown {
             position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
             font-size: 16px; text-shadow: 0 2px 2px rgba(0,0,0,0.5); z-index: 11;
