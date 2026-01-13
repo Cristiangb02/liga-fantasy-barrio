@@ -137,12 +137,14 @@ public class InicializadorDatos implements CommandLineRunner {
         }
 
         //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (EJEMPLO CON CHICO)
+        /*
         List<Jugador> listaChicos = jugadorRepository.findByNombre("Chico");
         for (Jugador c : listaChicos) {
             c.setUrlImagen("/chico.png");
             jugadorRepository.save(c);
             System.out.println("📸 Imagen actualizada para: " + c.getNombre() + " (" + c.getPosicion() + ")");
         }
+        */
 
         System.out.println(">>> ✅ CARGA DE DATOS COMPLETADA.");
     }
