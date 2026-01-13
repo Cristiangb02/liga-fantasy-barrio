@@ -136,12 +136,12 @@ public class InicializadorDatos implements CommandLineRunner {
             System.out.println("👑 ADMIN CREADO");
         }
 
-        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (EJEMPLO CON SEBAS)
-        List<Jugador> chicoList = jugadorRepository.findByNombre("Chico");
-        if (!chicoList.isEmpty()) {
-            Jugador chico = chicoList.get(0);
-            chico.setUrlImagen("/chico.png");
-            jugadorRepository.save(chico);
+        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (EJEMPLO CON CHICO)
+        List<Jugador> listaChicos = jugadorRepository.findByNombre("Chico");
+        for (Jugador c : listaChicos) {
+            c.setUrlImagen("/chico.png");
+            jugadorRepository.save(c);
+            System.out.println("📸 Imagen actualizada para: " + c.getNombre() + " (" + c.getPosicion() + ")");
         }
 
         System.out.println(">>> ✅ CARGA DE DATOS COMPLETADA.");
