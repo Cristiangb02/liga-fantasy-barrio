@@ -60,7 +60,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Alejandro G.", "DEFENSA", 30, 6.58, "/alejandrogarrocho.png"));
         lista.add(new Jugador("Andrés", "DEFENSA", 52, 4.72, "/andres.png"));
         lista.add(new Jugador("Cardenas", "DEFENSA", 45, 6.20, "/cardenas.png"));
-        lista.add(new Jugador("Chico", "DEFENSA", 46, 5.79, "/user.png"));
+        lista.add(new Jugador("Chico", "DEFENSA", 46, 5.79, "/chico.png"));
         lista.add(new Jugador("Conce", "DEFENSA", 29, 5.84, "/conce.png"));
         lista.add(new Jugador("Cristian", "DEFENSA", 24, 7.08, "/cristian.png"));
         lista.add(new Jugador("Diego", "DEFENSA", 49, 8.07, "/diego.png"));
@@ -84,6 +84,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Alejandro", "MEDIO", 32, 8.16, "/alejandro.png"));
         lista.add(new Jugador("Alejandro G.", "MEDIO", 30, 8.52, "/alejandrogarrocho.png"));
         lista.add(new Jugador("Cardenas", "MEDIO", 45, 6.8, "/cardenas.png"));
+        lista.add(new Jugador("Chico", "MEDIO", 46, 5.29, "/chico.png"));
         lista.add(new Jugador("Conce", "MEDIO", 29, 7.13, "/conce.png"));
         lista.add(new Jugador("Cristian", "MEDIO", 24, 7.66, "/cristian.png"));
         lista.add(new Jugador("Felipe", "MEDIO", 31, 7.69, "/felipe.png"));
@@ -136,14 +137,12 @@ public class InicializadorDatos implements CommandLineRunner {
         }
 
         //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (EJEMPLO CON SEBAS)
-        /*
-        List<Jugador> sebasList = jugadorRepository.findByNombre("Sebas");
-        if (!sebasList.isEmpty()) {
-            Jugador sebas = sebasList.get(0);
-            sebas.setUrlImagen("/sebastian.png");
-            jugadorRepository.save(sebas);
+        List<Jugador> chicoList = jugadorRepository.findByNombre("Chico");
+        if (!chicoList.isEmpty()) {
+            Jugador chico = chicoList.get(0);
+            chico.setUrlImagen("/chico.png");
+            jugadorRepository.save(chico);
         }
-        */
 
         System.out.println(">>> ✅ CARGA DE DATOS COMPLETADA.");
     }
