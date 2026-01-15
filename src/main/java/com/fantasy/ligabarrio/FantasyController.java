@@ -139,23 +139,31 @@ public class FantasyController {
         return listaJugadores;
     }
 
-    //Mercado diaro (14 jugadores cada día)
+    //Mercado diario ESTABLE (No cambia al añadir jugadores nuevos a la DB)
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
-        List<Jugador> todos = jugadorRepository.findAll();
+        //1. Cogemos a todos los jugadores libres
+        List<Jugador> libres = jugadorRepository.findAll().stream().filter(j -> j.getPropietario() == null).collect(Collectors.toList());
 
-        //1. Ordenamos siempre por ID primero para garantizar consistencia antes de barajar
-        todos.sort(Comparator.comparing(Jugador::getId));
-
-        //2. Semilla basada en el DÍA + el offset del admin
+        //2. Calculamos la semilla del día (el número que representa "HOY")
         LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
-        long seed = hoy.toEpochDay() + seedOffset;
+        long seedDia = hoy.toEpochDay() + seedOffset;
 
-        //3. Barajaramos TODOS los jugadores con esa semilla
-        Collections.shuffle(todos, new Random(seed));
+        libres.sort((j1, j2) -> {
+            //Generamos una semilla única para el Jugador 1
+            long s1 = seedDia + (j1.getId() * 31);
+            //Generamos una semilla única para el Jugador 2
+            long s2 = seedDia + (j2.getId() * 31);
 
-        List<Jugador> mercado = todos.stream().filter(j -> j.getPropietario() == null).limit(14).collect(Collectors.toList());
-        return mercado;
+            //Sacamos su número aleatorio para hoy
+            long ticketLoteria1 = new Random(s1).nextLong();
+            long ticketLoteria2 = new Random(s2).nextLong();
+
+            return Long.compare(ticketLoteria1, ticketLoteria2);
+        });
+
+        //4. Devolvemos los 14 que hayan sacado los números aleatorios más altos hoy
+        return libres.stream().limit(14).collect(Collectors.toList());
     }
 
     @GetMapping("/jornada/resumen")
