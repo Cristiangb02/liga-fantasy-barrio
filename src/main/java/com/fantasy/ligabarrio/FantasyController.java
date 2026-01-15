@@ -166,6 +166,27 @@ public class FantasyController {
         return libres.stream().limit(14).collect(Collectors.toList());
     }
 
+    //ADMIN - Jugadores que AÚN NO han puntuado en esta jornada
+    @GetMapping("/admin/jugadores-pendientes")
+    public List<Jugador> getJugadoresPendientes() {
+        Jornada actual = getJornadaActiva();
+
+        // 1. Sacamos todos los jugadores
+        List<Jugador> todos = jugadorRepository.findAll();
+
+        // 2. Sacamos los IDs de los que YA han jugado esta jornada
+        List<Long> idsPuntuados = actuacionRepository.findAll().stream()
+                .filter(a -> a.getJornada().getId().equals(actual.getId()))
+                .map(a -> a.getJugador().getId())
+                .collect(Collectors.toList());
+
+        // 3. Devolvemos la lista de todos MENOS los que ya están puntuados
+        return todos.stream()
+                .filter(j -> !idsPuntuados.contains(j.getId()))
+                .sorted(Comparator.comparing(Jugador::getNombre)) // Ordenados por nombre para que sea fácil buscar
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/jornada/resumen")
     public List<Map<String, Object>> verResumenJornadaAnterior() {
         Jornada actual = getJornadaActiva();
