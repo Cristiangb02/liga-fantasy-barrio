@@ -361,6 +361,15 @@
 <div id="sec-admin" class="seccion oculto">
     <h3 style="color:#c62828">Panel Admin</h3>
 
+    <div style="background:#263238; padding:15px; border-radius:10px; border:2px solid #546e7a; margin-bottom: 20px; text-align:center;">
+        <h4 style="color:#cfd8dc; margin-top:0;">🛑 CONTROL DE PARTIDO</h4>
+        <p style="font-size:0.85em; color:#b0bec5;">Bloquea ventas, compras y robos durante los partidos.</p>
+
+        <button id="btn-bloqueo" onclick="toggleBloqueo()" style="width:100%; padding:15px; border:none; border-radius:8px; font-weight:900; font-size:1.1em; cursor:pointer; transition:0.3s;">
+            CARGANDO ESTADO...
+        </button>
+    </div>
+
     <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
         <h4>👮 Gestión de usuarios (Credenciales)</h4>
         <div id="admin-lista-usuarios">Cargando...</div>
@@ -579,6 +588,7 @@
             document.getElementById('tab-admin').classList.remove('oculto');
             cargarUsuariosAdmin();
             pintarSelectAdmin();
+            actualizarBotonBloqueo(); // 🔴 AÑADIDO: Chequear bloqueo al cargar
         }
         cargarTodo();
         // Recargar ofertas también
@@ -1177,6 +1187,10 @@
         document.getElementById('sec-' + tab).classList.remove('oculto');
         document.getElementById('tab-' + tab).classList.add('active');
         if(tab === 'ofertas') cargarOfertas(); // Cargar ofertas al entrar
+        if(tab === 'admin') {
+            cargarUsuariosAdmin();
+            actualizarBotonBloqueo(); // 🔴 AÑADIDO: Actualizar el botón al entrar
+        }
     }
     function actualizarPresupuestoUI() { const el = document.getElementById('presupuesto-display'); el.innerText = formatoDinero.format(presupuesto); if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); } else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); } }
     function logout() { localStorage.clear(); window.location.href = 'login.html'; }
@@ -1212,6 +1226,34 @@
         mostrarModal("Cazafantasmas", "¿Seguro que quieres borrar a todos los 'Jona'?", 'confirm', () => {
             post('/admin/eliminar-jonas', {});
         });
+    }
+
+    // 🔴 FUNCIONES DE BLOQUEO DE ACCIONES
+    function toggleBloqueo() {
+        post('/admin/toggle-bloqueo', {}, 0);
+        setTimeout(actualizarBotonBloqueo, 500);
+    }
+
+    function actualizarBotonBloqueo() {
+        if (!esAdmin) return;
+        const btn = document.getElementById('btn-bloqueo');
+        if (!btn) return;
+
+        fetch('/admin/estado-bloqueo')
+            .then(r => r.json())
+            .then(bloqueado => {
+                if (bloqueado) {
+                    btn.innerText = "🔒 BLOQUEO ACTIVADO (Nadie puede operar)";
+                    btn.style.background = "#d32f2f";
+                    btn.style.color = "white";
+                    btn.style.boxShadow = "0 0 15px rgba(211, 47, 47, 0.6)";
+                } else {
+                    btn.innerText = "🔓 BLOQUEO DESACTIVADO (Mercado abierto)";
+                    btn.style.background = "#2e7d32";
+                    btn.style.color = "white";
+                    btn.style.boxShadow = "none";
+                }
+            });
     }
 </script>
 </body>
