@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>Acceso Liga Fantasy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script>
+        if (localStorage.getItem('usuarioId')) {
+            window.location.replace('fantasy.html');
+        }
+    </script>
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1565c0, #0d47a1); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
         .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 320px; text-align: center; }
