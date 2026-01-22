@@ -192,7 +192,7 @@ public class FantasyController {
         });
 
         // 4. Devolvemos los 14 mejores tickets
-        return libres.stream().limit(14).collect(Collectors.toList());
+        return libres.stream().limit(20).collect(Collectors.toList());
     }
 
     //ADMIN - Jugadores que AÚN NO han puntuado en esta jornada
