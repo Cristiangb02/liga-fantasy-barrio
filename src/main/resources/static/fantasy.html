@@ -680,9 +680,11 @@
             });
         });
 
-        fetch('/mercado-diario').then(r=>r.json()).then(mercado => {
-            pintarMercado(mercado);
-        });
+        fetch('/mercado-diario?t=' + new Date().getTime())
+            .then(r=>r.json())
+            .then(mercado => {
+                pintarMercado(mercado);
+            });
 
         fetch('/usuarios').then(r=>r.json()).then(usuarios => {
             pintarRivales(usuarios);
