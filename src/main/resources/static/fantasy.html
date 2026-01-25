@@ -429,9 +429,14 @@
     </div>
 
     <div style="background:#f3e5f5; padding:15px; border-radius:10px; border:1px solid #ce93d8; margin-bottom: 20px;">
-        <h4 style="color:#7b1fa2; margin-top:0;">👻 Cazafantasmas</h4>
-        <p style="font-size:0.85em; color:#666;">Elimina a los jugadores duplicados llamados "Jona".</p>
-        <button onclick="eliminarJonas()" style="background:#8e24aa; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">🚫 BORRAR JONAS</button>
+        <h4 style="color:#7b1fa2; margin-top:0;">🗑️ Eliminar jugadores</h4>
+        <p style="font-size:0.85em; color:#666;">Selecciona al jugador para borrarlo definitivamente de la base de datos.</p>
+
+        <select id="select-eliminar-jugador" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;">
+            <option>Cargando lista...</option>
+        </select>
+
+        <button onclick="eliminarJugadorSeleccionado()" style="background:#8e24aa; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">🚫 BORRAR JUGADOR</button>
     </div>
 
     <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
@@ -1191,7 +1196,9 @@
         if(tab === 'ofertas') cargarOfertas(); // Cargar ofertas al entrar
         if(tab === 'admin') {
             cargarUsuariosAdmin();
-            actualizarBotonBloqueo(); // 🔴 AÑADIDO: Actualizar el botón al entrar
+            actualizarBotonBloqueo();
+            pintarSelectAdmin();
+            pintarSelectEliminar();
         }
     }
     function actualizarPresupuestoUI() { const el = document.getElementById('presupuesto-display'); el.innerText = formatoDinero.format(presupuesto); if(presupuesto < 0) { el.classList.add('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.remove('oculto'); } else { el.classList.remove('presupuesto-negativo'); document.getElementById('aviso-saldo').classList.add('oculto'); } }
@@ -1224,9 +1231,9 @@
         });
     }
 
-    function eliminarJonas() {
-        mostrarModal("Cazafantasmas", "¿Seguro que quieres borrar a todos los 'Jona'?", 'confirm', () => {
-            post('/admin/eliminar-jonas', {});
+    function eliminarJugador() {
+        mostrarModal("Eliminar jugador", "¿Seguro que quieres borrar al jugador?", 'confirm', () => {
+            post('/admin/eliminar-jugador', {});
         });
     }
 
@@ -1256,6 +1263,39 @@
                     btn.style.boxShadow = "none";
                 }
             });
+    }
+
+    function pintarSelectEliminar() {
+        fetch('/jugadores').then(r => r.json()).then(jugadores => {
+            // Ordenamos alfabéticamente
+            jugadores.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+            const select = document.getElementById('select-eliminar-jugador');
+            if (jugadores.length === 0) {
+                select.innerHTML = '<option>No hay jugadores</option>';
+            } else {
+                select.innerHTML = jugadores.map(j =>
+                    `<option value="${j.id}">${j.nombre} (${j.posicion}) - ${j.propietario && j.propietario.nombre ? j.propietario.nombre : 'Libre'}</option>`
+                ).join('');
+            }
+        });
+    }
+
+    function eliminarJugadorSeleccionado() {
+        const select = document.getElementById('select-eliminar-jugador');
+        const idJugador = select.value;
+        const nombreJugador = select.options[select.selectedIndex].text;
+
+        if (!idJugador) return;
+
+        mostrarModal("Eliminar Jugador", `¿Estás seguro de que quieres eliminar a:\n\n👉 ${nombreJugador}?\n\nEsta acción es irreversible.`, 'confirm', () => {
+            post(`/admin/eliminar-jugador/${idJugador}`, {});
+            // Recargamos los selects para que desaparezca
+            setTimeout(() => {
+                pintarSelectEliminar();
+                pintarSelectAdmin(); // Para actualizar el de registrar partido también
+            }, 1000);
+        });
     }
 </script>
 </body>

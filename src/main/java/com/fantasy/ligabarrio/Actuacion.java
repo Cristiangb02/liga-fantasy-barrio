@@ -18,7 +18,7 @@ public class Actuacion {
     private int puntosTotales;
     private boolean victoria;
     private boolean derrota;
-    private boolean jugado; // ¿Jugó o no?
+    private boolean jugado;
     private int autogoles;  
     private int golesMarcados;
     private int golesEncajados;
