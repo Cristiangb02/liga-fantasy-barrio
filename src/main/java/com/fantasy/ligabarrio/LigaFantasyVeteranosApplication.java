@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import java.util.List;
-import java.util.TimeZone; // 🔴 IMPORTANTE
+import java.util.TimeZone;
 
 @SpringBootApplication
 public class LigaFantasyVeteranosApplication {
@@ -20,7 +20,6 @@ public class LigaFantasyVeteranosApplication {
         return args -> {
             if (jornadaRepository.count() == 0) {
                 jornadaRepository.save(new Jornada());
-                System.out.println(">>> ✅ Jornada 1 creada.");
             }
 
             //Aseguramos el admin
@@ -31,13 +30,11 @@ public class LigaFantasyVeteranosApplication {
                 admin.setNombre("Cristian");
                 admin.setPresupuesto(100_000_000);
                 admin.setEsAdmin(true);
-                System.out.println(">>> 🆕 Creando usuario 'Cristian'...");
-            } 
+            }
 
             //Aseguramos la contraseña
             admin.setPassword("Huelvamolamazo");
             usuarioRepository.save(admin);
-            System.out.println(">>> 👑 ADMIN 'Cristian' asegurado.");
         };
     }
 }

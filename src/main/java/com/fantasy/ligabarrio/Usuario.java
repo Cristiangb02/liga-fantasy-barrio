@@ -12,7 +12,7 @@ public class Usuario {
     private String password;
     private int presupuesto;
     private boolean esAdmin;
-    private boolean activo; //Control de acceso
+    private boolean activo;
 
     public Usuario() {
     }

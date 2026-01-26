@@ -14,10 +14,9 @@
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0 auto; color: #333; max-width: 1000px; }
 
-        /* HEADER MODIFICADO PARA ALOJAR DINERO DEBAJO */
         header {
             display: flex;
-            justify-content: center; /* Centrado o flex-start según gusto, al quitar el botón salir queda mejor así o left */
+            justify-content: center;
             align-items: center;
             background: linear-gradient(135deg, #1a237e, #0d47a1);
             color: white;
@@ -44,15 +43,14 @@
             justify-content:center;
             font-size:1.8rem;
             border: 2px solid white;
-            flex-shrink: 0; /* Que no se aplaste el avatar */
+            flex-shrink: 0;
         }
 
-        /* Estilos para nombre y dinero apilados */
         .user-details-col {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            overflow: hidden; /* Para que el texto largo no rompa */
+            overflow: hidden;
         }
 
         .user-name-row {
@@ -67,7 +65,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px; /* Si el nombre es muy largo, pone ... */
+            max-width: 200px;
         }
 
         .jornada-badge { background: #ffd600; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; flex-shrink: 0; }
@@ -75,14 +73,10 @@
         .presupuesto-box {
             font-size: 0.95rem;
             font-weight: bold;
-            color: #b3e5fc; /* Un azul muy clarito para que destaque sobre el fondo oscuro */
+            color: #b3e5fc;
             margin-top: 2px;
-            /* Quitamos el fondo caja para que quede más limpio debajo del nombre, o lo dejamos sutil */
-            /* background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; display:inline-block; align-self: flex-start; */
         }
-        .presupuesto-negativo { color: #ff8a80 !important; } /* Rojo claro para que se lea sobre fondo oscuro */
-
-        /* ELIMINADO .btn-logout PUES YA NO EXISTE */
+        .presupuesto-negativo { color: #ff8a80 !important; }
 
         nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         nav button { position: relative; flex: 0 0 auto; padding: 10px 15px; border: none; background: white; cursor: pointer; border-radius: 8px; font-weight: 700; color: #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 0.9em; }
@@ -93,7 +87,6 @@
         .notif-badge { position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: #d32f2f; border-radius: 50%; border: 2px solid white; display: none; }
         .notif-active .notif-badge { display: block; }
 
-        /* Botón Partido */
         .btn-partido { background: #2e7d32 !important; color: white !important; }
 
         .grid-jugadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
@@ -113,7 +106,6 @@
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         .card:hover .card-img { transform: scale(1.05); }
 
-        /* 🔒 Estilo Blindado */
         .blindado-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; z-index: 5; font-weight: bold; text-align: center; }
         .candado-icon { font-size: 2rem; margin-bottom: 5px; }
         .timer-blindaje { font-family: monospace; font-size: 1.1em; color: #ffeb3b; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
@@ -121,7 +113,6 @@
         .card-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; cursor: pointer; }
         .card-name { font-weight: 700; font-size: 0.95em; color: #1a237e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ESTILOS POSICIONES RESALTADAS */
         .card-pos-badge { display: inline-block; font-size: 0.75em; font-weight: 900; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; align-self: center; color: white; letter-spacing: 0.5px; margin-top: 2px; }
         .pos-portero { background-color: #7b1fa2; } /* Morado */
         .pos-defensa { background-color: #d32f2f; } /* Rojo */
@@ -136,38 +127,29 @@
         .btn-fichar { background: #0288d1; color: white; }
         .btn-robar { background: #d32f2f; color: white; }
         .btn-ofertar { background: #7b1fa2; color: white; margin-top: 5px; }
-
         .btn-vender { background: #d32f2f; color: white; }
-
         .btn-blindar { background: #388e3c; color: white; }
         .btn-action-big { background: #2e7d32; color: white; margin-top: 15px; padding: 14px; width: 100%; border-radius: 8px; border:none; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #1b5e20; }
-
         .alineacion-overlay { position: absolute; top: 8px; left: 8px; z-index: 10; }
         .check-alinear { transform: scale(1.5); cursor: pointer; accent-color: #2e7d32; }
-
         .oculto { display: none !important; }
         .seccion { min-height: 400px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
         .fila-clasif { background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
         .avatar-small { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background-color: #e0e0e0; border: 2px solid #e3e8ee; display:flex; align-items:center; justify-content:center; overflow:hidden;}
         .avatar-small img { width:100%; height:100%; object-fit:cover; }
         .clasif-user { display: flex; align-items: center; gap: 12px; }
-
         .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
         .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
         .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
         .btn-edit-user { background: #0288d1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; margin-right: 5px; }
-
         .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .timer-badge { background: #1a237e; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em; letter-spacing: 1px; }
-
         .bloque-premios { background: #e8f5e9; border: 1px solid #43a047; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
 
-        /* NUEVOS ESTILOS HISTORIAL */
         .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
         .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
@@ -179,7 +161,6 @@
         .text-red { color: #d32f2f; }
         .text-orange { color: #ff9800; }
 
-        /* ESTILOS OFERTAS (NUEVO) */
         .oferta-item { background: #fff; border: 1px solid #ddd; border-left: 5px solid #7b1fa2; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
         .oferta-item.enviada { border-left: 5px solid #0288d1; background: #e1f5fe; } /* Estilo diferente para enviadas */
         .oferta-info { font-size: 0.9em; }
@@ -229,7 +210,6 @@
 
         .btn-back-red { background: #d32f2f; border: 1px solid #b71c1c; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
 
-        /* 🔴 ESTILOS BARRA ONLINE */
         .online-bar {
             background: #e3f2fd;
             color: #1565c0;
@@ -265,7 +245,7 @@
 </header>
 
 <div id="bar-online" class="online-bar" onclick="verQuienEstaOnline()">
-    <span class="online-dot"></span> En línea: <span id="num-online">1</span>
+    <span class="online-dot"></span> Usuarios en línea: <span id="num-online">1</span>
 </div>
 
 <nav>
@@ -305,7 +285,7 @@
     <div class="market-header">
         <span style="font-weight:bold; font-size:1.1rem;">Mercado Libre</span>
         <div id="msg-mercado-cerrado" class="oculto" style="font-size:0.8em; color:#d32f2f;">⛔ Cerrado de 21:30 a 10:00</div>
-        <span style="font-size:0.7em; color:#666;">Próxima renovación</span>
+        <span style="font-size:0.7em; color:#666;">Se renueva en: </span>
         <div id="market-countdown" class="timer-badge">--:--:--</div>
     </div>
     <div id="grid-mercado" class="grid-jugadores">Cargando...</div>
@@ -325,12 +305,12 @@
 </div>
 
 <div id="sec-ofertas" class="seccion oculto">
-    <h3>🤝 Gestión de Ofertas</h3>
+    <h3>Ofertas</h3>
 
-    <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Ofertas Recibidas</h4>
+    <h4 style="color:#7b1fa2; border-bottom:1px solid #eee; padding-bottom:5px;">📥 Recibidas</h4>
     <div id="lista-ofertas-recibidas">Cargando...</div>
 
-    <h4 style="color:#0288d1; border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">📤 Ofertas Enviadas </h4>
+    <h4 style="color:#0288d1; border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">📤 Enviadas </h4>
     <div id="lista-ofertas-enviadas">Cargando...</div>
 </div>
 
@@ -362,8 +342,8 @@
     <h3 style="color:#c62828">Panel Admin</h3>
 
     <div style="background:#263238; padding:15px; border-radius:10px; border:2px solid #546e7a; margin-bottom: 20px; text-align:center;">
-        <h4 style="color:#cfd8dc; margin-top:0;">🛑 CONTROL DE PARTIDO</h4>
-        <p style="font-size:0.85em; color:#b0bec5;">Bloquea ventas, compras y robos durante los partidos.</p>
+        <h4 style="color:#cfd8dc; margin-top:0;">BLOQUEO</h4>
+        <p style="font-size:0.85em; color:#b0bec5;">Todos los días que haya partido, se debe bloquear justo cuando se sepan las alineaciones..</p>
 
         <button id="btn-bloqueo" onclick="toggleBloqueo()" style="width:100%; padding:15px; border:none; border-radius:8px; font-weight:900; font-size:1.1em; cursor:pointer; transition:0.3s;">
             CARGANDO ESTADO...
@@ -371,7 +351,7 @@
     </div>
 
     <div style="background:white; padding:15px; border-radius:10px; border:1px solid #90caf9; margin-bottom: 20px;">
-        <h4>👮 Gestión de usuarios (Credenciales)</h4>
+        <h4>Usuarios</h4>
         <div id="admin-lista-usuarios">Cargando...</div>
     </div>
 
@@ -408,7 +388,7 @@
 
     <div style="background:#e1f5fe; padding:15px; border-radius:10px; border:1px solid #81d4fa; margin-bottom: 20px;">
         <h4 style="color:#0277bd; margin-top:0;">🛒 Gestión de Mercado</h4>
-        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Fuerza la aparición de nuevos jugadores inmediatamente.</p>
+        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Renueva el mercado.</p>
         <button onclick="resetearMercado()" style="background:#0288d1; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">🔄 GENERAR NUEVO MERCADO</button>
     </div>
 
@@ -470,10 +450,7 @@
     const esAdmin = (localStorage.getItem('esAdmin') === 'true');
     let presupuesto = parseInt(localStorage.getItem('presupuesto') || 0);
     const formatoDinero = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
-
-    // Variable global para guardar los nombres
     let listaUsuariosOnline = [];
-
     let modalCallback = null;
 
     function mostrarModal(titulo, mensaje, tipo, callback) {
@@ -593,36 +570,30 @@
             document.getElementById('tab-admin').classList.remove('oculto');
             cargarUsuariosAdmin();
             pintarSelectAdmin();
-            actualizarBotonBloqueo(); // 🔴 AÑADIDO: Chequear bloqueo al cargar
+            actualizarBotonBloqueo();
         }
         cargarTodo();
-        // Recargar ofertas también
         cargarOfertas();
         setInterval(cargarNoticias, 5000);
         iniciarContadorMercado();
         iniciarRelojesBlindaje();
-
-        // 🔴 Arrancar el ping de usuarios online
-        setInterval(pingOnline, 5000); // Cada 5 segundos
-        pingOnline(); // Primera llamada inmediata
+        setInterval(pingOnline, 5000); //Cada 5 segundos
+        pingOnline();
     };
 
    function iniciarContadorMercado() {
         function actualizar() {
             const now = new Date();
-
-            // 1. Lógica del texto "Cerrado"
             const minutosDia = now.getHours() * 60 + now.getMinutes();
 
-            // 21:30 = 1290 minutos
+            //21:30 = 1290 minutos
             const cerradoNoche = 1290;
 
-            // 10:00 = 600 minutos (ANTES PONÍA 90, POR ESO NO SALÍA A LAS 7:40)
+            //10:00 = 600 minutos
             const cerradoMadrugada = 600;
-
             const msgCerrado = document.getElementById('msg-mercado-cerrado');
 
-            // Si es más tarde de las 21:30 O más temprano de las 10:00 -> Muestra mensaje
+            //Si es más tarde de las 21:30 O más temprano de las 10:00 -> Muestra mensaje
             if (minutosDia >= cerradoNoche || minutosDia < cerradoMadrugada) {
                 msgCerrado.classList.remove('oculto');
             } else {
@@ -1237,7 +1208,6 @@
         });
     }
 
-    // 🔴 FUNCIONES DE BLOQUEO DE ACCIONES
     function toggleBloqueo() {
         post('/admin/toggle-bloqueo', {}, 0);
         setTimeout(actualizarBotonBloqueo, 500);
@@ -1252,12 +1222,12 @@
             .then(r => r.json())
             .then(bloqueado => {
                 if (bloqueado) {
-                    btn.innerText = "🔒 BLOQUEO ACTIVADO (Nadie puede operar)";
+                    btn.innerText = "🔒 BLOQUEO ACTIVO";
                     btn.style.background = "#d32f2f";
                     btn.style.color = "white";
                     btn.style.boxShadow = "0 0 15px rgba(211, 47, 47, 0.6)";
                 } else {
-                    btn.innerText = "🔓 BLOQUEO DESACTIVADO (Mercado abierto)";
+                    btn.innerText = "🔓 BLOQUEO DESACTIVADO";
                     btn.style.background = "#2e7d32";
                     btn.style.color = "white";
                     btn.style.boxShadow = "none";

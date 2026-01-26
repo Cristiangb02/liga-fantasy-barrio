@@ -19,7 +19,7 @@ public class Oferta {
     private Usuario vendedor;
 
     private int cantidad;
-    private String estado; // "PENDIENTE", "ACEPTADA", "RECHAZADA"
+    private String estado; //"PENDIENTE", "ACEPTADA", "RECHAZADA"
     private LocalDateTime fecha;
 
     public Oferta() {}

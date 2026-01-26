@@ -45,7 +45,6 @@
         .camiseta-AMARILLO .jugador-img { border-color: #fbc02d; }
         .camiseta-BLANCO .jugador-img { border-color: #ffffff; }
 
-        /* CORRECCIÓN: Z-Index 20 para estar encima del MVP */
         .puntos-badge {
             position: absolute; top: -5px; right: 0;
             color: white; font-weight: bold; font-size: 11px; width: 20px; height: 20px;
@@ -60,7 +59,6 @@
 
         .jugador-nombre { font-size: 9px; background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; }
 
-        /* El MVP tiene z-index 10, así que el badge (20) gana */
         .mvp .jugador-img {
             box-shadow: 0 0 15px 5px #ffd700;
             transform: scale(1.2);
@@ -93,7 +91,7 @@
         <input type="number" id="numJornada" value="1" min="1">
         <button class="btn-buscar" onclick="cargarTodo()">🔍</button>
     </div>
-    <button class="btn-toggle" onclick="alternarVista()">🔄 Cambiar Vista</button>
+    <button class="btn-toggle" onclick="alternarVista()">🔄 Cambiar vista</button>
     <a href="fantasy.html" class="btn-volver">Volver</a>
 </div>
 
@@ -138,7 +136,7 @@
             const data = await response.json();
 
             if(data.error) {
-                document.getElementById("marcador").innerText = "⚠️ " + data.error;
+                document.getElementById("marcador").innerText = data.error;
                 document.getElementById("area-equipo-a").innerHTML = "";
                 document.getElementById("area-equipo-b").innerHTML = "";
                 return;

@@ -124,33 +124,29 @@ public class InicializadorDatos implements CommandLineRunner {
 
             if (existentes.isEmpty()) {
                 jugadorRepository.save(j);
-                System.out.println("✅ " + j.getNombre() + " (" + j.getPosicion() + ") -> " + j.getValor() + "€");
             }
         }
 
         if (jornadaRepository.count() == 0) {
-            Jornada jornada1 = new Jornada(1, LocalDate.now(), t2026); // Usamos la temporada recuperada
+            Jornada jornada1 = new Jornada(1, LocalDate.now(), t2026);
             jornadaRepository.save(jornada1);
         }
 
-        //Administrador
+        //Creación del admin
         if (usuarioRepository.findByNombre("Cristian") == null) {
             Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
             admin.setActivo(true);
             usuarioRepository.save(admin);
-            System.out.println("👑 ADMIN CREADO");
         }
 
-        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (EJEMPLO CON CHICO)
-
-        List<Jugador> listaPablos = jugadorRepository.findByNombre("Pablo");
-        for (Jugador c : listaPablos) {
-            c.setUrlImagen("/pablo.png");
+        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR
+        /*
+        List<Jugador> listaJugadorExistente = jugadorRepository.findByNombre("nombre");
+        for (Jugador c : listaJugadorExistente) {
+            c.setUrlImagen("/nombre.png");
             jugadorRepository.save(c);
-            System.out.println("📸 Imagen actualizada para: " + c.getNombre() + " (" + c.getPosicion() + ")");
         }
-
-
-        System.out.println(">>> ✅ CARGA DE DATOS COMPLETADA.");
+          */
+        System.out.println("CARGA DE DATOS COMPLETADA.");
     }
 }

@@ -1079,9 +1079,7 @@ public class FantasyController {
         });
 
         equipoRepository.deleteAll(equipoRepository.findByUsuario(u));
-        List<Oferta> ofertasRelacionadas = ofertaRepository.findAll().stream()
-                .filter(o -> o.getVendedor().getId().equals(idUsuario) || o.getComprador().getId().equals(idUsuario))
-                .collect(Collectors.toList());
+        List<Oferta> ofertasRelacionadas = ofertaRepository.findAll().stream().filter(o -> o.getVendedor().getId().equals(idUsuario) || o.getComprador().getId().equals(idUsuario)).collect(Collectors.toList());
         ofertaRepository.deleteAll(ofertasRelacionadas);
         usuarioRepository.delete(u);
         String mensaje = "✅ Usuario eliminado correctamente.";

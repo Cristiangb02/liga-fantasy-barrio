@@ -61,7 +61,7 @@ public class Jugador {
             factorEdad -= (bajadaSuave + bajadaFuerte);
         }
 
-        //Suelo para veteranos cracks
+        //Suelo para veteranos con alta media
         if (factorEdad < 0.25) factorEdad = 0.24;
 
         //3. Cálculo final
