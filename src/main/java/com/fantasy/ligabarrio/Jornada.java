@@ -15,14 +15,23 @@ public class Jornada {
     @ManyToOne
     private Temporada temporada;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean bloqueada = false;
+
     public Jornada() {
         this.numero = 1;
+        this.bloqueada = false;
     }
 
     public Jornada(int numero, LocalDate fecha, Temporada temporada) {
-        this.numero = (numero <= 0) ? 1 : numero;
+        if (numero <= 0) {
+            this.numero = 1;
+        } else {
+            this.numero = numero;
+        }
         this.fecha = fecha;
         this.temporada = temporada;
+        this.bloqueada = false;
     }
 
     public Long getId() { return id; }
@@ -33,4 +42,6 @@ public class Jornada {
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
     public Temporada getTemporada() { return temporada; }
     public void setTemporada(Temporada temporada) { this.temporada = temporada; }
+    public boolean isBloqueada() { return bloqueada; }
+    public void setBloqueada(boolean bloqueada) { this.bloqueada = bloqueada; }
 }
