@@ -459,27 +459,28 @@
         document.getElementById('modal-titulo').innerText = titulo;
         document.getElementById('modal-mensaje').innerText = mensaje;
         document.getElementById('modal-overlay').classList.remove('oculto');
+
         const btnOk = document.getElementById('btn-modal-ok');
         const inputContainer = document.getElementById('modal-input-container');
         const input = document.getElementById('modal-input');
         const infoExtra = document.getElementById('modal-info-extra');
+
         input.value = '';
         inputContainer.classList.add('oculto');
         infoExtra.classList.add('oculto');
-        btnOk.className = 'btn-modal btn-modal-ok';
+        btnOk.className = 'btn-modal btn-modal-ok'; // Azul por defecto
         btnOk.classList.remove('oculto');
+        btnOk.innerText = "Confirmar"; // Texto por defecto
 
         if (tipo === 'input' || tipo === 'blindar' || tipo === 'oferta') {
             inputContainer.classList.remove('oculto');
 
             if(tipo === 'oferta') {
                 input.placeholder = "Cantidad a ofrecer";
-                input.type = "text"; // Cambiado a text para permitir puntos
+                input.type = "text";
                 input.onkeyup = function() {
-                     // Eliminar cualquier caracter que no sea número
                     let val = this.value.replace(/\./g, '').replace(/\D/g, '');
                     if(val === "") { this.value = ""; return; }
-                    // Formatear con puntos
                     let num = parseInt(val);
                     this.value = num.toLocaleString('es-ES');
                 };
@@ -506,10 +507,15 @@
             btnOk.className = 'btn-modal btn-modal-danger';
         } else if (tipo === 'info') {
             btnOk.classList.add('oculto');
+
+        } else if (tipo === 'vender') {
+            btnOk.className = 'btn-modal btn-modal-danger'; // Lo pone ROJO
+            btnOk.innerText = "Vender"; // Cambia el texto
         }
 
         modalCallback = () => {
-            if (tipo === 'confirm') callback();
+            // Añadimos 'vender' aquí para que ejecute el callback sin pedir input
+            if (tipo === 'confirm' || tipo === 'vender') callback();
             else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
             else if (tipo === 'oferta') {
                 let valLimpio = input.value.replace(/\./g, '');
@@ -965,7 +971,12 @@
     function robar(id, p) { mostrarModal("Fichar por Cláusula", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
     function vender(id, valor, clausula) {
         let ingreso = valor + (clausula - valor) / 2;
-        mostrarModal("Vender al Mercado", `Recuperarás Coste + Inversión.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`, 'confirm', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso));
+        mostrarModal(
+            "Vender al Mercado",
+            `Recuperarás Coste + Inversión.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`,
+            'vender',
+            () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso)
+        );
     }
     function blindar(id) {
         mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => {
