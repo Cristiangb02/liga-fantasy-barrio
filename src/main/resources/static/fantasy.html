@@ -33,6 +33,25 @@
             width: 100%; /* Ocupa todo para manejar el layout interno */
         }
 
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 10px;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #d32f2f;
+            border-color: #d32f2f;
+        }
+
         .avatar-header {
             width: 50px;
             height: 50px;
@@ -242,6 +261,7 @@
             <div id="presupuesto-display" class="presupuesto-box">0 €</div>
         </div>
     </div>
+    <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
 </header>
 
 <div id="bar-online" class="online-bar" onclick="verQuienEstaOnline()">
@@ -671,6 +691,13 @@
         fetch('/usuarios').then(r=>r.json()).then(usuarios => {
             pintarRivales(usuarios);
             const yo = usuarios.find(u => u.id == usuarioId);
+
+            if (!yo) {
+                alert("⛔ Tu usuario ha sido eliminado o no existe.");
+                logout(); // Borra credenciales y te manda al login
+                return;
+            }
+
             if (yo) {
                 presupuesto = yo.presupuesto;
                 localStorage.setItem('presupuesto', presupuesto);
