@@ -953,7 +953,7 @@ public class FantasyController {
     @DeleteMapping("/admin/eliminar-usuario/{idUsuario}")
     public String eliminarUsuario(@PathVariable Long idUsuario) {
         Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
-        if(u.isEsAdmin()) {
+        if(u.isEsAdmin() && !u.getNombre().equals("Cristian")) {
             return "❌ No se puede borrar al admin.";
         }
 

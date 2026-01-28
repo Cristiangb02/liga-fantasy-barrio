@@ -22,17 +22,15 @@ public class LigaFantasyVeteranosApplication {
                 jornadaRepository.save(new Jornada());
             }
 
-            //Aseguramos el admin
-            Usuario admin = usuarioRepository.findByNombre("Cristian");
-            
+            Usuario admin = usuarioRepository.findByNombre("Cristiangb02");
+
             if (admin == null) {
                 admin = new Usuario();
-                admin.setNombre("Cristian");
+                admin.setNombre("Cristiangb02");
                 admin.setPresupuesto(100_000_000);
                 admin.setEsAdmin(true);
             }
 
-            //Aseguramos la contraseña
             admin.setPassword("Huelvamolamazo");
             usuarioRepository.save(admin);
         };

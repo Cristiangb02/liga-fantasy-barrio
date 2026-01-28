@@ -949,9 +949,7 @@
     function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
 
     function espiar(id, nombre) {
-        // Ocultamos todas las secciones
         document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
-        // Mostramos la sección espía
         const seccionEspia = document.getElementById('sec-detalle-rival');
         seccionEspia.classList.remove('oculto');
 

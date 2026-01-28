@@ -132,9 +132,9 @@ public class InicializadorDatos implements CommandLineRunner {
             jornadaRepository.save(jornada1);
         }
 
-        //Creación del admin
-        if (usuarioRepository.findByNombre("Cristian") == null) {
-            Usuario admin = new Usuario("Cristian", "Huelvamolamazo", 100_000_000, true);
+        if (usuarioRepository.findByNombre("Cristiangb02") == null) {
+
+            Usuario admin = new Usuario("Cristiangb02", "Huelvamolamazo", 100_000_000, true);
             admin.setActivo(true);
             usuarioRepository.save(admin);
         }
