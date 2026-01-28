@@ -824,8 +824,7 @@
                     <div style="flex-shrink:0;">
                         <button class="btn-edit-user" onclick="editarUsuario(${u.id}, '${u.nombre}')">✏️</button>
 
-                        ${!u.esAdmin ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}
-                    </div>
+                        ${(!u.esAdmin || u.nombre === 'Cristian') ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}                    </div>
                 </div>
             `).join('');
         });
