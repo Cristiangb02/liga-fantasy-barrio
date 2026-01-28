@@ -992,8 +992,7 @@ public class FantasyController {
             }
 
             return Map.<String, Object>of(
-                    "nombre", j.getNombre(), "posicion", j.getPosicion(),
-                    "puntos", a.getPuntosTotales(), "imagen", imagen, "mvp", esMvp
+                    "nombre", j.getNombre(), "posicion", j.getPosicion(), "puntos", a.getPuntosTotales(), "imagen", imagen, "mvp", esMvp
             );
         }).collect(Collectors.toList());
     }
