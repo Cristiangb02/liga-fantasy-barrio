@@ -121,8 +121,14 @@ public class InicializadorDatos implements CommandLineRunner {
 
         for (Jugador j : lista) {
             List<Jugador> existentes = jugadorRepository.findByNombreAndPosicion(j.getNombre(), j.getPosicion());
+
             if (existentes.isEmpty()) {
+                // Si no existe, lo crea nuevo
                 jugadorRepository.save(j);
+            } else {
+                Jugador jugadorExistente = existentes.get(0);
+                jugadorExistente.setUrlImagen(j.getUrlImagen());
+                jugadorRepository.save(jugadorExistente);
             }
         }
 
