@@ -9,38 +9,34 @@ import java.util.ArrayList;
 @Component
 public class InicializadorDatos implements CommandLineRunner {
 
-    private final JugadorRepository jugadorRepository;
-    private final TemporadaRepository temporadaRepository;
-    private final JornadaRepository jornadaRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final EquipoRepository equipoRepository;
-    private final ActuacionRepository actuacionRepository;
-    private final NoticiaRepository noticiaRepository;
+    private final JugadorRepository juR;
+    private final TemporadaRepository tR;
+    private final JornadaRepository joR;
+    private final UsuarioRepository uR;
+    private final EquipoRepository eR;
+    private final ActuacionRepository aR;
+    private final NoticiaRepository nR;
 
-    public InicializadorDatos(JugadorRepository jugadorRepository, TemporadaRepository temporadaRepository,
-                              JornadaRepository jornadaRepository,
-                              UsuarioRepository usuarioRepository,
-                              EquipoRepository equipoRepository,
-                              ActuacionRepository actuacionRepository,
-                              NoticiaRepository noticiaRepository) {
-        this.jugadorRepository = jugadorRepository;
-        this.temporadaRepository = temporadaRepository;
-        this.jornadaRepository = jornadaRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.equipoRepository = equipoRepository;
-        this.actuacionRepository = actuacionRepository;
-        this.noticiaRepository = noticiaRepository;
+    public InicializadorDatos(JugadorRepository juR, TemporadaRepository tR, JornadaRepository joR, UsuarioRepository uR,
+                              EquipoRepository eR, ActuacionRepository aR, NoticiaRepository nR) {
+        this.juR = juR;
+        this.tR = tR;
+        this.joR = joR;
+        this.uR = uR;
+        this.eR = eR;
+        this.aR = aR;
+        this.nR = nR;
     }
 
     @Override
     public void run(String... args) throws Exception {
 
         Temporada t2026;
-        if (temporadaRepository.count() == 0) {
+        if (tR.count() == 0) {
             t2026 = new Temporada(2026);
-            temporadaRepository.save(t2026);
+            tR.save(t2026);
         } else {
-            t2026 = temporadaRepository.findAll().get(0);
+            t2026 = tR.findAll().get(0);
         }
 
         List<Jugador> lista = new ArrayList<>();
@@ -120,27 +116,22 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Sergio", "DELANTERO", 34, 6.88, "/images/sergio.png"));
 
         for (Jugador j : lista) {
-            List<Jugador> existentes = jugadorRepository.findByNombreAndPosicion(j.getNombre(), j.getPosicion());
+            List<Jugador> existentes = juR.findByNombreAndPosicion(j.getNombre(), j.getPosicion());
 
             if (existentes.isEmpty()) {
-                // Si no existe, lo crea nuevo
-                jugadorRepository.save(j);
-            } else {
-                Jugador jugadorExistente = existentes.get(0);
-                jugadorExistente.setUrlImagen(j.getUrlImagen());
-                jugadorRepository.save(jugadorExistente);
+                juR.save(j);
             }
         }
 
-        if (jornadaRepository.count() == 0) {
+        if (joR.count() == 0) {
             Jornada jornada1 = new Jornada(1, LocalDate.now(), t2026);
-            jornadaRepository.save(jornada1);
+            joR.save(jornada1);
         }
 
-        if (usuarioRepository.findByNombre("Cristiangb02") == null) {
+        if (uR.findByNombre("Cristiangb02") == null) {
             Usuario admin = new Usuario("Cristiangb02", "Huelvamolamazo", 100_000_000, true);
             admin.setActivo(true);
-            usuarioRepository.save(admin);
+            uR.save(admin);
         }
 
         //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR

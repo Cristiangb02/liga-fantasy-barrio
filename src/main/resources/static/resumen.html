@@ -5,18 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resumen Jornada</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: white; margin: 0; padding: 10px; text-align: center; }
+        body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #1a1a1a;
+        color: white;
+        margin: 0;
+        padding: 10px;
+        text-align: center; }
 
         .controls {
-            background: #333; padding: 15px; border-radius: 12px; margin-bottom: 20px;
-            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        input { padding: 10px; border-radius: 5px; border: none; text-align: center; width: 60px; font-weight: bold; font-size: 1rem; }
-        button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-buscar { background: #ffd700; color: #333; }
-        .btn-toggle { background: #2196f3; color: white; }
-        .btn-volver { background-color: #d32f2f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; }
+            background: #333;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+        input {
+            padding: 10px;
+            border-radius: 5px; b
+            order: none;
+            text-align: center;
+            width: 60px;
+            font-weight: bold;
+            font-size: 1rem; }
+
+        button { padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s; }
+
+        .btn-buscar {
+            background: #ffd700;
+            color: #333; }
+
+        .btn-toggle {
+            background: #2196f3;
+            color: white; }
+
+        .btn-volver {
+            background-color: #d32f2f;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block; }
 
         .campo {
             background: linear-gradient(to bottom, #4caf50, #388e3c);
@@ -25,17 +65,52 @@
             position: relative; display: flex; flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
-        .linea-medio { position: absolute; top: 50%; width: 100%; height: 4px; background: rgba(255,255,255,0.6); }
-        .circulo-central { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border: 4px solid rgba(255,255,255,0.6); border-radius: 50%; }
-        .equipo-area { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; padding: 10px 0; z-index: 2; }
+
+        .linea-medio {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.6); }
+
+        .circulo-central {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255,255,255,0.6);
+            border-radius: 50%; }
+
+        .equipo-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            padding: 10px 0;
+            z-index: 2; }
+
         .equipo-top { flex-direction: column; }
+
         .equipo-bottom { flex-direction: column-reverse; }
-        .linea-jugadores { display: flex; justify-content: center; gap: 8px; }
-        .jugador-card { width: 65px; text-align: center; position: relative; }
+
+        .linea-jugadores {
+            display: flex; justify-content: center;
+            gap: 8px; }
+
+        .jugador-card {
+            width: 65px;
+            text-align: center;
+            position: relative; }
 
         .jugador-img {
-            width: 45px; height: 45px; border-radius: 50%;
-            border: 3px solid #333; background: #fff; object-fit: cover;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 3px solid #333;
+            background: #fff;
+            object-fit: cover;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             position: relative;
         }
@@ -46,10 +121,20 @@
         .camiseta-BLANCO .jugador-img { border-color: #ffffff; }
 
         .puntos-badge {
-            position: absolute; top: -5px; right: 0;
-            color: white; font-weight: bold; font-size: 11px; width: 20px; height: 20px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: absolute;
+            top: -5px;
+            right: 0;
+            color: white;
+            font-weight: bold;
+            font-size: 11px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             z-index: 20;
         }
 
@@ -57,7 +142,16 @@
         .badge-red { background-color: #d32f2f; }
         .badge-orange { background-color: #f57c00; color: white; }
 
-        .jugador-nombre { font-size: 9px; background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; }
+        .jugador-nombre {
+            font-size: 9px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px;
+            border-radius: 4px;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: white; }
 
         .mvp .jugador-img {
             box-shadow: 0 0 15px 5px #ffd700;
@@ -67,19 +161,62 @@
         }
 
         .mvp-crown {
-            position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-            font-size: 16px; text-shadow: 0 2px 2px rgba(0,0,0,0.5); z-index: 11;
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.5);
+            z-index: 11;
         }
 
-        .marcador { font-size: 1.5rem; font-weight: bold; margin: 10px 0; background: #333; padding: 10px 20px; border-radius: 10px; display: inline-block; border: 1px solid #555; }
-        .vista-lista { max-width: 600px; margin: 0 auto; text-align: left; }
-        .manager-card { background: white; color: #333; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
-        .manager-header { background: #eceff1; padding: 10px; display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #ddd; }
-        .pts-badge { background: #1a237e; color: white; padding: 2px 8px; border-radius: 10px; }
-        .player-row { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+        .marcador {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            background: #333;
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: inline-block;
+            border: 1px solid #555; }
+
+        .vista-lista {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left; }
+
+        .manager-card {
+            background: white;
+            color: #333;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden; }
+
+        .manager-header {
+            background: #eceff1;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd; }
+
+        .pts-badge {
+            background: #1a237e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px; }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em; }
+
         .text-green { color: #2e7d32; font-weight: bold; }
         .text-red { color: #d32f2f; font-weight: bold; }
         .text-orange { color: #f57c00; font-weight: bold; }
+
         .oculto { display: none !important; }
     </style>
 </head>
@@ -245,8 +382,22 @@
         }
     }
 
-    window.onload = () => {
-        cargarTodo();
+    window.onload = async () => {
+        try {
+            const response = await fetch('/jornada/actual');
+            const actual = await response.json();
+
+            let objetivo = actual - 1;
+            if (objetivo < 1) objetivo = 1;
+
+            document.getElementById("numJornada").value = objetivo;
+
+            cargarTodo();
+
+        } catch (e) {
+            console.error("Error al obtener jornada actual:", e);
+            cargarTodo();
+        }
     };
 </script>
 </body>
