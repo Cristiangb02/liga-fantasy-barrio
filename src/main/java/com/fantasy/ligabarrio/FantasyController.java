@@ -188,15 +188,42 @@ public class FantasyController {
 
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
-        List<Jugador> todosLibres = jugadorRepository.findAll().stream()
-                .filter(j -> j.getPropietario() == null)
-                .sorted(Comparator.comparing(Jugador::getId))
-                .collect(Collectors.toList());
         LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
         long seed = hoy.toEpochDay() + desplazamiento;
+        List<Jugador> todos = jugadorRepository.findAll();
+        List<Jugador> libresAnoche = new ArrayList<>();
 
-        Collections.shuffle(todosLibres, new Random(seed));
-        return todosLibres.stream().limit(14).collect(Collectors.toList());
+        for (Jugador j : todos) {
+            if (j.getPropietario() == null) {
+                if (j.getFechaVenta() == null || !j.getFechaVenta().isEqual(hoy)) {
+                    libresAnoche.add(j);
+                }
+            } else {
+                if (j.getFechaFichaje() != null && j.getFechaFichaje().isEqual(hoy)) {
+                    libresAnoche.add(j);
+                }
+            }
+        }
+        libresAnoche.sort(Comparator.comparing(Jugador::getId));
+        Collections.shuffle(libresAnoche, new Random(seed));
+        List<Jugador> mercadoBase = libresAnoche.stream().limit(14).collect(Collectors.toList());
+
+        List<Jugador> mercadoReal = new ArrayList<>();
+
+        for (Jugador j : mercadoBase) {
+            if (j.getPropietario() == null) {
+                mercadoReal.add(j);
+            }
+        }
+
+        for (Jugador j : todos) {
+            if (j.getPropietario() == null && j.getFechaVenta() != null && j.getFechaVenta().isEqual(hoy)) {
+                if (!mercadoReal.contains(j)) {
+                    mercadoReal.add(j);
+                }
+            }
+        }
+        return mercadoReal;
     }
 
     @GetMapping("/jornada/resumen")
@@ -534,6 +561,7 @@ public class FantasyController {
             j.setJornadaFichaje(0L);
             j.setFechaFichaje(null);
             j.setFechaFinBlindaje(null);
+            j.setFechaVenta(null);
         }
         jugadorRepository.saveAll(jugadores);
         List<Usuario> usuarios = usuarioRepository.findAll();
@@ -730,7 +758,6 @@ public class FantasyController {
 
     @PostMapping("/mercado/vender/{idJugador}/{idUsuario}")
     public String venderJugador(@PathVariable Long idJugador, @PathVariable Long idUsuario) {
-        // NUEVO BLOQUEO: Consultamos BBDD
         if (getJornadaActiva().isBloqueada()) {
             return "⛔ No puedes hacer compras, ventas o clausulazos desde que se conoce la alineación hasta el día siguiente.";
         }
@@ -746,6 +773,7 @@ public class FantasyController {
         jugador.setPropietario(null);
         jugador.setClausula(jugador.getValor());
         jugador.setFechaFinBlindaje(null);
+        jugador.setFechaVenta(LocalDate.now(ZoneId.of("Europe/Madrid")));
 
         Jornada jornadaActual = getJornadaActiva();
         List<Equipo> equipos = equipoRepository.findByUsuario(vendedor);

@@ -24,6 +24,7 @@ public class Jugador {
     private Long jornadaFichaje;
     private LocalDate fechaFichaje;
     private LocalDateTime fechaFinBlindaje;
+    private LocalDate fechaVenta;
 
     public Jugador() {
     }
@@ -97,4 +98,6 @@ public class Jugador {
     public void setFechaFichaje(LocalDate fechaFichaje) { this.fechaFichaje = fechaFichaje; }
     public LocalDateTime getFechaFinBlindaje() { return fechaFinBlindaje;}
     public void setFechaFinBlindaje(LocalDateTime fechaFinBlindaje) { this.fechaFinBlindaje = fechaFinBlindaje;}
+    public LocalDate getFechaVenta() { return fechaVenta; }
+    public void setFechaVenta(LocalDate fechaVenta) { this.fechaVenta = fechaVenta; }
 }
