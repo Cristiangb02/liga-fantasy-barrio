@@ -538,7 +538,7 @@ public class FantasyController {
         // Bloqueo manual: asegurarnos de que la jornada vieja quede desbloqueada (o bloqueada, da igual, ya pasó)
         Jornada nueva = new Jornada();
         nueva.setNumero(actual.getNumero() + 1);
-        nueva.setBloqueada(false); // Por defecto abierta
+        nueva.setBloqueada(actual.isBloqueada());
         jornadaRepository.save(nueva);
 
         noticiaRepository.save(new Noticia("🏁 JORNADA " + actual.getNumero() + " FINALIZADA.\n" + res));
