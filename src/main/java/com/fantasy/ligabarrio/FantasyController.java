@@ -535,7 +535,6 @@ public class FantasyController {
             res.append("✅ ").append(m.getNombre()).append(": ").append(total).append("p\n");
         }
 
-        // Bloqueo manual: asegurarnos de que la jornada vieja quede desbloqueada (o bloqueada, da igual, ya pasó)
         Jornada nueva = new Jornada();
         nueva.setNumero(actual.getNumero() + 1);
         nueva.setBloqueada(actual.isBloqueada());
