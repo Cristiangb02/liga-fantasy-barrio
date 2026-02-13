@@ -699,7 +699,8 @@ public class FantasyController {
         cancelarOfertasPendientes(jugador);
         usuarioRepository.save(comprador);
         jugadorRepository.save(jugador);
-        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ha fichado a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") por " + fmtDinero(jugador.getValor())));
+        noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ha fichado a " + jugador.getNombre() +
+                " (" + jugador.getPosicion() + ") por " + fmtDinero(jugador.getValor())));
         return "✅ Fichaje realizado.";
     }
 
@@ -751,7 +752,8 @@ public class FantasyController {
         usuarioRepository.save(ladron);
         usuarioRepository.save(victima);
         jugadorRepository.save(jugador);
-        noticiaRepository.save(new Noticia("🔥 CLAUSULAZO: " + ladron.getNombre() + " robó a " + jugador.getNombre() + " al mánager " + victima.getNombre() + " por " + fmtDinero(precioRobo)));
+        noticiaRepository.save(new Noticia("🔥 CLAUSULAZO: " + ladron.getNombre() + " ha robado a " + jugador.getNombre() +
+                " (" + jugador.getPosicion() + ") " + " al mánager " + victima.getNombre() + " por " + fmtDinero(precioRobo)));
         return "✅ ¡Has hecho un clausulazo!";
     }
 
@@ -786,7 +788,8 @@ public class FantasyController {
         cancelarOfertasPendientes(jugador);
         usuarioRepository.save(vendedor);
         jugadorRepository.save(jugador);
-        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " vende a " + jugador.getNombre() + " por " + fmtDinero(ingreso)));
+        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " ha vendido a " + jugador.getNombre() +
+                " (" + jugador.getPosicion() + ") " + fmtDinero(ingreso)));
         return "✅ Jugador vendido. Recibes " + fmtDinero(ingreso);
     }
 
