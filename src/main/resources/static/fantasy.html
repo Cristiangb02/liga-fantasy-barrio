@@ -445,7 +445,17 @@
         <div style="background: white; padding: 10px; border-radius: 6px;">
             <label style="font-size:0.9em; font-weight:bold; color:#2e7d32;">2. Poner a (Correcto):</label>
             <select id="edit-jugador-poner" style="width:100%; padding:10px; margin-top:5px; margin-bottom:10px; border-radius:5px;"></select>
+
+            <label style="font-size:0.85em; font-weight:bold;">Color de camiseta:</label>
+            <select id="edit-color-poner" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; background:#f0f4c3;">
+                <option value="ROJO">🔴 Rojo</option>
+                <option value="AZUL">🔵 Azul</option>
+                <option value="AMARILLO">🟡 Amarillo</option>
+                <option value="BLANCO">⚪ Blanco</option>
+            </select>
+
             <input type="number" id="edit-puntos-poner" placeholder="Puntos conseguidos" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
+
             <button onclick="ejecutarPoner()" style="background:#2e7d32; color:white; width:100%; padding:10px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">➕ AÑADIR SUS PUNTOS</button>
         </div>
     </div>
@@ -1352,10 +1362,12 @@
         const jor = document.getElementById('edit-num-jornada').value;
         const idJugador = document.getElementById('edit-jugador-poner').value;
         const pts = document.getElementById('edit-puntos-poner').value;
+        const color = document.getElementById('edit-color-poner').value; // ¡Cogemos el color!
+
         if(!jor || !idJugador || !pts) return alert("Rellena la jornada y los puntos.");
 
-        mostrarModal("Añadir a Jornada", `¿Seguro que quieres sumar ${pts} puntos a este jugador en la jornada ${jor}?`, 'confirm', () => {
-            post(`/admin/add-puntos-jornada/${idJugador}/${jor}/${pts}`, {});
+        mostrarModal("Añadir a Jornada", `¿Seguro que quieres sumar ${pts} puntos a este jugador en la jornada ${jor} con el equipo ${color}?`, 'confirm', () => {
+            post(`/admin/add-puntos-jornada/${idJugador}/${jor}/${pts}/${color}`, {});
         });
     }
 </script>

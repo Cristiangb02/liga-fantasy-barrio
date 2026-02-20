@@ -994,30 +994,25 @@ public class FantasyController {
         return "✅ Puntos de " + jugador.getNombre() + " eliminados de la jornada " + numJornada + ".";
     }
 
-    @PostMapping("/admin/add-puntos-jornada/{idJugador}/{numJornada}/{puntos}")
-    public String addPuntosJornada(@PathVariable Long idJugador, @PathVariable int numJornada, @PathVariable int puntos) {
+    @PostMapping("/admin/add-puntos-jornada/{idJugador}/{numJornada}/{puntos}/{color}")
+    public String addPuntosJornada(@PathVariable Long idJugador, @PathVariable int numJornada, @PathVariable int puntos, @PathVariable String color) {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
-        Jornada jornada = jornadaRepository.findAll().stream()
-                .filter(j -> j.getNumero() == numJornada)
-                .findFirst().orElseThrow();
+        Jornada jornada = jornadaRepository.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
 
-        //Creamos su actuación manual para esa jornada pasada
         Actuacion acta = new Actuacion(jugador, jornada);
         acta.setPuntosTotales(puntos);
         acta.setJugado(true);
+        acta.setEquipoColor(color);
         actuacionRepository.save(acta);
 
-        //Le sumamos a su total el valor y los puntos
         int valorSumar = puntos * 100_000;
         jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() + puntos);
         jugador.setValor(jugador.getValor() + valorSumar);
 
-        //Ajustamos la cláusula por si ha superado su valor actual
         if (jugador.getClausula() < jugador.getValor()) {
             jugador.setClausula(jugador.getValor());
         }
         jugadorRepository.save(jugador);
-
         return "✅ " + puntos + " puntos añadidos a " + jugador.getNombre() + " en la jornada " + numJornada + ".";
     }
 
