@@ -430,6 +430,26 @@
         <button onclick="resetearPuntos()" style="background:#e65100; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">↺ RESETEAR PUNTOS JUGADOR</button>
     </div>
 
+    <div style="background:#e8eaf6; padding:15px; border-radius:10px; border:1px solid #3f51b5; margin-bottom: 20px;">
+        <h4 style="color:#1a237e; margin-top:0;">🛠️ Editar Jornada Pasada (Intercambio)</h4>
+        <p style="font-size:0.85em; color:#666;">Permite eliminar la actuación errónea de un jugador en una jornada concreta, y añadirle la puntuación a otro diferente.</p>
+
+        <input type="number" id="edit-num-jornada" placeholder="Nº de Jornada afectada (Ej: 3)" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
+
+        <div style="background: white; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+            <label style="font-size:0.9em; font-weight:bold; color:#d32f2f;">1. Quitar a (Erróneo):</label>
+            <select id="edit-jugador-quitar" style="width:100%; padding:10px; margin-top:5px; margin-bottom:10px; border-radius:5px;"></select>
+            <button onclick="ejecutarQuitar()" style="background:#d32f2f; color:white; width:100%; padding:10px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">🗑️ BORRAR SUS PUNTOS</button>
+        </div>
+
+        <div style="background: white; padding: 10px; border-radius: 6px;">
+            <label style="font-size:0.9em; font-weight:bold; color:#2e7d32;">2. Poner a (Correcto):</label>
+            <select id="edit-jugador-poner" style="width:100%; padding:10px; margin-top:5px; margin-bottom:10px; border-radius:5px;"></select>
+            <input type="number" id="edit-puntos-poner" placeholder="Puntos conseguidos" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
+            <button onclick="ejecutarPoner()" style="background:#2e7d32; color:white; width:100%; padding:10px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">➕ AÑADIR SUS PUNTOS</button>
+        </div>
+    </div>
+
     <div style="background:#fffde7; padding:15px; border-radius:10px; border:1px solid #fbc02d; margin-bottom: 20px;">
         <h4 style="color:#f57f17; margin-top:0;">🔔 Solicitudes de acceso</h4>
         <div id="admin-lista-pendientes">Cargando...</div>
@@ -1279,17 +1299,25 @@
 
     function pintarSelectEliminar() {
         fetch('/jugadores').then(r => r.json()).then(jugadores => {
-            // Ordenamos alfabéticamente
-            jugadores.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-            const select = document.getElementById('select-eliminar-jugador');
+            jugadores.sort((a, b) => a.nombre.localeCompare(b.nombre));
+            let opcionesHTML = '';
+
             if (jugadores.length === 0) {
-                select.innerHTML = '<option>No hay jugadores</option>';
+                opcionesHTML = '<option>No hay jugadores</option>';
             } else {
-                select.innerHTML = jugadores.map(j =>
+                opcionesHTML = jugadores.map(j =>
                     `<option value="${j.id}">${j.nombre} (${j.posicion}) - ${j.propietario && j.propietario.nombre ? j.propietario.nombre : 'Libre'}</option>`
                 ).join('');
             }
+
+            document.getElementById('select-eliminar-jugador').innerHTML = opcionesHTML;
+
+            const selectQuitar = document.getElementById('edit-jugador-quitar');
+            if (selectQuitar) selectQuitar.innerHTML = opcionesHTML;
+
+            const selectPoner = document.getElementById('edit-jugador-poner');
+            if (selectPoner) selectPoner.innerHTML = opcionesHTML;
         });
     }
 
@@ -1307,6 +1335,27 @@
                 pintarSelectEliminar();
                 pintarSelectAdmin(); // Para actualizar el de registrar partido también
             }, 1000);
+        });
+    }
+
+    function ejecutarQuitar() {
+        const jor = document.getElementById('edit-num-jornada').value;
+        const idJugador = document.getElementById('edit-jugador-quitar').value;
+        if(!jor || !idJugador) return alert("Rellena el número de jornada.");
+
+        mostrarModal("Corregir Jornada", "¿Seguro que quieres borrar la actuación de este jugador en la jornada " + jor + "?", 'confirm', () => {
+            post(`/admin/reset-puntos-jornada/${idJugador}/${jor}`, {});
+        });
+    }
+
+    function ejecutarPoner() {
+        const jor = document.getElementById('edit-num-jornada').value;
+        const idJugador = document.getElementById('edit-jugador-poner').value;
+        const pts = document.getElementById('edit-puntos-poner').value;
+        if(!jor || !idJugador || !pts) return alert("Rellena la jornada y los puntos.");
+
+        mostrarModal("Añadir a Jornada", `¿Seguro que quieres sumar ${pts} puntos a este jugador en la jornada ${jor}?`, 'confirm', () => {
+            post(`/admin/add-puntos-jornada/${idJugador}/${jor}/${pts}`, {});
         });
     }
 </script>

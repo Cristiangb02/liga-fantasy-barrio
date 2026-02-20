@@ -11,6 +11,7 @@ public class Jornada {
     private Long id;
     private int numero;
     private LocalDate fecha;
+    private LocalDate diaBloqueo;
 
     @ManyToOne
     private Temporada temporada;
@@ -44,4 +45,6 @@ public class Jornada {
     public void setTemporada(Temporada temporada) { this.temporada = temporada; }
     public boolean isBloqueada() { return bloqueada; }
     public void setBloqueada(boolean bloqueada) { this.bloqueada = bloqueada; }
+    public LocalDate getDiaBloqueo() { return diaBloqueo;}
+    public void setDiaBloqueo(LocalDate diaBloqueo) { this.diaBloqueo = diaBloqueo;}
 }

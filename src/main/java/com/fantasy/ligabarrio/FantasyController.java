@@ -60,22 +60,21 @@ public class FantasyController {
     public String toggleBloqueo() {
         Jornada actual = getJornadaActiva();
 
-        // Invertir estado
         if (actual.isBloqueada()) {
             actual.setBloqueada(false);
+            actual.setDiaBloqueo(null);
         } else {
             actual.setBloqueada(true);
+            actual.setDiaBloqueo(LocalDate.now(ZoneId.of("Europe/Madrid")));
         }
 
         jornadaRepository.save(actual);
-
         String estado;
         if (actual.isBloqueada()) {
             estado = "ACTIVADO 🔒";
         } else {
             estado = "DESACTIVADO 🔓";
         }
-
         return "Bloqueo de acciones " + estado;
     }
 
@@ -970,6 +969,58 @@ public class FantasyController {
         return "💰 Reclamado: " + fmtDinero(base) + mensajeExtra;
     }
 
+    @PostMapping("/admin/reset-puntos-jornada/{idJugador}/{numJornada}")
+    public String resetPuntosJornada(@PathVariable Long idJugador, @PathVariable int numJornada) {
+        Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
+        Jornada jornada = jornadaRepository.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
+
+        Optional<Actuacion> actaOpt = actuacionRepository.findByJugadorAndJornada(jugador, jornada);
+        if (actaOpt.isEmpty()) {
+            return "❌ Este jugador no tiene puntos registrados en la jornada " + numJornada + ".";
+        }
+
+        Actuacion acta = actaOpt.get();
+        int puntosRestar = acta.getPuntosTotales();
+        int valorRestar = puntosRestar * 100_000;
+
+        //Restar puntos de la jornada que hizo
+        jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() - puntosRestar);
+        jugador.setValor(jugador.getValor() - valorRestar);
+        jugador.setClausula(jugador.getClausula() - valorRestar);
+
+        actuacionRepository.delete(acta);
+        jugadorRepository.save(jugador);
+
+        return "✅ Puntos de " + jugador.getNombre() + " eliminados de la jornada " + numJornada + ".";
+    }
+
+    @PostMapping("/admin/add-puntos-jornada/{idJugador}/{numJornada}/{puntos}")
+    public String addPuntosJornada(@PathVariable Long idJugador, @PathVariable int numJornada, @PathVariable int puntos) {
+        Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
+        Jornada jornada = jornadaRepository.findAll().stream()
+                .filter(j -> j.getNumero() == numJornada)
+                .findFirst().orElseThrow();
+
+        //Creamos su actuación manual para esa jornada pasada
+        Actuacion acta = new Actuacion(jugador, jornada);
+        acta.setPuntosTotales(puntos);
+        acta.setJugado(true);
+        actuacionRepository.save(acta);
+
+        //Le sumamos a su total el valor y los puntos
+        int valorSumar = puntos * 100_000;
+        jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() + puntos);
+        jugador.setValor(jugador.getValor() + valorSumar);
+
+        //Ajustamos la cláusula por si ha superado su valor actual
+        if (jugador.getClausula() < jugador.getValor()) {
+            jugador.setClausula(jugador.getValor());
+        }
+        jugadorRepository.save(jugador);
+
+        return "✅ " + puntos + " puntos añadidos a " + jugador.getNombre() + " en la jornada " + numJornada + ".";
+    }
+
     //**************************************************************************************************************+***
     //                                                      DELETE
     //**************************************************************************************************************+***
@@ -1048,6 +1099,25 @@ public class FantasyController {
             }
             jornadaResultado = activa;
         }
+
+        if (jornadaResultado.isBloqueada()) {
+            LocalDateTime ahora = LocalDateTime.now(ZoneId.of("Europe/Madrid"));
+            LocalDate hoy = ahora.toLocalDate();
+            LocalTime horaActual = ahora.toLocalTime();
+            LocalTime horaApertura = LocalTime.of(10, 0);
+
+            // Condición: ¿El bloqueo se hizo en un día ANTERIOR a hoy? Y ¿ya son pasadas las 10:00 AM?
+            if (jornadaResultado.getDiaBloqueo() != null &&
+                    hoy.isAfter(jornadaResultado.getDiaBloqueo()) &&
+                    horaActual.isAfter(horaApertura)) {
+
+                jornadaResultado.setBloqueada(false);
+                jornadaResultado.setDiaBloqueo(null);
+                jornadaRepository.save(jornadaResultado);
+            }
+        }
+        // ---------------------------------------------------------------------------------
+
         return jornadaResultado;
     }
 
