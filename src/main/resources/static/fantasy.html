@@ -17,6 +17,36 @@
         from { opacity:0; } to { opacity:1; }
       }
 
+      @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% {
+            box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% {
+            box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
+
+      #titulo-web {
+          margin: 0;
+          font-size: 1.3rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 200px;
+      }
+
+      #modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(3px);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.2s;
+      }
+
       body {
         font-family: 'Segoe UI', system-ui, sans-serif;
         background-color: #f0f2f5;
@@ -90,15 +120,6 @@
           gap: 8px;
       }
 
-      #titulo-web {
-          margin: 0;
-          font-size: 1.3rem;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 200px;
-      }
-
       .jornada-badge {
           background: #ffd600;
           color: #333;
@@ -115,6 +136,7 @@
           color: #b3e5fc;
           margin-top: 2px;
       }
+
       .presupuesto-negativo { color: #ff8a80 !important; }
 
       nav {
@@ -259,9 +281,7 @@
           transition: 0.3s;
       }
 
-      .card:hover .card-img {
-          transform: scale(1.05);
-      }
+      .card:hover .card-img { transform: scale(1.05); }
 
       .blindado-overlay {
           position: absolute;
@@ -324,21 +344,10 @@
           margin-top: 2px;
       }
 
-      .pos-portero {
-          background-color: #7b1fa2;
-      }
-
-      .pos-defensa {
-          background-color: #d32f2f;
-      }
-
-      .pos-medio {
-          background-color: #f57c00;
-      }
-
-      .pos-delantero {
-          background-color: #388e3c;
-      }
+      .pos-portero { background-color: #7b1fa2;}
+      .pos-defensa { background-color: #d32f2f; }
+      .pos-medio { background-color: #f57c00; }
+      .pos-delantero { background-color: #388e3c; }
 
       .card-clausula {
           font-size: 0.8em;
@@ -422,13 +431,11 @@
           #2e7d32;
       }
 
-      .oculto {
-          display: none !important;
-      }
+      .oculto { display: none !important; }
 
       .seccion {
           min-height: 400px;
-           animation: fadeIn 0.3s;
+          animation: fadeIn 0.3s;
       }
 
       .fila-clasif {
@@ -443,66 +450,393 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-      .pos-num { font-size: 1.2em; font-weight: 900; color: #1a237e; min-width: 30px; }
-      .avatar-small { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background-color: #e0e0e0; border: 2px solid #e3e8ee; display:flex; align-items:center; justify-content:center; overflow:hidden;}
-      .avatar-small img { width:100%; height:100%; object-fit:cover; }
-      .clasif-user { display: flex; align-items: center; gap: 12px; }
-      .user-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border-radius: 5px; border: 1px solid #eee; }
-      .noticia-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #1a237e; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9em; animation: fadeIn 0.5s; }
-      .btn-delete-user { background: #e53935; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
-      .btn-edit-user { background: #0288d1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; margin-right: 5px; }
-      .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 10px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-      .timer-badge { background: #1a237e; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em; letter-spacing: 1px; }
-      .bloque-premios { background: #e8f5e9; border: 1px solid #43a047; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-      .btn-reclamar { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; }
-      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); } }
+      .pos-num {
+        font-size: 1.2em;
+        font-weight: 900;
+        color: #1a237e;
+        min-width: 30px;
+      }
 
-      .historial-card { background: white; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #546e7a; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
-      .historial-header { padding: 12px 15px; background: #eceff1; font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: #37474f; }
-      .historial-badge { background: #37474f; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em; }
-      .historial-body { padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
-      .player-mini { background: #fff; border: 1px solid #ddd; padding: 8px; border-radius: 5px; font-size: 0.85em; display:flex; flex-direction:column; gap:4px; }
-      .mini-puntos { font-weight:bold; font-size:1.1em; align-self: flex-end; }
-      .mini-pos { font-size: 0.8em; opacity: 0.7; }
+      .avatar-small {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        background-color: #e0e0e0;
+        border: 2px solid #e3e8ee;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        overflow:hidden;
+      }
+
+      .avatar-small img {
+        width:100%;
+        height:100%;
+        object-fit:cover;
+      }
+
+      .clasif-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .user-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        border: 1px solid #eee;
+      }
+
+      .noticia-item {
+        background: white;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #1a237e;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        font-size: 0.9em;
+        animation: fadeIn 0.5s;
+      }
+
+      .btn-delete-user {
+        background: #e53935;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius:
+        4px; cursor: pointer;
+        font-size: 0.8em;
+        font-weight: bold;
+      }
+
+      .btn-edit-user {
+        background: #0288d1;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
+      .market-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      }
+
+      .timer-badge {
+        background: #1a237e;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-family: monospace;
+        font-size: 1.1em;
+        letter-spacing: 1px;
+      }
+
+      .bloque-premios {
+        background: #e8f5e9;
+        border: 1px solid #43a047;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .btn-reclamar {
+        background: #2e7d32;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        animation: pulse 2s infinite;
+      }
+
+      .historial-card {
+        background: white;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        border-left: 5px solid #546e7a;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        overflow: hidden;
+      }
+
+      .historial-header {
+        padding: 12px 15px;
+        background: #eceff1;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #37474f;
+      }
+
+      .historial-badge {
+        background: #37474f;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px; font-size: 0.9em;
+      }
+
+      .historial-body {
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 8px;
+      }
+
+      .player-mini {
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 8px;
+        border-radius: 5px;
+        font-size: 0.85em;
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+      }
+
+      .mini-puntos {
+        font-weight:bold;
+        font-size:1.1em;
+        align-self: flex-end;
+      }
+
+      .mini-pos {
+        font-size: 0.8em;
+        opacity: 0.7;
+      }
+
       .text-green { color: #2e7d32; }
       .text-red { color: #d32f2f; }
       .text-orange { color: #ff9800; }
 
-      .oferta-item { background: #fff; border: 1px solid #ddd; border-left: 5px solid #7b1fa2; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-      .oferta-item.enviada { border-left: 5px solid #0288d1; background: #e1f5fe; } /* Estilo diferente para enviadas */
-      .oferta-info { font-size: 0.9em; }
-      .btn-oferta-ok { background: #2e7d32; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
-      .btn-oferta-ko { background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+      .oferta-item {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-left: 5px solid #7b1fa2;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-      .solicitud-row { display: flex; justify-content: space-between; align-items: center; background: #fffde7; border: 1px solid #fbc02d; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
-      .btn-aprobar { background: #43a047; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
-      .btn-rechazar { background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+      .oferta-item.enviada {
+        border-left: 5px solid #0288d1;
+        background: #e1f5fe;
+      }
 
-      .modal-jugador-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #1a237e; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }
-      .detalle-stats { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-      .stat-row { display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 6px; align-items: center; font-weight: bold; }
-      .badge-puntos { padding: 4px 10px; border-radius: 15px; color: white; font-size: 0.9em; min-width: 30px; text-align: center; }
+      .oferta-info {
+        font-size: 0.9em;
+      }
+
+      .btn-oferta-ok {
+        background: #2e7d32;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
+      .btn-oferta-ko {
+        background: #d32f2f;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .solicitud-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fffde7;
+        border: 1px solid #fbc02d;
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+      }
+
+      .btn-aprobar {
+        background: #43a047;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
+      .btn-rechazar {
+        background: #d32f2f;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .modal-jugador-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #1a237e;
+        margin-bottom: 15px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .detalle-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 6px;
+        align-items: center;
+        font-weight: bold;
+      }
+
+      .badge-puntos {
+        padding: 4px 10px;
+        border-radius: 15px;
+        color: white;
+        font-size: 0.9em;
+        min-width: 30px;
+        text-align: center;
+      }
+
       .bg-green { background: #2e7d32; }
-      .bg-orange { background: #ff9800; color: #333; }
       .bg-red { background: #d32f2f; }
 
-      #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 1000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
-      .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; max-height: 80vh; overflow-y: auto; }
-      .modal-titulo { margin-top: 0; color: #1565c0; font-size: 1.2rem; }
-      .modal-mensaje { color: #555; margin-bottom: 20px; font-size: 0.95em; line-height: 1.5; }
-      .modal-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 10px; box-sizing: border-box; }
-      .modal-info-extra { background: #f5f5f5; padding: 10px; border-radius: 6px; font-size: 0.85em; color: #333; margin-bottom: 20px; text-align: left; }
-      .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
-      .btn-modal { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; }
-      .btn-modal-cancel { background: #cfd8dc; color: #455a64; }
-      .btn-modal-ok { background: #1565c0; color: white; }
-      .btn-modal-danger { background: #d32f2f; color: white; }
+      .bg-orange {
+        background: #ff9800;
+        color: #333;
+      }
+
+      .modal-box {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        text-align: center;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .modal-titulo {
+        margin-top: 0;
+        color: #1565c0;
+        font-size: 1.2rem;
+      }
+
+      .modal-mensaje {
+        color: #555;
+        margin-bottom: 20px;
+        font-size: 0.95em;
+        line-height: 1.5;
+      }
+
+      .modal-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+
+      .modal-info-extra {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 0.85em;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .btn-modal {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      .btn-modal-cancel {
+        background: #cfd8dc;
+        color: #455a64;
+        }
+
+      .btn-modal-ok {
+        background: #1565c0;
+        color: white;
+      }
+
+      .btn-modal-danger {
+        background: #d32f2f;
+        color: white;
+      }
 
       .fila-ranking {
-          background: white; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px;
-          display: flex; justify-content: space-between; align-items: center;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s;
+          background: white;
+          padding: 12px 15px;
+          margin-bottom: 8px;
+          border-radius: 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+          transition: transform 0.2s;
       }
+
       .fila-ranking:hover { transform: scale(1.02); }
       .fila-ranking.top-1 { border-left: 5px solid #FFD700; background: linear-gradient(to right, #fff, #fffde7); }
       .fila-ranking.top-2 { border-left: 5px solid #C0C0C0; }
@@ -512,8 +846,17 @@
       .ranking-details { display:flex; align-items:center; gap:10px; }
       .ranking-points { font-weight:900; color:#1a237e; font-size:1.1em; }
 
-      .timer-mini { font-size: 0.8em; color: #e65100; font-weight: bold; background: #fff3e0; padding: 2px 5px; border-radius: 4px;
-      margin-bottom: 5px; display: inline-block; border: 1px solid #ffb74d; }
+      .timer-mini {
+        font-size: 0.8em;
+        color: #e65100;
+        font-weight: bold;
+        background: #fff3e0;
+        padding: 2px 5px;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        display: inline-block;
+        border: 1px solid #ffb74d;
+      }
 
       .btn-back-red { background: #d32f2f; border: 1px solid #b71c1c; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
 
@@ -533,7 +876,16 @@
           align-items: center;
           gap: 8px;
       }
-      .online-dot { height: 8px; width: 8px; background-color: #4caf50; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px #4caf50; }
+
+      .online-dot {
+        height: 8px;
+        width: 8px;
+        background-color: #4caf50;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 5px #4caf50;
+      }
+
     </style>
 </head>
 <body>
@@ -566,9 +918,7 @@
     <button onclick="cambiarPestaña('alineacion')" id="tab-alineacion">⚽ Mi alineación</button>
     <button onclick="cambiarPestaña('mercado')" id="tab-mercado">🛒 Mercado</button>
     <button onclick="cambiarPestaña('rivales')" id="tab-rivales">🕵️ Mánagers</button>
-    <button onclick="cambiarPestaña('ofertas')" id="tab-ofertas">
-        🤝 Ofertas
-        <div id="notif-ofertas" class="notif-badge"></div> </button>
+    <button onclick="cambiarPestaña('ofertas')" id="tab-ofertas"> 🤝 Ofertas <div id="notif-ofertas" class="notif-badge"></div> </button>
     <button onclick="cambiarPestaña('clasificacion')" id="tab-clasificacion">🏆 Clasificación</button>
     <button onclick="cambiarPestaña('ranking')" id="tab-ranking">🌟 Mejores Jugadores</button>
     <button onclick="cambiarPestaña('historial')" id="tab-historial">📜 Mis jornadas </button>
@@ -722,7 +1072,7 @@
         <h4 style="color:#1a237e; margin-top:0;">🛠️ Editar Jornada Pasada (Intercambio)</h4>
         <p style="font-size:0.85em; color:#666;">Permite eliminar la actuación errónea de un jugador en una jornada concreta, y añadirle la puntuación a otro diferente.</p>
 
-        <input type="number" id="edit-num-jornada" placeholder="Nº de Jornada afectada (Ej: 3)" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
+        <input type="number" id="edit-num-jornada" placeholder="Nº de Jornada para corregir" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
 
         <div style="background: white; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
             <label style="font-size:0.9em; font-weight:bold; color:#d32f2f;">1. Quitar a (Erróneo):</label>
@@ -813,9 +1163,9 @@
         input.value = '';
         inputContainer.classList.add('oculto');
         infoExtra.classList.add('oculto');
-        btnOk.className = 'btn-modal btn-modal-ok'; // Azul por defecto
+        btnOk.className = 'btn-modal btn-modal-ok';
         btnOk.classList.remove('oculto');
-        btnOk.innerText = "Confirmar"; // Texto por defecto
+        btnOk.innerText = "Confirmar";
 
         if (tipo === 'input' || tipo === 'blindar' || tipo === 'oferta') {
             inputContainer.classList.remove('oculto');
@@ -854,8 +1204,8 @@
             btnOk.classList.add('oculto');
 
         } else if (tipo === 'vender') {
-            btnOk.className = 'btn-modal btn-modal-danger'; // Lo pone ROJO
-            btnOk.innerText = "Vender"; // Cambia el texto
+            btnOk.className = 'btn-modal btn-modal-danger';
+            btnOk.innerText = "Vender";
         }
 
         modalCallback = () => {
@@ -927,7 +1277,6 @@
         cargarNoticias();
         iniciarContadorMercado();
         iniciarRelojesBlindaje();
-        //setInterval(pingOnline, 5000);
         pingOnline();
     };
 
@@ -950,7 +1299,7 @@
                 msgCerrado.classList.add('oculto');
             }
 
-            // 2. Lógica del contador (existente)
+            //2. Contador
             const fechaMadridStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
             const nowMadrid = new Date(fechaMadridStr);
             const midnightMadrid = new Date(nowMadrid);
@@ -1051,7 +1400,7 @@
 
     function pintarRanking(jugadores) {
         let lista = [...jugadores];
-        // Ordenar: Puntos DESC, luego Nombre ASC
+        //Orden: Puntos DESC, luego Nombre ASC
         lista.sort((a, b) => {
             if (b.puntosAcumulados !== a.puntosAcumulados) {
                 return b.puntosAcumulados - a.puntosAcumulados;
@@ -1066,7 +1415,7 @@
             else if (i === 1) { extraClass = 'top-2'; icon = '🥈'; }
             else if (i === 2) { extraClass = 'top-3'; icon = '🥉'; }
 
-            // Imagen circular pequeña
+            //Imagen circular pequeña
             let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
 
             return `
@@ -1124,7 +1473,7 @@
 
     function cargarNoticias() {
         fetch('/noticias').then(r=>r.json()).then(noticias => {
-            let html = noticias.map(n => `<div class="noticia-item ${n.mensaje.includes("CLÁUSULAZO") || n.mensaje.includes("ADMIN") ? 'noticia-robo':''}"><span class="noticia-fecha">${n.fechaBonita}</span><span class="noticia-texto">${n.mensaje}</span></div>`).join('');
+            let html = noticias.map(n => `<div class="noticia-item ${n.mensaje.includes("CLAUSULAZO") || n.mensaje.includes("ADMIN") ? 'noticia-robo':''}"><span class="noticia-fecha">${n.fechaBonita}</span><span class="noticia-texto">${n.mensaje}</span></div>`).join('');
             const container = document.getElementById('lista-noticias');
             if (container.innerHTML !== html) container.innerHTML = html || '<p>No hay noticias.</p>';
         });
@@ -1133,12 +1482,11 @@
             const zonaPremios = document.getElementById('zona-premios');
             if (premios.length > 0) {
                 let htmlPremios = premios.map(p => {
-                    // Lógica visual para el MVP
                     let htmlMvp = '';
                     let claseExtra = '';
 
                     if (p.tieneMvp) {
-                        claseExtra = 'border: 2px solid #ffd700; background: #fffde7;'; // Borde dorado y fondo amarillo claro
+                        claseExtra = 'border: 2px solid #ffd700; background: #fffde7;';
                         htmlMvp = `<div style="background:#ffd700; color:#333; padding:5px; border-radius:4px; margin-top:5px; font-size:0.9em; text-align:center;">
                                       <strong>🏆 ¡BONUS MVP!</strong><br>
                                       Tenías a ${p.nombreMvp}<br>
@@ -1214,7 +1562,6 @@
         let contenido = '';
         let extraClass = alineado ? 'alineado' : '';
         let checked = alineado ? 'checked' : '';
-
         let overlay = '';
 
         if (j.blindado) {
@@ -1261,8 +1608,8 @@
                 <div class="card-clausula">Cláusula 🔒: ${clausula}</div>
                 ${htmlBlindaje}
                 <div style="display:flex; gap:5px; margin-top:auto; width:100%;">
-                    <button class="btn-card btn-vender" style="flex:1;" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button>
-                    <button class="btn-card btn-blindar" style="flex:1;" onclick="blindar(${j.id})">Subir 🔒</button>
+                    <button class="btn-card btn-vender" style="flex:1;" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender jugador</button>
+                    <button class="btn-card btn-blindar" style="flex:1;" onclick="blindar(${j.id})">Subir cláusula 🔒</button>
                 </div>`;
         }
 
@@ -1337,7 +1684,6 @@
         });
     }
 
-    // 🆕 FUNCIONES OFERTAS
     function hacerOferta(idJugador, nombreJugador) {
         mostrarModal("Oferta por " + nombreJugador, "Introduce cantidad:", 'oferta', (cant) => {
             if(cant > 0) {
@@ -1348,22 +1694,18 @@
     }
 
     function cargarOfertas() {
-        // 🔴 CAMBIO: Ahora llama a 'mis-ofertas' que devuelve {recibidas:[], enviadas:[]}
         fetch(`/ofertas/mis-ofertas/${usuarioId}`).then(r=>r.json()).then(data => {
-
             const divRecibidas = document.getElementById('lista-ofertas-recibidas');
             const divEnviadas = document.getElementById('lista-ofertas-enviadas');
             const tabButton = document.getElementById('tab-ofertas');
             const notifBadge = document.getElementById('notif-ofertas');
 
-            // 1. GESTIONAR NOTIFICACIÓN (ROJA)
             if(data.recibidas.length > 0) {
                 tabButton.classList.add('notif-active');
             } else {
                 tabButton.classList.remove('notif-active');
             }
 
-            // 2. PINTAR RECIBIDAS
             if(data.recibidas.length === 0) {
                 divRecibidas.innerHTML = '<p style="font-size:0.9em; color:#888;">No tienes ofertas pendientes.</p>';
             } else {
@@ -1381,7 +1723,6 @@
                 `).join('');
             }
 
-            // 3. PINTAR ENVIADAS
             if(data.enviadas.length === 0) {
                 divEnviadas.innerHTML = '<p style="font-size:0.9em; color:#888;">No has hecho ofertas.</p>';
             } else {
@@ -1443,7 +1784,7 @@
     function post(url, data, coste = 0) {
         fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
         .then(r => r.text()).then(msg => {
-            let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito"; // Cambio para que "Mercado Cerrado" no salga rojo error crítico
+            let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito";
             mostrarModal(titulo, msg, 'confirm', () => {
                 if(!msg.includes("❌") && !msg.includes("⛔")) {
                     if(coste !== 0) {
@@ -1463,7 +1804,6 @@
     }
 
     function pintarSelectAdmin() {
-        // Carga lista para registrar
         fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
             const select = document.getElementById('admin-jugador');
             if (jugadores.length === 0) {
@@ -1513,7 +1853,7 @@
             equipoColor: document.getElementById('select-equipo-color').value
         };
         post('/admin/registrar', datos);
-        setTimeout(pintarSelectAdmin, 500); // Recargar lista
+        setTimeout(pintarSelectAdmin, 500); //Se recarga la lista
     }
 
     function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Repartir puntos y dinero?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
@@ -1523,7 +1863,7 @@
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         document.getElementById('sec-' + tab).classList.remove('oculto');
         document.getElementById('tab-' + tab).classList.add('active');
-        if(tab === 'ofertas') cargarOfertas(); // Cargar ofertas al entrar
+        if(tab === 'ofertas') cargarOfertas();
         if(tab === 'admin') {
             cargarUsuariosAdmin();
             actualizarBotonBloqueo();
@@ -1546,11 +1886,7 @@
 
     function verQuienEstaOnline() {
         if(listaUsuariosOnline.length === 0) return;
-
-        // 1. Mostrar el modal primero (esto borra el contenido anterior y pone el título)
         mostrarModal("Usuarios en línea 🟢", "", 'info', ()=>{});
-
-        // 2. Y LUEGO inyectamos la lista HTML (para que no se borre)
         let listaHTML = listaUsuariosOnline.map(n => `<li style="margin-bottom:5px;">👤 ${n}</li>`).join('');
         document.getElementById('modal-mensaje').innerHTML = `<ul style="list-style:none; padding:0; font-size:1.1em; text-align:left;">${listaHTML}</ul>`;
     }
@@ -1581,12 +1917,12 @@
             .then(r => r.json())
             .then(bloqueado => {
                 if (bloqueado) {
-                    btn.innerText = "🔒 BLOQUEO ACTIVO";
+                    btn.innerText = "🔒 EL BLOQUEO ESTÁ ACTIVO";
                     btn.style.background = "#d32f2f";
                     btn.style.color = "white";
                     btn.style.boxShadow = "0 0 15px rgba(211, 47, 47, 0.6)";
                 } else {
-                    btn.innerText = "🔓 BLOQUEO DESACTIVADO";
+                    btn.innerText = "🔓 EL BLOQUEO ESTÁ DESACTIVADO";
                     btn.style.background = "#2e7d32";
                     btn.style.color = "white";
                     btn.style.boxShadow = "none";
@@ -1627,10 +1963,9 @@
 
         mostrarModal("Eliminar Jugador", `¿Estás seguro de que quieres eliminar a:\n\n👉 ${nombreJugador}?\n\nEsta acción es irreversible.`, 'confirm', () => {
             post(`/admin/eliminar-jugador/${idJugador}`, {});
-            // Recargamos los selects para que desaparezca
             setTimeout(() => {
                 pintarSelectEliminar();
-                pintarSelectAdmin(); // Para actualizar el de registrar partido también
+                pintarSelectAdmin();
             }, 1000);
         });
     }
@@ -1649,7 +1984,7 @@
         const jor = document.getElementById('edit-num-jornada').value;
         const idJugador = document.getElementById('edit-jugador-poner').value;
         const pts = document.getElementById('edit-puntos-poner').value;
-        const color = document.getElementById('edit-color-poner').value; // ¡Cogemos el color!
+        const color = document.getElementById('edit-color-poner').value;
 
         if(!jor || !idJugador || !pts) return alert("Rellena la jornada y los puntos.");
 
