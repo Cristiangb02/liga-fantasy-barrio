@@ -5,23 +5,10 @@
     <title>Acceso Liga Fantasy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script>
-        if (localStorage.getItem('usuarioId')) {
-            window.location.replace('fantasy.html');
-        }
-    </script>
-    <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1565c0, #0d47a1); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 320px; text-align: center; }
-        h2 { color: #1565c0; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1rem; }
-        .btn-login { background: #1565c0; color: white; }
-        .btn-register { background: #cfd8dc; color: #455a64; margin-top: 5px; }
-        #error-msg { color: #d32f2f; margin-top: 15px; font-size: 0.9em; display: none; }
-        #success-msg { color: #2e7d32; margin-top: 15px; font-size: 0.9em; display: none; }
-    </style>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/login.css">
 </head>
+
 <body>
 <div class="login-box">
     <h2>Liga Fantasy</h2>
@@ -33,59 +20,7 @@
     <div id="success-msg"></div>
 </div>
 
-<script>
-    function login() {
-        const nombre = document.getElementById('nombre').value;
-        const pass = document.getElementById('pass').value;
+<script src="js/login.js"></script>
 
-        fetch('/auth/login', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ nombre: nombre, password: pass })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.error) {
-                mostrarError(data.error);
-            } else {
-                localStorage.setItem('usuarioId', data.id);
-                localStorage.setItem('usuarioNombre', data.nombre);
-                localStorage.setItem('esAdmin', data.esAdmin);
-                localStorage.setItem('presupuesto', data.presupuesto);
-                window.location.href = 'fantasy.html';
-            }
-        });
-    }
-
-    function registro() {
-        const nombre = document.getElementById('nombre').value;
-        const pass = document.getElementById('pass').value;
-
-        if(!nombre || !pass) { mostrarError("Rellena todos los campos."); return; }
-
-        fetch('/auth/registro', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ nombre: nombre, password: pass })
-        })
-        .then(r => r.text())
-        .then(msg => {
-            if(msg.includes("❌")) mostrarError(msg);
-            else {
-                document.getElementById('error-msg').style.display = 'none';
-                const s = document.getElementById('success-msg');
-                s.innerText = msg;
-                s.style.display = 'block';
-            }
-        });
-    }
-
-    function mostrarError(msg) {
-        document.getElementById('success-msg').style.display = 'none';
-        const e = document.getElementById('error-msg');
-        e.innerText = msg;
-        e.style.display = 'block';
-    }
-</script>
 </body>
 </html>
