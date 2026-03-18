@@ -1,5 +1,8 @@
-package com.fantasy.ligabarrio;
+package com.fantasy.ligabarrio.repository;
 
+import com.fantasy.ligabarrio.model.Jugador;
+import com.fantasy.ligabarrio.model.Oferta;
+import com.fantasy.ligabarrio.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

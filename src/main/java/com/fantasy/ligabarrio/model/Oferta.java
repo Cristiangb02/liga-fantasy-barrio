@@ -1,4 +1,4 @@
-package com.fantasy.ligabarrio;
+package com.fantasy.ligabarrio.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

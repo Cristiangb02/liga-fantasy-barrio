@@ -1,5 +1,10 @@
 package com.fantasy.ligabarrio;
 
+import com.fantasy.ligabarrio.model.Jornada;
+import com.fantasy.ligabarrio.model.Jugador;
+import com.fantasy.ligabarrio.model.Temporada;
+import com.fantasy.ligabarrio.model.Usuario;
+import com.fantasy.ligabarrio.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
