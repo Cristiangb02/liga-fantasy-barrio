@@ -202,6 +202,7 @@ public class AdminController {
         for (Usuario u : usuarios) {
             u.setPresupuesto(100_000_000);
             u.setActivo(true);
+            u.setPuntosExtra(0);
         }
         usuarioRepository.saveAll(usuarios);
         equipoRepository.deleteAll();
@@ -300,6 +301,16 @@ public class AdminController {
         }
         jugadorRepository.save(jugador);
         return "✅ " + puntos + " puntos añadidos a " + jugador.getNombre() + " en la jornada " + numJornada + ".";
+    }
+
+    @PostMapping("/modificar-puntos-extra/{idUsuario}/{puntos}")
+    public String modificarPuntosExtra(@PathVariable Long idUsuario, @PathVariable int puntos) {
+        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
+        u.setPuntosExtra(u.getPuntosExtra() + puntos);
+        usuarioRepository.save(u);
+
+        String accion = puntos >= 0 ? "añadido" : "restado";
+        return "✅ Se han " + accion + " " + Math.abs(puntos) + " puntos a " + u.getNombre() + " en la clasificación general.";
     }
 
     // --- DELETE ---

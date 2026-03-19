@@ -372,6 +372,11 @@ function cargarUsuariosAdmin() {
                     ${(!u.esAdmin || u.nombre === 'Cristian') ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}                    </div>
             </div>
         `).join('');
+
+        const selectPuntos = document.getElementById('admin-usuario-puntos');
+        if (selectPuntos) {
+            selectPuntos.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+        }
     });
 
     fetch('/admin/pendientes').then(r => r.json()).then(pendientes => {
@@ -825,5 +830,21 @@ function ejecutarPoner() {
 
     mostrarModal("Añadir a Jornada", `¿Seguro que quieres sumar ${pts} puntos a este jugador en la jornada ${jor} con el equipo ${color}?`, 'confirm', () => {
         post(`/admin/add-puntos-jornada/${idJugador}/${jor}/${pts}/${color}`, {});
+    });
+}
+
+function modificarPuntosManager() {
+    const idUsuario = document.getElementById('admin-usuario-puntos').value;
+    const puntos = parseInt(document.getElementById('input-puntos-extra').value);
+
+    if (!idUsuario || isNaN(puntos)) {
+        mostrarModal("Error", "Selecciona un mánager e introduce una cantidad válida.", "confirm", ()=>{});
+        return;
+    }
+
+    const accion = puntos >= 0 ? "sumar" : "restar";
+    mostrarModal("Compensar Puntos", `¿Seguro que quieres ${accion} ${Math.abs(puntos)} puntos a este mánager en la clasificación general?`, "confirm", () => {
+        post(`/admin/modificar-puntos-extra/${idUsuario}/${puntos}`, {});
+        document.getElementById('input-puntos-extra').value = '';
     });
 }

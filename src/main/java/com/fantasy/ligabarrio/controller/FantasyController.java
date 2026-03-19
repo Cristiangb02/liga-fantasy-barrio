@@ -229,6 +229,8 @@ public class FantasyController {
 
         return usuarios.stream().map(u -> {
             int p = todosEquipos.stream().filter(e -> e.getUsuario().getId().equals(u.getId())).mapToInt(Equipo::getPuntosTotalesJornada).sum();
+            p += u.getPuntosExtra();
+
             int v = todosJugadores.stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId())).mapToInt(Jugador::getValor).sum();
             return Map.<String, Object>of("nombre", u.getNombre(), "puntos", p, "valorPlantilla", v);
         }).sorted((m1, m2) -> {
