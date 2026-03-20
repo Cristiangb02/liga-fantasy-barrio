@@ -81,8 +81,6 @@ function verDetalleJugador(id, nombre, img, posicion) {
     detalleDiv.classList.remove('oculto');
     document.getElementById('btn-modal-ok').classList.add('oculto');
     document.getElementById('btn-modal-cancel').innerText = "Cerrar";
-
-    // Reutilizamos tus clases de colores para la posición
     let posClass = 'pos-' + posicion.toLowerCase();
 
     detalleDiv.innerHTML = `
@@ -547,11 +545,13 @@ function actualizarContador(checkbox) {
 
 function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
 function robar(id, p) { mostrarModal("Fichar por Cláusula", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
+
 function vender(id, valor, clausula) {
-    let ingreso = valor + (clausula - valor) / 2;
+    let ingreso = valor;
+
     mostrarModal(
         "Vender al Mercado",
-        `Recuperarás Coste + Inversión.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`,
+        `⚠️ ATENCIÓN: Al vender al mercado SOLO recuperas el valor de mercado actual del jugador. Se perderá todo el dinero que hayas invertido en subir su cláusula.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`,
         'vender',
         () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso)
     );

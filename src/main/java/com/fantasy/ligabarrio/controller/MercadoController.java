@@ -192,7 +192,7 @@ public class MercadoController {
         Usuario vendedor = usuarioRepository.findById(idUsuario).orElseThrow();
         if (jugador.getPropietario() == null || !jugador.getPropietario().getId().equals(idUsuario)) return "❌ No es tuyo.";
 
-        int ingreso = jugador.getValor() + (jugador.getClausula() - jugador.getValor()) / 2;
+        int ingreso = jugador.getValor();
         vendedor.setPresupuesto(vendedor.getPresupuesto() + ingreso);
         jugador.setPropietario(null);
         jugador.setClausula(jugador.getValor());
@@ -210,8 +210,9 @@ public class MercadoController {
         fantasyService.cancelarOfertasPendientes(jugador);
         usuarioRepository.save(vendedor);
         jugadorRepository.save(jugador);
-        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " ha vendido a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") " + fantasyService.fmtDinero(ingreso)));
-        return "✅ Jugador vendido. Recibes " + fantasyService.fmtDinero(ingreso);
+
+        noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " ha vendido a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") por " + fantasyService.fmtDinero(ingreso)));
+        return "✅ Jugador vendido. Has recibido " + fantasyService.fmtDinero(ingreso);
     }
 
     @PostMapping("/jugador/subir-clausula/{idJugador}/{cantidad}")
