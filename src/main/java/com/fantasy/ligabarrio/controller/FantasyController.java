@@ -58,12 +58,20 @@ public class FantasyController {
             String urlImagen = j.getUrlImagen() != null ? j.getUrlImagen() : "";
             Object propietarioObj = j.getPropietario() != null ? j.getPropietario() : Map.of();
 
-            return Map.<String, Object>of(
-                    "id", j.getId(), "nombre", j.getNombre(), "posicion", j.getPosicion(),
-                    "valor", j.getValor(), "clausula", j.getClausula(),
-                    "puntosAcumulados", j.getPuntosAcumulados(), "urlImagen", urlImagen,
-                    "propietario", propietarioObj, "blindado", blindado, "segundosBlindaje", segundosRestantes
-            );
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", j.getId());
+            map.put("nombre", j.getNombre());
+            map.put("posicion", j.getPosicion());
+            map.put("valor", j.getValor());
+            map.put("clausula", j.getClausula());
+            map.put("puntosAcumulados", j.getPuntosAcumulados());
+            map.put("urlImagen", urlImagen);
+            map.put("propietario", propietarioObj);
+            map.put("blindado", blindado);
+            map.put("segundosBlindaje", segundosRestantes);
+            map.put("estado", j.getEstado() != null ? j.getEstado() : "DISPONIBLE");
+
+            return map;
         }).collect(Collectors.toList());
     }
 

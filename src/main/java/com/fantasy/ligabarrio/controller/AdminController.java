@@ -313,6 +313,17 @@ public class AdminController {
         return "✅ Se han " + accion + " " + Math.abs(puntos) + " puntos a " + u.getNombre() + " en la clasificación general.";
     }
 
+    @PostMapping("/cambiar-estado/{idJugador}/{nuevoEstado}")
+    public String cambiarEstadoJugador(@PathVariable Long idJugador, @PathVariable String nuevoEstado) {
+        Jugador j = jugadorRepository.findById(idJugador).orElseThrow();
+
+        String estadoLimpio = nuevoEstado.replace("-", " ");
+        j.setEstado(estadoLimpio);
+        jugadorRepository.save(j);
+
+        return "✅ Estado de " + j.getNombre() + " cambiado a " + estadoLimpio;
+    }
+
     // --- DELETE ---
     @DeleteMapping("/rechazar/{idUsuario}")
     public String rechazarUsuario(@PathVariable Long idUsuario) {

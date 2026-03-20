@@ -25,6 +25,8 @@ public class Jugador {
     private LocalDate fechaFichaje;
     private LocalDateTime fechaFinBlindaje;
     private LocalDate fechaVenta;
+    private String estado = "DISPONIBLE";
+
 
     public Jugador() {
     }
@@ -100,4 +102,6 @@ public class Jugador {
     public void setFechaFinBlindaje(LocalDateTime fechaFinBlindaje) { this.fechaFinBlindaje = fechaFinBlindaje;}
     public LocalDate getFechaVenta() { return fechaVenta; }
     public void setFechaVenta(LocalDate fechaVenta) { this.fechaVenta = fechaVenta; }
+    public String getEstado() {return estado;}
+    public void setEstado(String estado) { this.estado = estado; }
 }

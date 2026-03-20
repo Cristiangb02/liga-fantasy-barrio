@@ -74,7 +74,7 @@ function mostrarModal(titulo, mensaje, tipo, callback) {
     };
 }
 
-function verDetalleJugador(id, nombre, img) {
+function verDetalleJugador(id, nombre, img, posicion) {
     document.getElementById('modal-overlay').classList.remove('oculto');
     document.getElementById('modal-content-wrapper').classList.add('oculto');
     const detalleDiv = document.getElementById('modal-jugador-detalle');
@@ -82,18 +82,33 @@ function verDetalleJugador(id, nombre, img) {
     document.getElementById('btn-modal-ok').classList.add('oculto');
     document.getElementById('btn-modal-cancel').innerText = "Cerrar";
 
+    // Reutilizamos tus clases de colores para la posición
+    let posClass = 'pos-' + posicion.toLowerCase();
+
     detalleDiv.innerHTML = `
         <img src="${img}" class="modal-jugador-img">
         <h3 style="margin:0; color:#1a237e;">${nombre}</h3>
-        <div id="stats-loading">Cargando historial...</div>
+        <div class="card-pos-badge ${posClass}" style="margin-top:5px;">${posicion}</div>
+        <div id="media-puntos" style="font-weight:bold; margin-top:10px; color:#546e7a; font-size:1.1em;">MEDIA: Calculando...</div>
+
+        <div id="stats-loading" style="margin-top: 15px;">Cargando historial...</div>
         <div id="stats-content" class="detalle-stats"></div>
     `;
 
     fetch(`/jugador/${id}/historial-puntos`).then(r=>r.json()).then(stats => {
         document.getElementById('stats-loading').style.display = 'none';
         const content = document.getElementById('stats-content');
-        if(stats.length === 0) content.innerHTML = '<p>Sin puntos registrados.</p>';
-        else {
+        const divMedia = document.getElementById('media-puntos');
+
+        if(stats.length === 0) {
+            content.innerHTML = '<p>Sin puntos registrados.</p>';
+            divMedia.innerText = 'MEDIA: 0.00';
+        } else {
+            let sumaPuntos = stats.reduce((acumulador, s) => acc + s.puntos, 0);
+            let suma = 0;
+            stats.forEach(s => suma += s.puntos);
+            let media = (suma / stats.length).toFixed(2);
+            divMedia.innerText = `MEDIA: ${media}`;
             content.innerHTML = stats.map(s => {
                 let colorClass = s.puntos > 0 ? 'bg-green' : (s.puntos < 0 ? 'bg-red' : 'bg-orange');
                 return `
@@ -126,6 +141,7 @@ window.onload = function() {
         cargarUsuariosAdmin();
         pintarSelectAdmin();
         actualizarBotonBloqueo();
+        pintarSelectEstado();
     }
     cargarTodo();
     cargarOfertas();
@@ -462,8 +478,25 @@ function crearCarta(j, tipo, alineado = false) {
             </div>`;
     }
 
-    let accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}')"`;
+    let accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}', '${j.posicion}')"`;
     let posClass = 'pos-' + j.posicion.toLowerCase();
+
+    let iconoEstado = '✅';
+    let colorEstado = '#2e7d32';
+    let textoEstado = j.estado || 'DISPONIBLE';
+
+    if (textoEstado === 'DUDOSO') {
+        iconoEstado = '⚠️';
+        colorEstado = '#f57c00';
+    } else if (textoEstado === 'LESIONADO') {
+        iconoEstado = '🚑';
+        colorEstado = '#d32f2f';
+    } else if (textoEstado === 'NO DISPONIBLE' || textoEstado === 'NO-DISPONIBLE') {
+        iconoEstado = '❌';
+        colorEstado = '#c62828';
+    }
+
+    let badgeEstado = `<div style="font-size: 0.75em; font-weight: 900; color: ${colorEstado}; margin-top: 4px;">${iconoEstado} ${textoEstado}</div>`;
 
     return `<div class="card ${extraClass}" id="card-${j.id}">
         <div class="puntos-triangle ${colorTriangulo}"></div>
@@ -474,6 +507,7 @@ function crearCarta(j, tipo, alineado = false) {
             <div ${accionDetalle}>
                 <div class="card-name">${j.nombre}</div>
                 <div class="card-pos-badge ${posClass}">${j.posicion}</div>
+                ${badgeEstado}
             </div>
             ${tipo !== 'alinear' ? contenido : ''}
         </div>
@@ -701,6 +735,7 @@ function cambiarPestaña(tab) {
         actualizarBotonBloqueo();
         pintarSelectAdmin();
         pintarSelectEliminar();
+        pintarSelectEstado();
     }
 }
 
@@ -846,5 +881,46 @@ function modificarPuntosManager() {
     mostrarModal("Compensar Puntos", `¿Seguro que quieres ${accion} ${Math.abs(puntos)} puntos a este mánager en la clasificación general?`, "confirm", () => {
         post(`/admin/modificar-puntos-extra/${idUsuario}/${puntos}`, {});
         document.getElementById('input-puntos-extra').value = '';
+    });
+}
+
+function pintarSelectEstado() {
+    fetch('/jugadores').then(r => r.json()).then(jugadores => {
+        const select = document.getElementById('admin-jugador-estado');
+        if (!select) return;
+
+        const posiciones = ['PORTERO', 'DEFENSA', 'MEDIO', 'DELANTERO'];
+        let html = '';
+
+        posiciones.forEach(pos => {
+            // Filtramos por posición y ordenamos alfabéticamente
+            let filtrados = jugadores.filter(j => j.posicion === pos).sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+            if (filtrados.length > 0) {
+                html += `<optgroup label="${pos}">`; // Separador visual por posición
+                filtrados.forEach(j => {
+                    let estadoActual = j.estado || 'DISPONIBLE';
+                    let icon = estadoActual === 'DISPONIBLE' ? '✅' : (estadoActual === 'DUDOSO' ? '⚠️' : (estadoActual === 'LESIONADO' ? '🚑' : '❌'));
+                    html += `<option value="${j.id}">${j.nombre} (${icon} ${estadoActual})</option>`;
+                });
+                html += `</optgroup>`;
+            }
+        });
+
+        select.innerHTML = html;
+    });
+}
+
+function cambiarEstadoJugador() {
+    const idJug = document.getElementById('admin-jugador-estado').value;
+    const nuevoEstado = document.getElementById('admin-nuevo-estado').value;
+    if(!idJug) return;
+
+    mostrarModal("Cambiar Estado", "¿Aplicar este nuevo estado médico?", "confirm", () => {
+        post(`/admin/cambiar-estado/${idJug}/${nuevoEstado}`, {});
+        setTimeout(() => {
+            pintarSelectEstado();
+            cargarTodo();
+        }, 500);
     });
 }
