@@ -102,10 +102,10 @@ function verDetalleJugador(id, nombre, img, posicion) {
             content.innerHTML = '<p>Sin puntos registrados.</p>';
             divMedia.innerText = 'MEDIA: 0.00';
         } else {
-            let sumaPuntos = stats.reduce((acumulador, s) => acc + s.puntos, 0);
             let suma = 0;
             stats.forEach(s => suma += s.puntos);
             let media = (suma / stats.length).toFixed(2);
+
             divMedia.innerText = `MEDIA: ${media}`;
             content.innerHTML = stats.map(s => {
                 let colorClass = s.puntos > 0 ? 'bg-green' : (s.puntos < 0 ? 'bg-red' : 'bg-orange');
@@ -117,6 +117,9 @@ function verDetalleJugador(id, nombre, img, posicion) {
                 `;
             }).join('');
         }
+    }).catch(error => {
+        console.error("Error cargando el detalle del jugador: ", error);
+        document.getElementById('media-puntos').innerText = 'Error al calcular';
     });
 }
 
