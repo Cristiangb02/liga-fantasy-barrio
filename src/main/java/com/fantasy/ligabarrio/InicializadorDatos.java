@@ -55,7 +55,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Jhona", "PORTERO", 48, 8.06, "/images/jhona.png"));
         lista.add(new Jugador("Juanlu", "PORTERO", 56, 5.98, "/images/juanlu.png"));
         lista.add(new Jugador("Sergio", "PORTERO", 34, 6.56, "/images/sergio.png"));
-        lista.add(new Jugador("Sebas", "PORTERO", 30, 8, "/images/user.png"));
+        lista.add(new Jugador("Sebas", "PORTERO", 30, 8, "/images/sebasP.png"));
 
 
         //DEFENSAS
@@ -144,14 +144,21 @@ public class InicializadorDatos implements CommandLineRunner {
             uR.save(admin);
         }
 
-        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR
+        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (CONCRETAMENTE DE UNA POSICION)
+        List<Jugador> listaJugadorExistente = juR.findByNombreAndPosicion("Sebas", "PORTERO");
+        for (Jugador c : listaJugadorExistente) {
+            c.setUrlImagen("/images/sebasP.png");
+            juR.save(c);
+        }
+
+        //CUANDO HAYA QUE ACTUALIZAR LA FOTO DE UN JUGADOR (Para toddas las posiciones de ese jugador)
         /*
-        List<Jugador> listaJugadorExistente = jugadorRepository.findByNombre("nombre");
+        List<Jugador> listaJugadorExistente = juR.findByNombre("nombre");
         for (Jugador c : listaJugadorExistente) {
             c.setUrlImagen("/nombre.png");
-            jugadorRepository.save(c);
+            juR.save(c);
         }
-          */
         System.out.println("CARGA DE DATOS COMPLETADA.");
+           */
     }
 }
