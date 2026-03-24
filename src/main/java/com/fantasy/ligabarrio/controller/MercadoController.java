@@ -133,11 +133,16 @@ public class MercadoController {
         Usuario comprador = usuarioRepository.findById(idUsuario).orElseThrow();
         if (jugador.getPropietario() != null) return "❌ Error: Este jugador ya ha sido comprado.";
 
+        LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
+        if (jugador.getFechaVenta() != null && jugador.getFechaVenta().isEqual(hoy)) {
+            return "❌ Este jugador acaba de ser vendido. No saldrá al mercado hasta próximos días.";
+        }
+
         comprador.setPresupuesto(comprador.getPresupuesto() - jugador.getValor());
         jugador.setPropietario(comprador);
         jugador.setClausula(jugador.getValor());
         jugador.setJornadaFichaje(fantasyService.getJornadaActiva().getId());
-        jugador.setFechaFichaje(LocalDate.now(ZoneId.of("Europe/Madrid")));
+        jugador.setFechaFichaje(hoy);
         jugador.setFechaFinBlindaje(LocalDateTime.now(ZoneId.of("Europe/Madrid")).plusDays(7));
         fantasyService.cancelarOfertasPendientes(jugador);
 

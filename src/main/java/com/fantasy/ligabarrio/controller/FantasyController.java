@@ -89,16 +89,15 @@ public class FantasyController {
                 if (j.getFechaFichaje() != null && j.getFechaFichaje().isEqual(hoy)) libresAnoche.add(j);
             }
         }
+
+        //Con la semilla diaria se baraja
         libresAnoche.sort(Comparator.comparing(Jugador::getId));
         Collections.shuffle(libresAnoche, new Random(seed));
-        List<Jugador> mercadoReal = libresAnoche.stream().limit(14).filter(j -> j.getPropietario() == null).collect(Collectors.toList());
 
-        for (Jugador j : todos) {
-            if (j.getPropietario() == null && j.getFechaVenta() != null && j.getFechaVenta().isEqual(hoy)) {
-                if (!mercadoReal.contains(j)) mercadoReal.add(j);
-            }
-        }
-        return mercadoReal;
+        return libresAnoche.stream()
+                .limit(14)
+                .filter(j -> j.getPropietario() == null)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/jornada/resumen")
