@@ -12,16 +12,17 @@ public class CalculadoraPuntosService {
 
     public int calcularPuntos(Actuacion a) {
         //Si no ha jugado, no suma
-        if (!a.isJugado()) return 0;
+        if (!a.isJugado()) {
+            return 0;
+        }
 
         int puntos = 1; //Por jugar el partido, +1
         String pos = a.getJugador().getPosicion().toUpperCase();
 
-        //Puntos por el resultado del partido
-        if (a.isVictoria()) {
+        if (a.isVictoria()) { //VICTORIA --> +2 ASEGURADOS
             puntos += 2;
-            puntos += random.nextInt(4); //Extras
-        } else if (a.isDerrota()) {
+            puntos += random.nextInt(4); //Extras 0, 1, 2 O 3
+        } else if (a.isDerrota()) { //DERROTA --> -2 ASEGURADOS
             puntos -= 2;
             puntos += random.nextInt(2); //0 o +1
         } else {
@@ -34,7 +35,7 @@ public class CalculadoraPuntosService {
                 //    - 0 goles: +7 pts
                 //    - <3 goles: +4 pts
                 //    - 3-6 goles: 0 pts
-                //    - >6 goles: -3 pts
+                //    - >6 goles: -2 pts
                 puntos += calcularGolesEncajados(a.getGolesEncajados(), 7, 4, 0, -2);
 
                 //2 - Goles Marcados:
@@ -93,10 +94,15 @@ public class CalculadoraPuntosService {
     }
 
     private int calcularGolesEncajados(int goles, int pCero, int pMenos3, int p3a6, int pMas6) {
-        if (goles == 0) return pCero;
-        if (goles < 3) return pMenos3;
-        if (goles <= 6) return p3a6;
-        return pMas6;
+        if (goles == 0) {
+            return pCero;
+        } else if (goles < 3) {
+            return pMenos3;
+        } else if (goles <= 6) {
+            return p3a6;
+        } else {
+            return pMas6;
+        }
     }
 
     public int calcularTotalEquipo(Equipo equipo) {

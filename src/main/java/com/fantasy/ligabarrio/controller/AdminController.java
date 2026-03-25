@@ -324,6 +324,20 @@ public class AdminController {
         return "✅ Estado de " + j.getNombre() + " cambiado a " + estadoLimpio;
     }
 
+    @PostMapping("/actualizar-imagen/{idJugador}")
+    public String actualizarImagen(@PathVariable Long idJugador, @RequestBody Map<String, String> datos) {
+        String nuevaUrl = datos.get("urlImagen");
+        if (nuevaUrl == null || nuevaUrl.trim().isEmpty()) {
+            return "❌ Error: La ruta de la imagen no puede estar vacía.";
+        }
+
+        Jugador j = jugadorRepository.findById(idJugador).orElseThrow();
+        j.setUrlImagen(nuevaUrl.trim());
+        jugadorRepository.save(j);
+
+        return "✅ Foto de " + j.getNombre() + " (" + j.getPosicion() + ") " + " actualizada correctamente.";
+    }
+
     // --- DELETE ---
     @DeleteMapping("/rechazar/{idUsuario}")
     public String rechazarUsuario(@PathVariable Long idUsuario) {

@@ -259,6 +259,19 @@
         <button onclick="cambiarEstadoJugador()" style="background:#00897b; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">🔄 APLICAR ESTADO</button>
     </div>
 
+    <div style="background:#e3f2fd; padding:15px; border-radius:10px; border:1px solid #1976d2; margin-bottom: 20px;">
+        <h4 style="color:#1565c0; margin-top:0;">Actualizar imagen de un jugador</h4>
+        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Selecciona un jugador e introduce la nueva ruta de su foto (ej: <b>/images/nueva_foto.png</b>).</p>
+
+        <select id="admin-jugador-foto" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;">
+            <option>Cargando jugadores...</option>
+        </select>
+
+        <input type="text" id="admin-nueva-foto-url" placeholder="/images/nueva_foto.png" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
+
+        <button onclick="actualizarFotoJugador()" style="background:#1976d2; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">💾 GUARDAR NUEVA FOTO</button>
+    </div>
+
     <div style="background:#e8f5e9; padding:15px; border-radius:10px; border:1px solid #4caf50; margin-bottom: 20px;">
         <h4 style="color:#2e7d32; margin-top:0;">Dar/Quitar puntos (en la Clasificación)</h4>
         <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Añade o quita puntos a un mánager en la clasificación (por si hay errores o sanciones). Usa números negativos para restar.</p>

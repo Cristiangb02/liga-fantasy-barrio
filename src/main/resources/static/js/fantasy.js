@@ -142,7 +142,7 @@ window.onload = function() {
         cargarUsuariosAdmin();
         pintarSelectAdmin();
         actualizarBotonBloqueo();
-        pintarSelectEstado();
+        pintarSelectsAdminJugadores();
     }
     cargarTodo();
     cargarOfertas();
@@ -738,7 +738,7 @@ function cambiarPestaña(tab) {
         actualizarBotonBloqueo();
         pintarSelectAdmin();
         pintarSelectEliminar();
-        pintarSelectEstado();
+        pintarSelectsAdminJugadores();
     }
 }
 
@@ -887,30 +887,37 @@ function modificarPuntosManager() {
     });
 }
 
-function pintarSelectEstado() {
+function pintarSelectsAdminJugadores() {
     fetch('/jugadores').then(r => r.json()).then(jugadores => {
-        const select = document.getElementById('admin-jugador-estado');
-        if (!select) return;
+        const selectEstado = document.getElementById('admin-jugador-estado');
+        const selectFoto = document.getElementById('admin-jugador-foto'); // El nuevo select
 
         const posiciones = ['PORTERO', 'DEFENSA', 'MEDIO', 'DELANTERO'];
-        let html = '';
+        let htmlEstado = '';
+        let htmlFoto = '';
 
         posiciones.forEach(pos => {
-            // Filtramos por posición y ordenamos alfabéticamente
             let filtrados = jugadores.filter(j => j.posicion === pos).sort((a, b) => a.nombre.localeCompare(b.nombre));
 
             if (filtrados.length > 0) {
-                html += `<optgroup label="${pos}">`; // Separador visual por posición
+                htmlEstado += `<optgroup label="${pos}">`;
+                htmlFoto += `<optgroup label="${pos}">`;
+
                 filtrados.forEach(j => {
                     let estadoActual = j.estado || 'DISPONIBLE';
                     let icon = estadoActual === 'DISPONIBLE' ? '✅' : (estadoActual === 'DUDOSO' ? '⚠️' : (estadoActual === 'LESIONADO' ? '🚑' : '❌'));
-                    html += `<option value="${j.id}">${j.nombre} (${icon} ${estadoActual})</option>`;
+
+                    htmlEstado += `<option value="${j.id}">${j.nombre} (${icon} ${estadoActual})</option>`;
+                    htmlFoto += `<option value="${j.id}">${j.nombre}</option>`; // Sin iconos para la foto
                 });
-                html += `</optgroup>`;
+
+                htmlEstado += `</optgroup>`;
+                htmlFoto += `</optgroup>`;
             }
         });
 
-        select.innerHTML = html;
+        if (selectEstado) selectEstado.innerHTML = htmlEstado;
+        if (selectFoto) selectFoto.innerHTML = htmlFoto;
     });
 }
 
@@ -922,7 +929,26 @@ function cambiarEstadoJugador() {
     mostrarModal("Cambiar Estado", "¿Aplicar este nuevo estado médico?", "confirm", () => {
         post(`/admin/cambiar-estado/${idJug}/${nuevoEstado}`, {});
         setTimeout(() => {
-            pintarSelectEstado();
+            pintarSelectsAdminJugadores();
+            cargarTodo();
+        }, 500);
+    });
+}
+
+function actualizarFotoJugador() {
+    const idJug = document.getElementById('admin-jugador-foto').value;
+    const nuevaUrl = document.getElementById('admin-nueva-foto-url').value;
+
+    if (!idJug || !nuevaUrl.trim()) {
+        mostrarModal("Error", "Debes seleccionar un jugador y escribir la ruta de la nueva imagen.", "confirm", ()=>{});
+        return;
+    }
+
+    mostrarModal("Actualizar Foto", "¿Seguro que quieres aplicar esta nueva imagen?", "confirm", () => {
+        post(`/admin/actualizar-imagen/${idJug}`, { urlImagen: nuevaUrl });
+        document.getElementById('admin-nueva-foto-url').value = '';
+
+        setTimeout(() => {
             cargarTodo();
         }, 500);
     });

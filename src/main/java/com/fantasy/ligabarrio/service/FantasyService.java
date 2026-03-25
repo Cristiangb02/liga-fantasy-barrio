@@ -41,7 +41,6 @@ public class FantasyService {
         if (actual.isBloqueada()) {
             actual.setBloqueada(false);
             jornadaRepository.save(actual);
-            System.out.println("⏰ Bloqueo desactivado automáticamente en BBDD a las 10:00");
         }
     }
 
