@@ -60,8 +60,9 @@ public class InicializadorDatos implements CommandLineRunner {
         //DEFENSAS
         lista.add(new Jugador("Alejandro", "DEFENSA", 32, 6.63, "/images/alejandro.png"));
         lista.add(new Jugador("Alejandro G.", "DEFENSA", 30, 6.58, "/images/alejandrogarrocho.png"));
+        lista.add(new Jugador("Álvaro.", "DEFENSA", 33, 6.08, "/images/alvaro.png"));
         lista.add(new Jugador("Andrés", "DEFENSA", 52, 4.72, "/images/andres.png"));
-        lista.add(new Jugador("Cardenas", "DEFENSA", 45, 6.20, "/images/cardenas.png"));
+        lista.add(new Jugador("Cárdenas", "DEFENSA", 45, 6.20, "/images/cardenas.png"));
         lista.add(new Jugador("Chico", "DEFENSA", 46, 5.79, "/images/chico.png"));
         lista.add(new Jugador("Conce", "DEFENSA", 29, 5.84, "/images/conce.png"));
         lista.add(new Jugador("Cristian", "DEFENSA", 24, 7.08, "/images/cristian.png"));
@@ -87,6 +88,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Alberto", "MEDIO", 39, 8.06, "/images/alberto.png"));
         lista.add(new Jugador("Alejandro", "MEDIO", 32, 8.16, "/images/alejandro.png"));
         lista.add(new Jugador("Alejandro G.", "MEDIO", 30, 8.52, "/images/alejandrogarrocho.png"));
+        lista.add(new Jugador("Álvaro.", "MEDIO", 33, 7.52, "/images/alvaro.png"));
         lista.add(new Jugador("Cardenas", "MEDIO", 45, 6.8, "/images/cardenas.png"));
         lista.add(new Jugador("Chico", "MEDIO", 46, 5.29, "/images/chico.png"));
         lista.add(new Jugador("Conce", "MEDIO", 29, 7.13, "/images/conce.png"));
@@ -115,7 +117,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Cristian", "DELANTERO", 24, 7.96, "/images/cristian.png"));
         lista.add(new Jugador("David", "DELANTERO", 36, 6.19, "/images/david.png"));
         lista.add(new Jugador("Felipe", "DELANTERO", 31, 7.79, "/images/felipe.png"));
-        lista.add(new Jugador("Jesus", "DELANTERO", 42, 7.53, "/images/jesus.png"));
+        lista.add(new Jugador("Jesús", "DELANTERO", 42, 7.53, "/images/jesus.png"));
         lista.add(new Jugador("Jesús Jr", "DELANTERO", 25, 6.53, "/images/jesusjr.png"));
         lista.add(new Jugador("Jhona", "DELANTERO", 48, 6.16, "/images/jhona.png"));
         lista.add(new Jugador("Juan", "DELANTERO", 45, 5.97, "/images/juan.png"));
