@@ -49,12 +49,12 @@ public class InicializadorDatos implements CommandLineRunner {
         //PORTEROS
         lista.add(new Jugador("Carlos", "PORTERO", 52, 6.8, "/images/carlos.png"));
         lista.add(new Jugador("Carmelo", "PORTERO", 54, 6.26, "/images/carmelo.png"));
-        lista.add(new Jugador("Cristian", "PORTERO", 24, 7.26, "/images/cristian.png"));
-        lista.add(new Jugador("Diego", "PORTERO", 49, 7.23, "/images/diego.png"));
+        lista.add(new Jugador("Cristian", "PORTERO", 24, 7.26, "/images/cristianportero.png"));
+        lista.add(new Jugador("Diego", "PORTERO", 49, 7.23, "/images/diegop.png"));
         lista.add(new Jugador("Fran", "PORTERO", 53, 6.47, "/images/franportero.png"));
         lista.add(new Jugador("Jhona", "PORTERO", 48, 8.06, "/images/jhona.png"));
-        lista.add(new Jugador("Juanlu", "PORTERO", 56, 5.98, "/images/juanlu.png"));
-        lista.add(new Jugador("Sergio", "PORTERO", 34, 6.56, "/images/sergio.png"));
+        lista.add(new Jugador("Juanlu", "PORTERO", 56, 5.98, "/images/juanlup.png"));
+        lista.add(new Jugador("Sergio", "PORTERO", 34, 6.56, "/images/sergiop.png"));
         lista.add(new Jugador("Sebas", "PORTERO", 30, 8, "/images/sebasP.png"));
 
         //DEFENSAS
