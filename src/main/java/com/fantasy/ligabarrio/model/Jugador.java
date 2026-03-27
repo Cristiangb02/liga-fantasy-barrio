@@ -16,6 +16,7 @@ public class Jugador {
     private double media;
     private int valor;
     private String imagen;
+    private boolean enMercadoDiario = false;
 
     @ManyToOne
     private Usuario propietario;
@@ -100,4 +101,6 @@ public class Jugador {
     public void setFechaVenta(LocalDate fechaVenta) { this.fechaVenta = fechaVenta; }
     public String getEstado() {return estado;}
     public void setEstado(String estado) { this.estado = estado; }
+    public boolean isEnMercadoDiario() { return enMercadoDiario; }
+    public void setEnMercadoDiario(boolean enMercadoDiario) { this.enMercadoDiario = enMercadoDiario; }
 }

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -77,27 +78,53 @@ public class FantasyController {
 
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
+        // 1. Simplemente devolvemos los que tengan la marca encendida hoy
+        List<Jugador> mercado = jugadorRepository.findAll().stream()
+                .filter(Jugador::isEnMercadoDiario)
+                .collect(Collectors.toList());
+
+        // Seguridad: Si el servidor acaba de arrancar o se ha borrado la BD y no hay nadie, lo genera al momento.
+        if (mercado.isEmpty()) {
+            generarNuevoMercado();
+            mercado = jugadorRepository.findAll().stream()
+                    .filter(Jugador::isEnMercadoDiario)
+                    .collect(Collectors.toList());
+        }
+
+        return mercado;
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Madrid")
+    public void renovarMercadoAutomatico() {
+        generarNuevoMercado();
+    }
+
+    public void generarNuevoMercado() {
         LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
         long seed = hoy.toEpochDay() + fantasyService.getDesplazamiento();
+
         List<Jugador> todos = jugadorRepository.findAll();
-        List<Jugador> libresAnoche = new ArrayList<>();
+        List<Jugador> libres = new ArrayList<>();
 
         for (Jugador j : todos) {
+            j.setEnMercadoDiario(false);
+
             if (j.getPropietario() == null) {
-                if (j.getFechaVenta() == null || !j.getFechaVenta().isEqual(hoy)) libresAnoche.add(j);
-            } else {
-                if (j.getFechaFichaje() != null && j.getFechaFichaje().isEqual(hoy)) libresAnoche.add(j);
+                if (j.getFechaVenta() == null || !j.getFechaVenta().isEqual(hoy)) {
+                    libres.add(j);
+                }
             }
         }
 
-        //Con la semilla diaria se baraja
-        libresAnoche.sort(Comparator.comparing(Jugador::getId));
-        Collections.shuffle(libresAnoche, new Random(seed));
+        libres.sort(Comparator.comparing(Jugador::getId));
+        Collections.shuffle(libres, new Random(seed));
 
-        return libresAnoche.stream()
-                .limit(14)
-                .filter(j -> j.getPropietario() == null)
-                .collect(Collectors.toList());
+        List<Jugador> nuevosMercado = libres.stream().limit(14).collect(Collectors.toList());
+        for (Jugador j : nuevosMercado) {
+            j.setEnMercadoDiario(true);
+        }
+
+        jugadorRepository.saveAll(todos);
     }
 
     @GetMapping("/jornada/resumen")

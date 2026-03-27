@@ -241,6 +241,10 @@ function cargarTodo() {
             presupuesto = yo.presupuesto;
             localStorage.setItem('presupuesto', presupuesto);
             actualizarPresupuestoUI();
+
+            let miAvatar = yo.urlImagen && yo.urlImagen !== "null" ? yo.urlImagen : '/images/avatars/user.png';
+            document.getElementById('dashboard-avatar').src = miAvatar;
+            sessionStorage.setItem("urlImagen", miAvatar);
         }
     });
 
@@ -252,24 +256,24 @@ function cargarTodo() {
             } else {
                 miPuestoActual = "--º";
             }
+                    let html = data.map((fila, i) => {
+                        let img = fila.urlImagen && fila.urlImagen !== "null" ? fila.urlImagen : '/images/avatars/user.png';
+                        let puesto = i + 1; // Calculamos el puesto
 
-            let html = data.map((fila, i) => {
-                let img = fila.urlImagen && fila.urlImagen !== "null" ? fila.urlImagen : '/images/avatars/user.png';
-
-                return `
-                <div class="fila-clasif">
-                    <div class="clasif-user" style="display:flex; align-items:center;">
-                        <span class="pos-num" style="width:30px;">${i+1}º</span>
-                        <img src="${img}" style="width:35px; height:35px; object-fit:cover; border-radius:50%; border:2px solid #ccc; margin:0 10px;">
-                        <strong>${fila.nombre}</strong>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
-                        <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
-                    </div>
-                </div>`;
-            }).join('');
-            document.getElementById('lista-clasificacion').innerHTML = html;
+                        return `
+                        <div class="fila-clasif" style="cursor:pointer; transition: 0.2s;" onclick="verFichaManager('${fila.nombre}', '${img}', ${puesto})" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                            <div class="clasif-user" style="display:flex; align-items:center;">
+                                <span class="pos-num" style="width:30px;">${puesto}º</span>
+                                <img src="${img}" style="width:35px; height:35px; object-fit:cover; border-radius:50%; border:2px solid #ccc; margin:0 10px;">
+                                <strong>${fila.nombre}</strong>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
+                                <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    document.getElementById('lista-clasificacion').innerHTML = html;
         });
 
     cargarHistorial();
@@ -1027,18 +1031,20 @@ function actualizarAvatarManager() {
     });
 }
 
+function verFichaManager(nombre, urlImagen, puesto) {
+    let imagen = (!urlImagen || urlImagen === "null" || urlImagen === "undefined") ? '/images/avatars/user.png' : urlImagen;
+
+    document.getElementById('modal-perfil-imagen').src = imagen;
+    document.getElementById('modal-perfil-nombre').innerText = nombre;
+    document.getElementById('modal-perfil-puesto').innerText = puesto + "º";
+    document.getElementById('modal-perfil-wrapper').classList.remove('oculto');
+}
+
 function verMiFichaPerfil() {
     let imagen = sessionStorage.getItem("urlImagen");
     let nombre = localStorage.getItem("usuarioNombre");
-
-    if (!imagen || imagen === "null" || imagen === "undefined") {
-        imagen = '/images/avatars/user.png';
-    }
-
-    document.getElementById('modal-perfil-imagen').src = imagen;
-    document.getElementById('modal-perfil-nombre').innerText = nombre ? nombre : "Mánager";
-    document.getElementById('modal-perfil-puesto').innerText = miPuestoActual;
-    document.getElementById('modal-perfil-wrapper').classList.remove('oculto');
+    let puestoNum = miPuestoActual.replace("º", "");
+    verFichaManager(nombre ? nombre : "Mánager", imagen, puestoNum);
 }
 
 function cerrarModalPerfil() {
