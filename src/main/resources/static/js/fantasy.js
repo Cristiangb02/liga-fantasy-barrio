@@ -2,6 +2,7 @@
 let presupuesto = parseInt(localStorage.getItem('presupuesto') || 0);
 let listaUsuariosOnline = [];
 let modalCallback = null;
+let miPuestoActual = "--º";
 
 function mostrarModal(titulo, mensaje, tipo, callback) {
     document.getElementById('modal-content-wrapper').classList.remove('oculto');
@@ -1012,4 +1013,22 @@ function actualizarAvatarManager() {
             cargarTodo();
         }, 500);
     });
+}
+
+function verMiFichaPerfil() {
+    let imagen = sessionStorage.getItem("urlImagen");
+    let nombre = sessionStorage.getItem("nombreUsuario");
+
+    if (!imagen || imagen === "null") {
+        imagen = '/images/avatars/default.png';
+    }
+
+    document.getElementById('modal-perfil-imagen').src = imagen;
+    document.getElementById('modal-perfil-nombre').innerText = nombre;
+    document.getElementById('modal-perfil-puesto').innerText = miPuestoActual;
+    document.getElementById('modal-perfil-wrapper').classList.remove('oculto');
+}
+
+function cerrarModalPerfil() {
+    document.getElementById('modal-perfil-wrapper').classList.add('oculto');
 }

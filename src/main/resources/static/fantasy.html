@@ -19,7 +19,7 @@
 
 <header>
     <div class="user-info">
-        <div class="avatar-header">👤</div>
+        <img id="dashboard-avatar" src="/images/avatars/user.png" onclick="verMiFichaPerfil()" style="width:50px; height:50px; object-fit:cover; border-radius:50%; border:2px solid #fff; cursor:pointer; margin-right: 10px; box-shadow:0 2px 5px rgba(0,0,0,0.2);" title="Ver mi perfil">
         <div class="user-details-col">
             <div class="user-name-row">
                 <h1 id="titulo-web">Fantasy</h1>
@@ -317,6 +317,23 @@
     <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
         <h4 style="color:#b71c1c; margin-top:0;">☢️ ZONA DE PELIGRO</h4>
         <button onclick="resetearLiga()" style="background:#d32f2f; color:white; width:100%; padding:15px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">⚠️ RESETEAR LIGA COMPLETA</button>
+    </div>
+</div>
+
+<div id="modal-perfil-wrapper" class="oculto" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10001; display:flex; align-items:center; justify-content:center;">
+    <div style="background:white; padding:25px; border-radius:15px; width:90%; max-width:400px; text-align:center; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <button onclick="cerrarModalPerfil()" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.5em; color:#ccc; cursor:pointer;">❌</button>
+
+        <img id="modal-perfil-imagen" src="/images/avatars/default.png" style="width:180px; height:180px; object-fit:cover; border-radius:50%; border:5px solid #1a237e; box-shadow:0 5px 15px rgba(0,0,0,0.2); margin-bottom:15px;">
+        <h2 id="modal-perfil-nombre" style="margin:0; color:#1a237e; font-size:1.6em;">Nombre</h2>
+
+        <div style="background:#e8eaf6; padding:15px; border-radius:10px; margin-top:20px;">
+            <p style="margin:0; color:#1a237e; font-weight:bold; font-size:1.1em; line-height:1.4em;">
+                Vas <span id="modal-perfil-puesto" style="color:#d32f2f; font-size:1.4em; font-weight:900;">--º</span> clasificado
+            </p>
+        </div>
+
+        <button onclick="cerrarModalPerfil()" style="background:#1a237e; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin-top:20px;">ENTENDIDO</button>
     </div>
 </div>
 
