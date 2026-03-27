@@ -245,20 +245,32 @@ function cargarTodo() {
     });
 
     fetch('/clasificacion').then(r=>r.json()).then(data => {
-        let html = data.map((fila, i) => `
-            <div class="fila-clasif">
-                <div class="clasif-user">
-                    <span class="pos-num">${i+1}º</span>
-                    <div class="avatar-small">👤</div>
-                    <strong>${fila.nombre}</strong>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
-                    <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
-                </div>
-            </div>`).join('');
-        document.getElementById('lista-clasificacion').innerHTML = html;
-    });
+            const miNombre = localStorage.getItem('usuarioNombre');
+            const miIndex = data.findIndex(userMap => userMap.nombre === miNombre);
+            if (miIndex !== -1) {
+                miPuestoActual = (miIndex + 1) + "º";
+            } else {
+                miPuestoActual = "--º";
+            }
+
+            let html = data.map((fila, i) => {
+                let img = fila.urlImagen && fila.urlImagen !== "null" ? fila.urlImagen : '/images/avatars/user.png';
+
+                return `
+                <div class="fila-clasif">
+                    <div class="clasif-user" style="display:flex; align-items:center;">
+                        <span class="pos-num" style="width:30px;">${i+1}º</span>
+                        <img src="${img}" style="width:35px; height:35px; object-fit:cover; border-radius:50%; border:2px solid #ccc; margin:0 10px;">
+                        <strong>${fila.nombre}</strong>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
+                        <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('lista-clasificacion').innerHTML = html;
+        });
 
     cargarHistorial();
     cargarNoticias();
@@ -1017,14 +1029,14 @@ function actualizarAvatarManager() {
 
 function verMiFichaPerfil() {
     let imagen = sessionStorage.getItem("urlImagen");
-    let nombre = sessionStorage.getItem("nombreUsuario");
+    let nombre = localStorage.getItem("usuarioNombre");
 
-    if (!imagen || imagen === "null") {
-        imagen = '/images/avatars/default.png';
+    if (!imagen || imagen === "null" || imagen === "undefined") {
+        imagen = '/images/avatars/user.png';
     }
 
     document.getElementById('modal-perfil-imagen').src = imagen;
-    document.getElementById('modal-perfil-nombre').innerText = nombre;
+    document.getElementById('modal-perfil-nombre').innerText = nombre ? nombre : "Mánager";
     document.getElementById('modal-perfil-puesto').innerText = miPuestoActual;
     document.getElementById('modal-perfil-wrapper').classList.remove('oculto');
 }
