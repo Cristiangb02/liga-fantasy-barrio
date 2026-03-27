@@ -52,7 +52,8 @@ public class AuthController {
                 "id", user.getId(),
                 "nombre", user.getNombre(),
                 "esAdmin", user.isEsAdmin(),
-                "presupuesto", user.getPresupuesto()
+                "presupuesto", user.getPresupuesto(),
+                "urlImagen", user.getUrlImagen()
         );
     }
 }

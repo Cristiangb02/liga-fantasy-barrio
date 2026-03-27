@@ -338,6 +338,19 @@ public class AdminController {
         return "✅ Foto de " + j.getNombre() + " (" + j.getPosicion() + ") " + " actualizada correctamente.";
     }
 
+    @PostMapping("/actualizar-avatar/{idUsuario}")
+    public String actualizarAvatarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
+        String nuevaUrl = datos.get("urlImagen");
+        if (nuevaUrl == null || nuevaUrl.trim().isEmpty()) {
+            return "❌ Error: La ruta de la imagen no puede estar vacía.";
+        }
+        Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
+        u.setUrlImagen(nuevaUrl.trim());
+        usuarioRepository.save(u);
+
+        return "✅ Foto de perfil de " + u.getNombre() + " actualizada correctamente.";
+    }
+
     @PostMapping("/modificar-saldo/{idUsuario}/{cantidad}")
     public String modificarSaldo(@PathVariable Long idUsuario, @PathVariable int cantidad) {
         if (cantidad == 0) return "❌ La cantidad no puede ser cero.";

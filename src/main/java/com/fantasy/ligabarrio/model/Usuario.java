@@ -14,6 +14,7 @@ public class Usuario {
     private boolean esAdmin;
     private boolean activo;
     private int puntosExtra = 0;
+    private String urlImagen = "/images/avatars/user.png";
 
     public Usuario() {
     }
@@ -23,7 +24,9 @@ public class Usuario {
         this.password = password;
         this.presupuesto = presupuesto;
         this.esAdmin = esAdmin;
-        this.activo = esAdmin;
+        this.activo = false;
+        this.puntosExtra = 0;
+        this.urlImagen = "/images/avatars/user.png";
     }
 
     public Long getId() { return id; }
@@ -39,4 +42,6 @@ public class Usuario {
     public void setActivo(boolean activo) { this.activo = activo; }
     public int getPuntosExtra() { return puntosExtra; }
     public void setPuntosExtra(int puntosExtra) { this.puntosExtra = puntosExtra; }
+    public String getUrlImagen() { return urlImagen; }
+    public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
 }

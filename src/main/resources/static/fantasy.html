@@ -301,6 +301,19 @@
         </div>
     </div>
 
+    <div style="background:#f3e5f5; padding:15px; border-radius:10px; border:1px solid #8e24aa; margin-bottom: 20px;">
+        <h4 style="color:#6a1b9a; margin-top:0;">Actualizar Foto de Mánager</h4>
+        <p style="font-size:0.85em; color:#666; margin-bottom:10px;">Selecciona un mánager e introduce la ruta de su foto (ej: <b>/images/avatars/jugador.png</b>).</p>
+
+        <select id="admin-usuario-avatar" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;">
+            <option>Cargando mánagers...</option>
+        </select>
+
+        <input type="text" id="admin-nuevo-avatar-url" placeholder="/images/avatars/nueva_foto.png" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
+
+        <button onclick="actualizarAvatarManager()" style="background:#8e24aa; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">📸 GUARDAR NUEVO AVATAR</button>
+    </div>
+
     <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
         <h4 style="color:#b71c1c; margin-top:0;">☢️ ZONA DE PELIGRO</h4>
         <button onclick="resetearLiga()" style="background:#d32f2f; color:white; width:100%; padding:15px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">⚠️ RESETEAR LIGA COMPLETA</button>

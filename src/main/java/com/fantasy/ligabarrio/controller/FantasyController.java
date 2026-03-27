@@ -239,7 +239,7 @@ public class FantasyController {
             p += u.getPuntosExtra();
 
             int v = todosJugadores.stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId())).mapToInt(Jugador::getValor).sum();
-            return Map.<String, Object>of("nombre", u.getNombre(), "puntos", p, "valorPlantilla", v);
+            return Map.<String, Object>of("nombre", u.getNombre(), "puntos", p, "valorPlantilla", v, "urlImagen", u.getUrlImagen());
         }).sorted((m1, m2) -> {
             int cmp = Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos"));
             return cmp != 0 ? cmp : Integer.compare((int)m2.get("valorPlantilla"), (int)m1.get("valorPlantilla"));

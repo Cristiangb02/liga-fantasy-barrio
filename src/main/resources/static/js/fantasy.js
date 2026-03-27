@@ -405,6 +405,9 @@ function cargarUsuariosAdmin() {
                     selectSaldo.innerHTML = `<option value="0">TODOS LOS MÁNAGERS</option>` +
                                             usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
                 }
+
+                const selectAvatar = document.getElementById('admin-usuario-avatar');
+                if (selectAvatar) selectAvatar.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
     });
 
     fetch('/admin/pendientes').then(r => r.json()).then(pendientes => {
@@ -985,6 +988,31 @@ function modificarSaldoManager(tipo) {
 
         document.getElementById('input-saldo-cantidad').value = '';
         setTimeout(() => {
+            cargarTodo();
+        }, 500);
+    });
+}
+
+function actualizarAvatarManager() {
+    const idUsuario = document.getElementById('admin-usuario-avatar').value;
+    const nuevaUrl = document.getElementById('admin-nuevo-avatar-url').value;
+
+    if (!idUsuario || !nuevaUrl.trim()) {
+        mostrarModal("Error", "Debes seleccionar un mánager y escribir la ruta de la nueva imagen.", "confirm", ()=>{});
+        return;
+    }
+
+    mostrarModal("Actualizar Avatar", "¿Seguro que quieres aplicar esta foto de perfil al mánager?", "confirm", () => {
+        post(`/admin/actualizar-avatar/${idUsuario}`, { urlImagen: nuevaUrl });
+        document.getElementById('admin-nuevo-avatar-url').value = '';
+        setTimeout(() => {
+
+            if (idUsuario === sessionStorage.getItem("usuarioId")) {
+                sessionStorage.setItem("urlImagen", nuevaUrl);
+                const avatarDiv = document.getElementById('dashboard-avatar');
+                if (avatarDiv) avatarDiv.src = nuevaUrl;
+            }
+
             cargarTodo();
         }, 500);
     });
