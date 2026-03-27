@@ -385,7 +385,6 @@ function cargarUsuariosAdmin() {
                 </div>
                 <div style="flex-shrink:0;">
                     <button class="btn-edit-user" onclick="editarUsuario(${u.id}, '${u.nombre}')">✏️</button>
-
                     ${(!u.esAdmin || u.nombre === 'Cristian') ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}                    </div>
             </div>
         `).join('');
@@ -395,19 +394,16 @@ function cargarUsuariosAdmin() {
             selectPuntos.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
         }
 
-                const selectPuntos = document.getElementById('admin-usuario-puntos');
-                if (selectPuntos) {
-                    selectPuntos.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
-                }
+        const selectSaldo = document.getElementById('admin-usuario-saldo');
+        if (selectSaldo) {
+            selectSaldo.innerHTML = `<option value="0">🌍 TODOS LOS MÁNAGERS</option>` +
+                                    usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+        }
 
-                const selectSaldo = document.getElementById('admin-usuario-saldo');
-                if (selectSaldo) {
-                    selectSaldo.innerHTML = `<option value="0">TODOS LOS MÁNAGERS</option>` +
-                                            usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
-                }
-
-                const selectAvatar = document.getElementById('admin-usuario-avatar');
-                if (selectAvatar) selectAvatar.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+        const selectAvatar = document.getElementById('admin-usuario-avatar');
+        if (selectAvatar) {
+            selectAvatar.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+        }
     });
 
     fetch('/admin/pendientes').then(r => r.json()).then(pendientes => {
