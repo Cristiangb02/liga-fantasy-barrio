@@ -338,6 +338,28 @@ public class AdminController {
         return "✅ Foto de " + j.getNombre() + " (" + j.getPosicion() + ") " + " actualizada correctamente.";
     }
 
+    @PostMapping("/modificar-saldo/{idUsuario}/{cantidad}")
+    public String modificarSaldo(@PathVariable Long idUsuario, @PathVariable int cantidad) {
+        if (cantidad == 0) return "❌ La cantidad no puede ser cero.";
+
+        String accion = cantidad > 0 ? "ingresado" : "retirado";
+        //Si el ID es 0, es para a TODOS los mánagers
+        if (idUsuario == 0L) {
+            List<Usuario> usuarios = usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList());
+            for (Usuario u : usuarios) {
+                u.setPresupuesto(u.getPresupuesto() + cantidad);
+            }
+            usuarioRepository.saveAll(usuarios);
+            return "✅ Se han " + accion + " " + fantasyService.fmtDinero(Math.abs(cantidad)) + " a todos los mánagers.";
+        }
+        else {
+            Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
+            u.setPresupuesto(u.getPresupuesto() + cantidad);
+            usuarioRepository.save(u);
+            return "✅ Se han " + accion + " " + fantasyService.fmtDinero(Math.abs(cantidad)) + " a " + u.getNombre() + ".";
+        }
+    }
+
     // --- DELETE ---
     @DeleteMapping("/rechazar/{idUsuario}")
     public String rechazarUsuario(@PathVariable Long idUsuario) {

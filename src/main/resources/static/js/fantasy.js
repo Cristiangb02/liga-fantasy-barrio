@@ -394,6 +394,17 @@ function cargarUsuariosAdmin() {
         if (selectPuntos) {
             selectPuntos.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
         }
+
+                const selectPuntos = document.getElementById('admin-usuario-puntos');
+                if (selectPuntos) {
+                    selectPuntos.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+                }
+
+                const selectSaldo = document.getElementById('admin-usuario-saldo');
+                if (selectSaldo) {
+                    selectSaldo.innerHTML = `<option value="0">TODOS LOS MÁNAGERS</option>` +
+                                            usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+                }
     });
 
     fetch('/admin/pendientes').then(r => r.json()).then(pendientes => {
@@ -948,6 +959,31 @@ function actualizarFotoJugador() {
         post(`/admin/actualizar-imagen/${idJug}`, { urlImagen: nuevaUrl });
         document.getElementById('admin-nueva-foto-url').value = '';
 
+        setTimeout(() => {
+            cargarTodo();
+        }, 500);
+    });
+}
+
+function modificarSaldoManager(tipo) {
+    const idUsuario = document.getElementById('admin-usuario-saldo').value;
+    let cantidad = parseInt(document.getElementById('input-saldo-cantidad').value);
+
+    if (isNaN(cantidad) || cantidad <= 0) {
+        mostrarModal("Error", "Introduce una cantidad válida mayor que 0.", "confirm", ()=>{});
+        return;
+    }
+    if (tipo === 'retirar') {
+        cantidad = -cantidad;
+    }
+
+    const accionTxt = tipo === 'ingresar' ? 'INGRESAR' : 'RETIRAR MULTA DE';
+    const targetTxt = idUsuario === '0' ? 'a TODOS los mánagers' : 'al mánager seleccionado';
+
+    mostrarModal("Gestión de Saldo", `¿Seguro que quieres ${accionTxt} ${formatoDinero.format(Math.abs(cantidad))} ${targetTxt}?`, "confirm", () => {
+        post(`/admin/modificar-saldo/${idUsuario}/${cantidad}`, {});
+
+        document.getElementById('input-saldo-cantidad').value = '';
         setTimeout(() => {
             cargarTodo();
         }, 500);
