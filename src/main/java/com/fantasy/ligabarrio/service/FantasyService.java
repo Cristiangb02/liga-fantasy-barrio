@@ -115,4 +115,9 @@ public class FantasyService {
             }
         }
     }
+
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Madrid")
+    public void resetDiario() {
+        System.out.println("Mercado renovado: " + LocalDate.now());
+    }
 }

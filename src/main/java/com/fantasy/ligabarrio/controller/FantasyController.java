@@ -78,20 +78,27 @@ public class FantasyController {
 
     @GetMapping("/mercado-diario")
     public List<Jugador> getMercadoDiario() {
-        // 1. Simplemente devolvemos los que tengan la marca encendida hoy
-        List<Jugador> mercado = jugadorRepository.findAll().stream()
-                .filter(Jugador::isEnMercadoDiario)
+        LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
+        long seed = hoy.toEpochDay() + fantasyService.getDesplazamiento();
+
+        List<Jugador> todos = jugadorRepository.findAll();
+
+        List<Jugador> candidatosHoy = todos.stream()
+                .filter(j -> {
+                    if (j.getPropietario() == null) {
+                        return j.getFechaVenta() == null || !j.getFechaVenta().isEqual(hoy);
+                    }
+                    return j.getFechaFichaje() != null && j.getFechaFichaje().isEqual(hoy);
+                })
+                .sorted(Comparator.comparing(Jugador::getId))
                 .collect(Collectors.toList());
 
-        // Seguridad: Si el servidor acaba de arrancar o se ha borrado la BD y no hay nadie, lo genera al momento.
-        if (mercado.isEmpty()) {
-            generarNuevoMercado();
-            mercado = jugadorRepository.findAll().stream()
-                    .filter(Jugador::isEnMercadoDiario)
-                    .collect(Collectors.toList());
-        }
+        Collections.shuffle(candidatosHoy, new Random(seed));
 
-        return mercado;
+        return candidatosHoy.stream()
+                .limit(14)
+                .filter(j -> j.getPropietario() == null)
+                .collect(Collectors.toList());
     }
 
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Madrid")
