@@ -63,11 +63,14 @@ public class Jugador {
         }
 
         //Suelo para veteranos con alta media
-        if (factorEdad < 0.25) factorEdad = 0.24;
+        if (factorEdad < 0.25) {
+            factorEdad = 0.24;
+        }
 
         double precioFinal = precioBase * factorEdad;
-        if (precioFinal < 250_000) precioFinal = 250_000;
-
+        if (precioFinal < 250_000) {
+            precioFinal = 250_000;
+        }
         return (int) precioFinal;
     }
 

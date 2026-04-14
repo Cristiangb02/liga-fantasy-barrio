@@ -165,7 +165,7 @@ public class FantasyController {
         if (actuaciones.isEmpty()) return Map.of("error", "Sin datos en esta jornada");
 
         int maxPuntos = actuaciones.stream().mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
-        Map<String, List<Actuacion>> grupos = actuaciones.stream().filter(a -> a.getEquipoColor() != null).collect(Collectors.groupingBy(Actuacion::getEquipoColor));
+        Map<String, List<Actuacion>> grupos = actuaciones.stream().filter(a -> a.getColorEquipo() != null).collect(Collectors.groupingBy(Actuacion::getColorEquipo));
         List<String> colores = new ArrayList<>(grupos.keySet());
 
         String colorA = grupos.isEmpty() || colores.isEmpty() ? "BLANCO" : colores.get(0);
@@ -258,7 +258,7 @@ public class FantasyController {
                         }
                     }
                     int bonus = mvp ? 1_000_000 : 0;
-                    return Map.<String, Object>of("idEquipo", e.getId(), "jornada", e.getJornada().getNumero(), "puntos", p, "dineroFmt", fantasyService.fmtDinero(dinero + bonus), "tieneMvp", mvp, "nombreMvp", nombreMvp, "bonusFmt", fantasyService.fmtDinero(bonus));
+                    return Map.<String, Object>of("idEquipo", e.getId(), "jornada", e.getJornada().getNumero(), "puntos", p, "dineroFmt", fantasyService.formatearDinero(dinero + bonus), "tieneMvp", mvp, "nombreMvp", nombreMvp, "bonusFmt", fantasyService.formatearDinero(bonus));
                 }).collect(Collectors.toList());
     }
 
@@ -337,7 +337,7 @@ public class FantasyController {
         usuarioRepository.save(u);
         equipoRepository.save(equipo);
 
-        return "💰 Reclamado: " + fantasyService.fmtDinero(base) + (mvp ? " + 🏆 " + fantasyService.fmtDinero(bonus) : "");
+        return "💰 Reclamado: " + fantasyService.formatearDinero(base) + (mvp ? " + 🏆 " + fantasyService.formatearDinero(bonus) : "");
     }
 
     private List<Map<String, Object>> mapJugadoresCampo(List<Actuacion> acts, int maxPuntos) {

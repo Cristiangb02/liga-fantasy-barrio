@@ -22,7 +22,7 @@ public class Actuacion {
     private int autogoles;  
     private int golesMarcados;
     private int golesEncajados;
-    private String equipoColor;
+    private String colorEquipo;
 
     public Actuacion() {
     }
@@ -53,6 +53,6 @@ public class Actuacion {
     public void setJugado(boolean jugado) { this.jugado = jugado; }
     public int getAutogoles() { return autogoles; }
     public void setAutogoles(int autogoles) { this.autogoles = autogoles; }
-    public String getEquipoColor() { return equipoColor; }
-    public void setEquipoColor(String equipoColor) { this.equipoColor = equipoColor; }
+    public String getColorEquipo() { return colorEquipo; }
+    public void setColorEquipo(String colorEquipo) { this.colorEquipo = colorEquipo; }
 }

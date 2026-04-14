@@ -131,7 +131,7 @@ public class AdminController {
         actuacion.setGolesMarcados(datos.goles);
         actuacion.setGolesEncajados(datos.golesEncajados);
         actuacion.setAutogoles(datos.autogoles);
-        actuacion.setEquipoColor(datos.equipoColor);
+        actuacion.setColorEquipo(datos.colorEquipo);
 
         int puntos = calculadora.calcularPuntos(actuacion);
         actuacion.setPuntosTotales(puntos);
@@ -238,7 +238,7 @@ public class AdminController {
 
         actuacionRepository.delete(acta);
         jugadorRepository.save(jugador);
-        return "✅ CORREGIDO: Puntos de " + jugador.getNombre() + " reseteados. (Restados " + puntosRestar + " pts y " + fantasyService.fmtDinero(valorRestar) + " valor)";
+        return "✅ CORREGIDO: Puntos de " + jugador.getNombre() + " reseteados. (Restados " + puntosRestar + " pts y " + fantasyService.formatearDinero(valorRestar) + " valor)";
     }
 
     @PostMapping("/eliminar-jugador/{id}")
@@ -289,7 +289,7 @@ public class AdminController {
         Actuacion acta = new Actuacion(jugador, jornada);
         acta.setPuntosTotales(puntos);
         acta.setJugado(true);
-        acta.setEquipoColor(color);
+        acta.setColorEquipo(color);
         actuacionRepository.save(acta);
 
         int valorSumar = puntos * 100_000;
@@ -363,13 +363,13 @@ public class AdminController {
                 u.setPresupuesto(u.getPresupuesto() + cantidad);
             }
             usuarioRepository.saveAll(usuarios);
-            return "✅ Se han " + accion + " " + fantasyService.fmtDinero(Math.abs(cantidad)) + " a todos los mánagers.";
+            return "✅ Se han " + accion + " " + fantasyService.formatearDinero(Math.abs(cantidad)) + " a todos los mánagers.";
         }
         else {
             Usuario u = usuarioRepository.findById(idUsuario).orElseThrow();
             u.setPresupuesto(u.getPresupuesto() + cantidad);
             usuarioRepository.save(u);
-            return "✅ Se han " + accion + " " + fantasyService.fmtDinero(Math.abs(cantidad)) + " a " + u.getNombre() + ".";
+            return "✅ Se han " + accion + " " + fantasyService.formatearDinero(Math.abs(cantidad)) + " a " + u.getNombre() + ".";
         }
     }
 
@@ -395,12 +395,5 @@ public class AdminController {
         ofertaRepository.deleteAll(ofertasRelacionadas);
         usuarioRepository.delete(u);
         return "✅ Usuario eliminado correctamente.";
-    }
-
-    public static class DatosPartido {
-        public Long idJugador;
-        public boolean jugado; public boolean victoria; public boolean derrota;
-        public int goles; public int golesEncajados; public int autogoles;
-        public String equipoColor;
     }
 }
