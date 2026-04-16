@@ -121,30 +121,55 @@ public class FantasyController {
         }).sorted((a,b) -> Integer.compare((int)b.get("puntosTotal"), (int)a.get("puntosTotal"))).collect(Collectors.toList());
     }
 
-    // CORREGIDO: Ya no elimina a los jugadores con color "null"
     @GetMapping("/jornada/{numero}/resumen-partido")
     public Map<String, Object> getResumenPartido(@PathVariable int numero) {
         Optional<Jornada> jOpt = jornadaRepository.findAll().stream().filter(j -> j.getNumero() == numero).findFirst();
         if (jOpt.isEmpty()) return Map.of("error", "Jornada no encontrada");
 
         Jornada jornada = jOpt.get();
-        List<Actuacion> actuaciones = actuacionRepository.findAll().stream().filter(a -> a.getJornada().getId().equals(jornada.getId())).collect(Collectors.toList());
+        List<Actuacion> actuaciones = actuacionRepository.findAll().stream()
+                .filter(a -> a.getJornada().getId().equals(jornada.getId()))
+                .collect(Collectors.toList());
+
         if (actuaciones.isEmpty()) return Map.of("error", "Sin datos en esta jornada");
 
         int maxPuntos = actuaciones.stream().mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
 
-        // Asignamos a "BLANCO" por defecto a los que tengan colorEquipo == null
+        // Agrupamos puramente por el color de la camiseta de la tabla Actuacion
         Map<String, List<Actuacion>> grupos = actuaciones.stream()
-                .collect(Collectors.groupingBy(a -> a.getColorEquipo() != null ? a.getColorEquipo() : "BLANCO"));
+                .collect(Collectors.groupingBy(a -> a.getColorEquipo() != null ? a.getColorEquipo() : "SIN COLOR"));
 
         List<String> colores = new ArrayList<>(grupos.keySet());
 
-        String colorA = colores.isEmpty() ? "BLANCO" : colores.get(0);
-        String colorB = colores.size() > 1 ? colores.get(1) : "RIVAL";
+        List<Actuacion> listaA = new ArrayList<>();
+        List<Actuacion> listaB = new ArrayList<>();
+        String colorA = "EQUIPO 1";
+        String colorB = "EQUIPO 2";
 
-        return Map.of("colorA", colorA, "colorB", colorB,
-                "equipoA", mapJugadoresCampo(grupos.getOrDefault(colorA, new ArrayList<>()), maxPuntos),
-                "equipoB", mapJugadoresCampo(grupos.getOrDefault(colorB, new ArrayList<>()), maxPuntos));
+        if (colores.size() >= 2) {
+            // CASO IDEAL: Hay dos colores distintos registrados en la base de datos
+            colorA = colores.get(0);
+            colorB = colores.get(1);
+            listaA = grupos.get(colorA);
+            listaB = grupos.get(colorB);
+        } else if (colores.size() == 1) {
+            // SALVAVIDAS: Todos los jugadores tienen el mismo color (o son null).
+            // Cortamos la lista por la mitad para obligar al frontend a dibujar uno arriba y otro abajo.
+            colorA = colores.get(0) + " 1";
+            colorB = colores.get(0) + " 2";
+            List<Actuacion> todas = grupos.get(colores.get(0));
+
+            int mitad = todas.size() / 2;
+            listaA = todas.subList(0, mitad);
+            listaB = todas.subList(mitad, todas.size());
+        }
+
+        return Map.of(
+                "colorA", colorA,
+                "colorB", colorB,
+                "equipoA", mapJugadoresCampo(listaA, maxPuntos),
+                "equipoB", mapJugadoresCampo(listaB, maxPuntos)
+        );
     }
 
     @GetMapping("/jornada/{numero}/resumen-managers")
