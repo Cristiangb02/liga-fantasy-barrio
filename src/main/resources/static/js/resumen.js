@@ -7,18 +7,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('numJornada').value = jornadaUrl;
         cargarTodo();
     } else {
-        // SOLUCIÓN JORNADA: Preguntamos al backend cuál es la jornada actual
+        // SOLUCIÓN JORNADA: Preguntamos al backend cuál es la actual y le restamos 1
         fetch('/jornada/actual')
             .then(res => res.text())
             .then(num => {
                 if (num && !isNaN(num)) {
-                    document.getElementById('numJornada').value = num;
+                    let jornadaTerminada = parseInt(num) - 1;
+                    if (jornadaTerminada < 1) jornadaTerminada = 1; // Para que no ponga jornada 0
+                    document.getElementById('numJornada').value = jornadaTerminada;
                 }
                 cargarTodo();
             })
             .catch(err => {
                 console.error("Error obteniendo jornada actual:", err);
-                cargarTodo(); // Fallback a la jornada 1 si falla
+                cargarTodo(); // Fallback a lo que haya en el input si falla
             });
     }
 });
@@ -60,14 +62,19 @@ function cargarTodo() {
 function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
     contenedor.innerHTML = '';
 
-    // SOLUCIÓN AMONTONAMIENTO: Obligamos al área a apilar las líneas en formato columna (1-4-4-2, etc)
+    // FORZAR EL TAMAÑO: Cada área ocupa el 50% de la altura para no pisar al otro equipo
     contenedor.style.display = 'flex';
     contenedor.style.flexDirection = 'column';
-    contenedor.style.justifyContent = 'space-around'; // Reparte el espacio verticalmente
-    contenedor.style.alignItems = 'center';
-    contenedor.style.height = '100%';
+    contenedor.style.justifyContent = 'space-evenly';
+    contenedor.style.height = '50%';
     contenedor.style.width = '100%';
-    contenedor.style.padding = '10px 0';
+    contenedor.style.position = 'absolute';
+
+    if (posicionCampo === 'top') {
+        contenedor.style.top = '0'; // Pegado a la portería de arriba
+    } else {
+        contenedor.style.bottom = '0'; // Pegado a la portería de abajo
+    }
 
     // Agrupar jugadores por posiciones
     const lineas = {
@@ -78,16 +85,19 @@ function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
     };
 
     jugadores.forEach(j => {
-        // Limpiamos la cadena por si viene con espacios
-        const pos = (j.posicion || 'MED').trim().toUpperCase();
-        if(lineas[pos]) {
-            lineas[pos].push(j);
-        } else {
-            lineas['MED'].push(j); // Fallback de seguridad
-        }
+        // SOLUCIÓN TEXTO: Buscamos la subcadena sin importar cómo esté escrito en la base de datos
+        const posStr = (j.posicion || 'MED').trim().toUpperCase();
+        let posKey = 'MED'; // Por defecto
+
+        if (posStr.includes('POR') || posStr === 'PT') posKey = 'POR';
+        else if (posStr.includes('DEF') || posStr === 'DF') posKey = 'DEF';
+        else if (posStr.includes('MED') || posStr.includes('CEN') || posStr === 'MC') posKey = 'MED';
+        else if (posStr.includes('DEL') || posStr === 'DL') posKey = 'DEL';
+
+        lineas[posKey].push(j);
     });
 
-    // El equipo de arriba (top) dibuja Portero arriba, el de abajo (bottom) dibuja Portero abajo
+    // El equipo de arriba dibuja Portero arriba (primero), el de abajo dibuja Delantero primero (para que quede en el centro)
     const ordenPosiciones = posicionCampo === 'top'
         ? ['POR', 'DEF', 'MED', 'DEL']
         : ['DEL', 'MED', 'DEF', 'POR'];
@@ -97,19 +107,18 @@ function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
         if (lineas[pos].length > 0) {
             const divLinea = document.createElement('div');
             divLinea.className = `linea-${pos.toLowerCase()}`;
-            // Distribución horizontal de los jugadores en su línea correspondiente
             divLinea.style.display = 'flex';
             divLinea.style.flexDirection = 'row';
             divLinea.style.justifyContent = 'center';
-            divLinea.style.gap = '15px'; // Espacio entre jugadores de la misma línea
+            divLinea.style.gap = '20px'; // Un poco más de espacio para que respiren
             divLinea.style.width = '100%';
 
             lineas[pos].forEach(j => {
                 const img = j.imagen ? j.imagen : '/images/avatars/user.png';
 
-                // SOLUCIÓN COLORES: Verde (>0), Naranja (0), Rojo (<0)
+                // Colores correctos
                 let colorPuntos;
-                if (j.puntos > 0) colorPuntos = '#2e7d32'; // Verde oscuro
+                if (j.puntos > 0) colorPuntos = '#2e7d32'; // Verde
                 else if (j.puntos === 0) colorPuntos = '#f57c00'; // Naranja
                 else colorPuntos = '#d32f2f'; // Rojo
 
@@ -120,7 +129,7 @@ function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
                 divJugador.style.display = 'flex';
                 divJugador.style.flexDirection = 'column';
                 divJugador.style.alignItems = 'center';
-                divJugador.style.zIndex = '2'; // Asegura que estén por encima del césped
+                divJugador.style.zIndex = '2';
 
                 divJugador.innerHTML = `
                     <div style="position:relative; display:inline-block; margin-bottom: 5px;">
