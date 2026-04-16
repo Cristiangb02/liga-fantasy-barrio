@@ -40,14 +40,14 @@
                     .map(o -> Map.<String, Object>of(
                             "id", o.getId(), "jugador", o.getJugador().getNombre(),
                             "comprador", o.getComprador().getNombre(), "cantidad", o.getCantidad(),
-                            "cantidadFmt", fantasyService.fmtDinero(o.getCantidad())
+                            "cantidadFmt", fantasyService.formatearDinero(o.getCantidad())
                     )).collect(Collectors.toList());
     
             List<Map<String, Object>> enviadas = ofertaRepository.findByCompradorAndEstado(usuario, "PENDIENTE").stream()
                     .map(o -> Map.<String, Object>of(
                             "id", o.getId(), "jugador", o.getJugador().getNombre(),
                             "vendedor", o.getVendedor().getNombre(), "cantidad", o.getCantidad(),
-                            "cantidadFmt", fantasyService.fmtDinero(o.getCantidad())
+                            "cantidadFmt", fantasyService.formatearDinero(o.getCantidad())
                     )).collect(Collectors.toList());
     
             return Map.of("recibidas", recibidas, "enviadas", enviadas);
@@ -118,7 +118,7 @@
                 ofertaRepository.save(oferta);
                 fantasyService.cancelarOfertasPendientes(jugador);
     
-                noticiaRepository.save(new Noticia("🤝 ACUERDO: " + comprador.getNombre() + " ha comprado a " + jugador.getNombre() + " al mánager " + vendedor.getNombre() + " por " + fantasyService.fmtDinero(oferta.getCantidad())));
+                noticiaRepository.save(new Noticia("🤝 ACUERDO: " + comprador.getNombre() + " ha comprado a " + jugador.getNombre() + " al mánager " + vendedor.getNombre() + " por " + fantasyService.formatearDinero(oferta.getCantidad())));
                 return "✅ Oferta aceptada. El jugador ha sido transferido.";
             }
             return "❌ Error.";
@@ -148,7 +148,7 @@
     
             usuarioRepository.save(comprador);
             jugadorRepository.save(jugador);
-            noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ha fichado a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") por " + fantasyService.fmtDinero(jugador.getValor())));
+            noticiaRepository.save(new Noticia("💰 MERCADO: " + comprador.getNombre() + " ha fichado a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") por " + fantasyService.formatearDinero(jugador.getValor())));
             return "✅ Fichaje realizado.";
         }
     
@@ -185,7 +185,7 @@
             usuarioRepository.save(ladron);
             usuarioRepository.save(victima);
             jugadorRepository.save(jugador);
-            noticiaRepository.save(new Noticia("🔥 CLAUSULAZO: " + ladron.getNombre() + " ha robado a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") al mánager " + victima.getNombre() + " por " + fantasyService.fmtDinero(precioRobo)));
+            noticiaRepository.save(new Noticia("🔥 CLAUSULAZO: " + ladron.getNombre() + " ha robado a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") al mánager " + victima.getNombre() + " por " + fantasyService.formatearDinero(precioRobo)));
             return "✅ ¡Has hecho un clausulazo!";
         }
     
@@ -216,8 +216,8 @@
             usuarioRepository.save(vendedor);
             jugadorRepository.save(jugador);
     
-            noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " ha vendido a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") por " + fantasyService.fmtDinero(ingreso)));
-            return "✅ Jugador vendido. Has recibido " + fantasyService.fmtDinero(ingreso);
+            noticiaRepository.save(new Noticia("👋 VENTA: " + vendedor.getNombre() + " ha vendido a " + jugador.getNombre() + " (" + jugador.getPosicion() + ") por " + fantasyService.formatearDinero(ingreso)));
+            return "✅ Jugador vendido. Has recibido " + fantasyService.formatearDinero(ingreso);
         }
     
         @PostMapping("/jugador/subir-clausula/{idJugador}/{cantidad}")
@@ -233,6 +233,6 @@
             jugador.setClausula(jugador.getClausula() + (cantidad * 2));
             usuarioRepository.save(propietario);
             jugadorRepository.save(jugador);
-            return "✅ Cláusula subida a " + fantasyService.fmtDinero(jugador.getClausula());
+            return "✅ Cláusula subida a " + fantasyService.formatearDinero(jugador.getClausula());
         }
     }

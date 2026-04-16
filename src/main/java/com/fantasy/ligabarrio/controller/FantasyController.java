@@ -4,14 +4,14 @@ import com.fantasy.ligabarrio.model.*;
 import com.fantasy.ligabarrio.repository.*;
 import com.fantasy.ligabarrio.service.FantasyService;
 import org.springframework.web.bind.annotation.*;
-import java.util.*;
-import java.util.stream.Collectors;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.scheduling.annotation.Scheduled;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -80,7 +80,6 @@ public class FantasyController {
     public List<Jugador> getMercadoDiario() {
         LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
         long seed = hoy.toEpochDay() + fantasyService.getDesplazamiento();
-
         List<Jugador> todos = jugadorRepository.findAll();
 
         List<Jugador> candidatosHoy = todos.stream()
@@ -99,39 +98,6 @@ public class FantasyController {
                 .limit(14)
                 .filter(j -> j.getPropietario() == null)
                 .collect(Collectors.toList());
-    }
-
-    @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Madrid")
-    public void renovarMercadoAutomatico() {
-        generarNuevoMercado();
-    }
-
-    public void generarNuevoMercado() {
-        LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
-        long seed = hoy.toEpochDay() + fantasyService.getDesplazamiento();
-
-        List<Jugador> todos = jugadorRepository.findAll();
-        List<Jugador> libres = new ArrayList<>();
-
-        for (Jugador j : todos) {
-            j.setEnMercadoDiario(false);
-
-            if (j.getPropietario() == null) {
-                if (j.getFechaVenta() == null || !j.getFechaVenta().isEqual(hoy)) {
-                    libres.add(j);
-                }
-            }
-        }
-
-        libres.sort(Comparator.comparing(Jugador::getId));
-        Collections.shuffle(libres, new Random(seed));
-
-        List<Jugador> nuevosMercado = libres.stream().limit(14).collect(Collectors.toList());
-        for (Jugador j : nuevosMercado) {
-            j.setEnMercadoDiario(true);
-        }
-
-        jugadorRepository.saveAll(todos);
     }
 
     @GetMapping("/jornada/resumen")
@@ -161,19 +127,49 @@ public class FantasyController {
         if (jOpt.isEmpty()) return Map.of("error", "Jornada no encontrada");
 
         Jornada jornada = jOpt.get();
-        List<Actuacion> actuaciones = actuacionRepository.findAll().stream().filter(a -> a.getJornada().getId().equals(jornada.getId())).collect(Collectors.toList());
+        List<Actuacion> actuaciones = actuacionRepository.findAll().stream()
+                .filter(a -> a.getJornada().getId().equals(jornada.getId()))
+                .collect(Collectors.toList());
+
         if (actuaciones.isEmpty()) return Map.of("error", "Sin datos en esta jornada");
 
         int maxPuntos = actuaciones.stream().mapToInt(Actuacion::getPuntosTotales).max().orElse(0);
-        Map<String, List<Actuacion>> grupos = actuaciones.stream().filter(a -> a.getEquipoColor() != null).collect(Collectors.groupingBy(Actuacion::getEquipoColor));
+
+        // Agrupamos puramente por el color de la camiseta de la tabla Actuacion
+        Map<String, List<Actuacion>> grupos = actuaciones.stream()
+                .collect(Collectors.groupingBy(a -> a.getColorEquipo() != null ? a.getColorEquipo() : "SIN COLOR"));
+
         List<String> colores = new ArrayList<>(grupos.keySet());
 
-        String colorA = grupos.isEmpty() || colores.isEmpty() ? "BLANCO" : colores.get(0);
-        String colorB = colores.size() > 1 ? colores.get(1) : "RIVAL";
+        List<Actuacion> listaA = new ArrayList<>();
+        List<Actuacion> listaB = new ArrayList<>();
+        String colorA = "EQUIPO 1";
+        String colorB = "EQUIPO 2";
 
-        return Map.of("colorA", colorA, "colorB", colorB,
-                "equipoA", mapJugadoresCampo(grupos.getOrDefault(colorA, List.of()), maxPuntos),
-                "equipoB", mapJugadoresCampo(grupos.getOrDefault(colorB, List.of()), maxPuntos));
+        if (colores.size() >= 2) {
+            // CASO IDEAL: Hay dos colores distintos registrados en la base de datos
+            colorA = colores.get(0);
+            colorB = colores.get(1);
+            listaA = grupos.get(colorA);
+            listaB = grupos.get(colorB);
+        } else if (colores.size() == 1) {
+            // SALVAVIDAS: Todos los jugadores tienen el mismo color (o son null).
+            // Cortamos la lista por la mitad para obligar al frontend a dibujar uno arriba y otro abajo.
+            colorA = colores.get(0) + " 1";
+            colorB = colores.get(0) + " 2";
+            List<Actuacion> todas = grupos.get(colores.get(0));
+
+            int mitad = todas.size() / 2;
+            listaA = todas.subList(0, mitad);
+            listaB = todas.subList(mitad, todas.size());
+        }
+
+        return Map.of(
+                "colorA", colorA,
+                "colorB", colorB,
+                "equipoA", mapJugadoresCampo(listaA, maxPuntos),
+                "equipoB", mapJugadoresCampo(listaB, maxPuntos)
+        );
     }
 
     @GetMapping("/jornada/{numero}/resumen-managers")
@@ -258,7 +254,7 @@ public class FantasyController {
                         }
                     }
                     int bonus = mvp ? 1_000_000 : 0;
-                    return Map.<String, Object>of("idEquipo", e.getId(), "jornada", e.getJornada().getNumero(), "puntos", p, "dineroFmt", fantasyService.fmtDinero(dinero + bonus), "tieneMvp", mvp, "nombreMvp", nombreMvp, "bonusFmt", fantasyService.fmtDinero(bonus));
+                    return Map.<String, Object>of("idEquipo", e.getId(), "jornada", e.getJornada().getNumero(), "puntos", p, "dineroFmt", fantasyService.formatearDinero(dinero + bonus), "tieneMvp", mvp, "nombreMvp", nombreMvp, "bonusFmt", fantasyService.formatearDinero(bonus));
                 }).collect(Collectors.toList());
     }
 
@@ -273,7 +269,7 @@ public class FantasyController {
             p += u.getPuntosExtra();
 
             int v = todosJugadores.stream().filter(j -> j.getPropietario() != null && j.getPropietario().getId().equals(u.getId())).mapToInt(Jugador::getValor).sum();
-            return Map.<String, Object>of("nombre", u.getNombre(), "puntos", p, "valorPlantilla", v, "urlImagen", u.getUrlImagen());
+            return Map.<String, Object>of("nombre", u.getNombre(), "puntos", p, "valorPlantilla", v, "urlImagen", u.getUrlImagen() != null ? u.getUrlImagen() : "");
         }).sorted((m1, m2) -> {
             int cmp = Integer.compare((int)m2.get("puntos"), (int)m1.get("puntos"));
             return cmp != 0 ? cmp : Integer.compare((int)m2.get("valorPlantilla"), (int)m1.get("valorPlantilla"));
@@ -337,17 +333,19 @@ public class FantasyController {
         usuarioRepository.save(u);
         equipoRepository.save(equipo);
 
-        return "💰 Reclamado: " + fantasyService.fmtDinero(base) + (mvp ? " + 🏆 " + fantasyService.fmtDinero(bonus) : "");
+        return "💰 Reclamado: " + fantasyService.formatearDinero(base) + (mvp ? " + 🏆 " + fantasyService.formatearDinero(bonus) : "");
     }
 
     private List<Map<String, Object>> mapJugadoresCampo(List<Actuacion> acts, int maxPuntos) {
         return acts.stream().map(a -> {
             Jugador j = a.getJugador();
-            return Map.<String, Object>of(
-                    "nombre", j.getNombre(), "posicion", j.getPosicion(), "puntos", a.getPuntosTotales(),
-                    "imagen", j.getUrlImagen() != null ? j.getUrlImagen() : "",
-                    "mvp", a.getPuntosTotales() == maxPuntos && maxPuntos > 0
-            );
+            Map<String, Object> map = new HashMap<>();
+            map.put("nombre", j.getNombre() != null ? j.getNombre() : "Sin Nombre");
+            map.put("posicion", j.getPosicion() != null ? j.getPosicion() : "MED");
+            map.put("puntos", a.getPuntosTotales());
+            map.put("imagen", j.getUrlImagen() != null ? j.getUrlImagen() : "");
+            map.put("mvp", a.getPuntosTotales() == maxPuntos && maxPuntos > 0);
+            return map;
         }).collect(Collectors.toList());
     }
 }

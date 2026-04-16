@@ -1,148 +1,164 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // Intentar leer la jornada de la URL si vienes desde otra página (ej: historial)
+    const urlParams = new URLSearchParams(window.location.search);
+    const jornadaUrl = urlParams.get('jornada');
 
-let vistaActual = 'campo';
-
-function alternarVista() {
-    if (vistaActual === 'campo') {
-        vistaActual = 'lista';
-        document.getElementById('vista-campo').classList.add('oculto');
-        document.getElementById('vista-lista').classList.remove('oculto');
+    if (jornadaUrl) {
+        document.getElementById('numJornada').value = jornadaUrl;
+        cargarTodo();
     } else {
-        vistaActual = 'campo';
-        document.getElementById('vista-lista').classList.add('oculto');
-        document.getElementById('vista-campo').classList.remove('oculto');
+        // SOLUCIÓN JORNADA: Preguntamos al backend cuál es la actual y le restamos 1
+        fetch('/jornada/actual')
+            .then(res => res.text())
+            .then(num => {
+                if (num && !isNaN(num)) {
+                    let jornadaTerminada = parseInt(num) - 1;
+                    if (jornadaTerminada < 1) jornadaTerminada = 1; // Para que no ponga jornada 0
+                    document.getElementById('numJornada').value = jornadaTerminada;
+                }
+                cargarTodo();
+            })
+            .catch(err => {
+                console.error("Error obteniendo jornada actual:", err);
+                cargarTodo(); // Fallback a lo que haya en el input si falla
+            });
     }
+});
+
+function cargarTodo() {
+    const numeroJornada = document.getElementById('numJornada').value;
+    if (!numeroJornada) return;
+
+    const marcador = document.getElementById('marcador');
+    const areaA = document.getElementById('area-equipo-a');
+    const areaB = document.getElementById('area-equipo-b');
+
+    marcador.innerText = "Cargando partido...";
+    areaA.innerHTML = "";
+    areaB.innerHTML = "";
+
+    fetch(`/jornada/${numeroJornada}/resumen-partido`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                marcador.innerText = data.error;
+                return;
+            }
+
+            const ptsA = data.equipoA.reduce((sum, j) => sum + j.puntos, 0);
+            const ptsB = data.equipoB.reduce((sum, j) => sum + j.puntos, 0);
+
+            marcador.innerText = `${data.colorA} ${ptsA} - ${ptsB} ${data.colorB}`;
+
+            dibujarEquipoEnCampo(data.equipoA, areaA, 'top');
+            dibujarEquipoEnCampo(data.equipoB, areaB, 'bottom');
+        })
+        .catch(err => {
+            console.error("Error al cargar la jornada:", err);
+            marcador.innerText = "Error de conexión con el servidor";
+        });
 }
 
-async function cargarTodo() {
-    const num = document.getElementById("numJornada").value;
-    cargarCampo(num);
-    cargarLista(num);
-}
+function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
+    contenedor.innerHTML = '';
 
-async function cargarCampo(num) {
-    try {
-        const response = await fetch(`/jornada/${num}/resumen-partido`);
-        const data = await response.json();
+    // FORZAR EL TAMAÑO: Cada área ocupa el 50% de la altura para no pisar al otro equipo
+    contenedor.style.display = 'flex';
+    contenedor.style.flexDirection = 'column';
+    contenedor.style.justifyContent = 'space-evenly';
+    contenedor.style.height = '50%';
+    contenedor.style.width = '100%';
+    contenedor.style.position = 'absolute';
 
-        if(data.error) {
-            document.getElementById("marcador").innerText = data.error;
-            document.getElementById("area-equipo-a").innerHTML = "";
-            document.getElementById("area-equipo-b").innerHTML = "";
-            return;
-        }
+    if (posicionCampo === 'top') {
+        contenedor.style.top = '0'; // Pegado a la portería de arriba
+    } else {
+        contenedor.style.bottom = '0'; // Pegado a la portería de abajo
+    }
 
-        const puntosA = data.equipoA.reduce((acc, j) => acc + j.puntos, 0);
-        const puntosB = data.equipoB.reduce((acc, j) => acc + j.puntos, 0);
+    // Agrupar jugadores por posiciones
+    const lineas = {
+        'POR': [],
+        'DEF': [],
+        'MED': [],
+        'DEL': []
+    };
 
-        document.getElementById("marcador").innerHTML = `
-            <span style="color:${getColorCode(data.colorA)}">${data.colorA} ${puntosA}</span>
-            -
-            <span style="color:${getColorCode(data.colorB)}">${puntosB} ${data.colorB}</span>
-        `;
-
-        renderEquipo("area-equipo-a", data.equipoA, data.colorA);
-        renderEquipo("area-equipo-b", data.equipoB, data.colorB);
-
-    } catch (e) { console.error(e); }
-}
-
-async function cargarLista(num) {
-    try {
-        const response = await fetch(`/jornada/${num}/resumen-managers`);
-        const data = await response.json();
-        const container = document.getElementById('lista-contenido');
-
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="text-align:center;">Sin datos de mánagers.</p>';
-            return;
-        }
-
-        container.innerHTML = data.map(m => {
-            let htmlJugadores = m.jugadores.map(j => {
-                let colorClass = 'text-orange';
-                if (j.puntos > 0) colorClass = 'text-green';
-                if (j.puntos < 0) colorClass = 'text-red';
-                return `
-                <div class="player-row">
-                    <span>${j.nombre} <small>(${j.posicion.substring(0,3)})</small></span>
-                    <span class="${colorClass}">${j.puntos}</span>
-                </div>`;
-            }).join('');
-
-            return `
-            <div class="manager-card">
-                <div class="manager-header">
-                    <span>${m.manager}</span>
-                    <span class="pts-badge">${m.puntosTotal} pts</span>
-                </div>
-                <div>${htmlJugadores}</div>
-            </div>`;
-        }).join('');
-
-    } catch (e) { console.error(e); }
-}
-
-function renderEquipo(elementId, jugadores, color) {
-    const container = document.getElementById(elementId);
-    container.innerHTML = "";
-
-    const lineas = { PORTERO: [], DEFENSA: [], MEDIO: [], DELANTERO: [] };
     jugadores.forEach(j => {
-        if(lineas[j.posicion]) lineas[j.posicion].push(j);
-        else if(lineas.MEDIO) lineas.MEDIO.push(j);
+        // SOLUCIÓN TEXTO: Buscamos la subcadena sin importar cómo esté escrito en la base de datos
+        const posStr = (j.posicion || 'MED').trim().toUpperCase();
+        let posKey = 'MED'; // Por defecto
+
+        if (posStr.includes('POR') || posStr === 'PT') posKey = 'POR';
+        else if (posStr.includes('DEF') || posStr === 'DF') posKey = 'DEF';
+        else if (posStr.includes('MED') || posStr.includes('CEN') || posStr === 'MC') posKey = 'MED';
+        else if (posStr.includes('DEL') || posStr === 'DL') posKey = 'DEL';
+
+        lineas[posKey].push(j);
     });
 
-    const orden = ["PORTERO", "DEFENSA", "MEDIO", "DELANTERO"];
+    // El equipo de arriba dibuja Portero arriba (primero), el de abajo dibuja Delantero primero (para que quede en el centro)
+    const ordenPosiciones = posicionCampo === 'top'
+        ? ['POR', 'DEF', 'MED', 'DEL']
+        : ['DEL', 'MED', 'DEF', 'POR'];
 
-    orden.forEach(pos => {
+    // Dibujar las líneas
+    ordenPosiciones.forEach(pos => {
         if (lineas[pos].length > 0) {
-            const fila = document.createElement("div");
-            fila.className = "linea-jugadores";
-            lineas[pos].forEach(jug => {
-                let imgUrl = jug.imagen && jug.imagen.startsWith('/') ? jug.imagen : '/icon.png';
-                if(jug.imagen && jug.imagen.startsWith('http')) imgUrl = jug.imagen;
+            const divLinea = document.createElement('div');
+            divLinea.className = `linea-${pos.toLowerCase()}`;
+            divLinea.style.display = 'flex';
+            divLinea.style.flexDirection = 'row';
+            divLinea.style.justifyContent = 'center';
+            divLinea.style.gap = '20px'; // Un poco más de espacio para que respiren
+            divLinea.style.width = '100%';
 
-                let badgeClass = 'badge-orange';
-                if(jug.puntos > 0) badgeClass = 'badge-green';
-                if(jug.puntos < 0) badgeClass = 'badge-red';
+            lineas[pos].forEach(j => {
+                const img = j.imagen ? j.imagen : '/images/avatars/user.png';
 
-                let crownHtml = jug.mvp ? '<div class="mvp-crown">👑</div>' : '';
+                // Colores correctos
+                let colorPuntos;
+                if (j.puntos > 0) colorPuntos = '#2e7d32'; // Verde
+                else if (j.puntos === 0) colorPuntos = '#f57c00'; // Naranja
+                else colorPuntos = '#d32f2f'; // Rojo
 
-                fila.innerHTML += `
-                    <div class="jugador-card camiseta-${color} ${jug.mvp ? 'mvp' : ''}">
-                        ${crownHtml}
-                        <div class="puntos-badge ${badgeClass}">${jug.puntos}</div>
-                        <img src="${imgUrl}" class="jugador-img">
-                        <div class="jugador-nombre">${jug.nombre}</div>
+                const mvpEstilo = j.mvp ? 'border: 3px solid gold; box-shadow: 0 0 15px gold;' : 'border: 2px solid white;';
+
+                const divJugador = document.createElement('div');
+                divJugador.className = 'jugador-campo';
+                divJugador.style.display = 'flex';
+                divJugador.style.flexDirection = 'column';
+                divJugador.style.alignItems = 'center';
+                divJugador.style.zIndex = '2';
+
+                divJugador.innerHTML = `
+                    <div style="position:relative; display:inline-block; margin-bottom: 5px;">
+                        <img src="${img}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; background:white; ${mvpEstilo}" onerror="this.src='/images/avatars/user.png'">
+                        <div style="position:absolute; bottom:-5px; right:-8px; background:${colorPuntos}; color:white; border-radius:50%; width:22px; height:22px; display:flex; justify-content:center; align-items:center; font-size:12px; font-weight:bold; border: 2px solid white;">
+                            ${j.puntos}
+                        </div>
+                    </div>
+                    <div style="color:white; font-size:11px; background:rgba(0,0,0,0.65); padding:2px 6px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70px; font-weight:600;">
+                        ${j.nombre}
                     </div>
                 `;
+                divLinea.appendChild(divJugador);
             });
-            container.appendChild(fila);
+            contenedor.appendChild(divLinea);
         }
     });
 }
 
-function getColorCode(nombreColor) {
-    if(!nombreColor) return '#fff';
-    switch(nombreColor.toUpperCase()) {
-        case 'ROJO': return '#ff5252';
-        case 'AZUL': return '#448aff';
-        case 'AMARILLO': return '#ffd740';
-        case 'BLANCO': return '#ffffff';
-        default: return '#fff';
+function alternarVista() {
+    const vistaCampo = document.getElementById('vista-campo');
+    const vistaLista = document.getElementById('vista-lista');
+
+    if (vistaCampo.classList.contains('oculto')) {
+        vistaCampo.classList.remove('oculto');
+        vistaLista.classList.add('oculto');
+    } else {
+        vistaCampo.classList.add('oculto');
+        vistaLista.classList.remove('oculto');
+        document.getElementById('lista-contenido').innerHTML = "<p style='text-align:center; padding: 20px;'>Vista de lista en desarrollo...</p>";
     }
 }
-
-window.onload = async () => {
-    try {
-        const response = await fetch('/jornada/actual');
-        const actual = await response.json();
-        let objetivo = actual - 1;
-        if (objetivo < 1) objetivo = 1;
-        document.getElementById("numJornada").value = objetivo;
-        cargarTodo();
-    } catch (e) {
-        console.error("Error al obtener jornada actual:", e);
-        cargarTodo();
-    }
-};

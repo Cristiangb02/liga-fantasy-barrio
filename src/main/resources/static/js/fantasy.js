@@ -746,7 +746,7 @@ function registrarActa() {
         goles: parseInt(document.getElementById('input-goles').value)||0,
         golesEncajados: parseInt(document.getElementById('input-encajados').value)||0,
         autogoles: parseInt(document.getElementById('input-autogoles').value)||0,
-        equipoColor: document.getElementById('select-equipo-color').value
+        colorEquipo: document.getElementById('select-equipo-color').value
     };
     post('/admin/registrar', datos);
     setTimeout(pintarSelectAdmin, 500);

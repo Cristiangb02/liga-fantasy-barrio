@@ -27,8 +27,12 @@ public class Noticia {
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
 
     public String getFechaBonita() {
-        if (fecha == null) return "";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm");
-        return fecha.format(formatter);
+        String resultado = null;
+        if (fecha == null) {
+            resultado = "";
+        }
+        DateTimeFormatter formateador = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm");
+        resultado = fecha.format(formateador);
+        return resultado;
     }
 }

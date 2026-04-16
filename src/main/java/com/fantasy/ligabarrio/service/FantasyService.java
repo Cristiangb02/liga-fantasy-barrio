@@ -68,10 +68,7 @@ public class FantasyService {
             LocalTime horaActual = ahora.toLocalTime();
             LocalTime horaApertura = LocalTime.of(10, 0);
 
-            if (jornadaResultado.getDiaBloqueo() != null &&
-                    hoy.isAfter(jornadaResultado.getDiaBloqueo()) &&
-                    horaActual.isAfter(horaApertura)) {
-
+            if ((jornadaResultado.getDiaBloqueo() != null) && (hoy.isAfter(jornadaResultado.getDiaBloqueo())) && (horaActual.isAfter(horaApertura))) {
                 jornadaResultado.setBloqueada(false);
                 jornadaResultado.setDiaBloqueo(null);
                 jornadaRepository.save(jornadaResultado);
@@ -84,12 +81,14 @@ public class FantasyService {
         return getJornadaActiva().getNumero();
     }
 
-    public String fmtDinero(int cantidad) {
+    public String formatearDinero(int cantidad) {
         return NumberFormat.getCurrencyInstance(Locale.of("es", "ES")).format(cantidad);
     }
 
     public int getPesoPosicion(String pos) {
-        if (pos == null) return 5;
+        if (pos == null) {
+            return 5; //Un peso mayor para después el orden
+        }
         switch(pos.toUpperCase()) {
             case "PORTERO": return 1;
             case "DEFENSA": return 2;
@@ -100,10 +99,14 @@ public class FantasyService {
     }
 
     public boolean isMercadoCerrado() {
+        boolean estaCerrado = false;
         LocalTime ahora = LocalTime.now(ZoneId.of("Europe/Madrid"));
         boolean cerradoNoche = ahora.isAfter(LocalTime.of(21, 30)) || ahora.equals(LocalTime.of(21, 30));
         boolean cerradoManana = ahora.isBefore(LocalTime.of(10, 0));
-        return cerradoNoche || cerradoManana;
+        if (cerradoNoche || cerradoManana) {
+            estaCerrado = true;
+        }
+        return estaCerrado;
     }
 
     public void cancelarOfertasPendientes(Jugador j) {
