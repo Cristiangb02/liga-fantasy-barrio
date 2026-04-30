@@ -79,6 +79,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Luis", "DEFENSA", 57, 6.19, "/images/luis.png"));
         lista.add(new Jugador("Mario", "DEFENSA", 59, 7.01, "/images/mario.png"));
         lista.add(new Jugador("Pablo", "DEFENSA", 26, 6.63, "/images/pablo.png"));
+        lista.add(new Jugador("Pablo M.", "DEFENSA", 21, 8, "/images/pabloM.png"));
         lista.add(new Jugador("Paco", "DEFENSA", 62, 7.11, "/images/paco.png"));
         lista.add(new Jugador("Primo", "DEFENSA", 46, 6.87, "/images/primo.png"));
         lista.add(new Jugador("Sebas", "DEFENSA", 33, 6.13, "/images/sebastian.png"));
@@ -106,6 +107,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Mario", "MEDIO", 59, 6.01, "/images/mario.png"));
         lista.add(new Jugador("Oswaldo", "MEDIO", 45, 8.19, "/images/oswi.png"));
         lista.add(new Jugador("Pablo", "MEDIO", 26, 8.16, "/images/pablo.png"));
+        lista.add(new Jugador("Pablo M.", "MEDIO", 21, 8, "/images/pabloM.png"));
         lista.add(new Jugador("Pepe", "MEDIO", 67, 6.97, "/images/pepe.png"));
         lista.add(new Jugador("Primo", "MEDIO", 46, 6.57, "/images/primo.png"));
         lista.add(new Jugador("Sebas", "MEDIO", 33, 8.13, "/images/sebastian.png"));
@@ -122,6 +124,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Jhona", "DELANTERO", 48, 6.16, "/images/jhona.png"));
         lista.add(new Jugador("Juan", "DELANTERO", 45, 5.97, "/images/juan.png"));
         lista.add(new Jugador("Juanlu", "DELANTERO", 56, 5.89, "/images/juanlu.png"));
+        lista.add(new Jugador("Pablo M.", "DELANTERO", 21, 8, "/images/pabloM.png"));
         lista.add(new Jugador("Pepe", "DELANTERO", 67, 7.02, "/images/pepe.png"));
         lista.add(new Jugador("Sebas", "DELANTERO", 33, 7.13, "/images/sebastian.png"));
         lista.add(new Jugador("Sergio", "DELANTERO", 34, 6.88, "/images/sergio.png"));

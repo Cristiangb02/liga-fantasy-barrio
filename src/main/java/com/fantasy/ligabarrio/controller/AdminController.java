@@ -82,6 +82,52 @@ public class AdminController {
                 .collect(Collectors.toList());
     }
 
+    // --- BOTÓN DEL PÁNICO PARA BORRAR CLONES ---
+    @GetMapping("/limpiar-clones/{numJornada}")
+    public String limpiarClonesJornada(@PathVariable int numJornada) {
+        Jornada jornada = jornadaRepository.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
+
+        // Cogemos todas las actuaciones de esa jornada
+        List<Actuacion> todas = actuacionRepository.findAll().stream()
+                .filter(a -> a.getJornada().getId().equals(jornada.getId()))
+                .collect(Collectors.toList());
+
+        // Las agrupamos por el ID del jugador
+        Map<Long, List<Actuacion>> porJugador = todas.stream().collect(Collectors.groupingBy(a -> a.getJugador().getId()));
+        int borrados = 0;
+
+        for (List<Actuacion> lista : porJugador.values()) {
+            // Si hay más de 1 actuación para el mismo jugador... ¡Es un clon!
+            if (lista.size() > 1) {
+                // Ordenamos para mantener el que tenga color guardado
+                lista.sort((a, b) -> {
+                    if (a.getColorEquipo() != null && b.getColorEquipo() == null) return -1;
+                    if (b.getColorEquipo() != null && a.getColorEquipo() == null) return 1;
+                    return b.getId().compareTo(a.getId());
+                });
+
+                // Dejamos intacto el primero (el original) y borramos los demás (los clones)
+                for (int i = 1; i < lista.size(); i++) {
+                    Actuacion clon = lista.get(i);
+                    Jugador j = clon.getJugador();
+
+                    int puntosSobrantes = clon.getPuntosTotales();
+                    int valorSobrante = puntosSobrantes * 100_000;
+
+                    // Le quitamos los puntos y el valor extra que le dio el clon
+                    j.setPuntosAcumulados(j.getPuntosAcumulados() - puntosSobrantes);
+                    j.setValor(j.getValor() - valorSobrante);
+                    j.setClausula(j.getClausula() - valorSobrante);
+
+                    jugadorRepository.save(j);
+                    actuacionRepository.delete(clon);
+                    borrados++;
+                }
+            }
+        }
+        return "🧹 Limpieza completada. Se eliminaron " + borrados + " clones y se ajustaron sus puntos generales.";
+    }
+
     // --- POST ---
     @PostMapping("/toggle-bloqueo")
     public String toggleBloqueo() {
@@ -286,7 +332,17 @@ public class AdminController {
         Jugador jugador = jugadorRepository.findById(idJugador).orElseThrow();
         Jornada jornada = jornadaRepository.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
 
-        Actuacion acta = new Actuacion(jugador, jornada);
+        List<Actuacion> actas = actuacionRepository.findAll().stream()
+                .filter(a -> a.getJugador().getId().equals(idJugador) && a.getJornada().getId().equals(jornada.getId()))
+                .collect(Collectors.toList());
+
+        Actuacion acta;
+        if (!actas.isEmpty()) {
+            acta = actas.get(0); // Si ya existe, cogemos esa para actualizarla
+        } else {
+            acta = new Actuacion(jugador, jornada); // Si no existe, entonces sí creamos una nueva
+        }
+
         acta.setPuntosTotales(puntos);
         acta.setJugado(true);
         acta.setColorEquipo(color);
@@ -300,7 +356,8 @@ public class AdminController {
             jugador.setClausula(jugador.getValor());
         }
         jugadorRepository.save(jugador);
-        return "✅ " + puntos + " puntos añadidos a " + jugador.getNombre() + " en la jornada " + numJornada + ".";
+
+        return "✅ " + puntos + " puntos guardados a " + jugador.getNombre() + " en la jornada " + numJornada + ".";
     }
 
     @PostMapping("/modificar-puntos-extra/{idUsuario}/{puntos}")
