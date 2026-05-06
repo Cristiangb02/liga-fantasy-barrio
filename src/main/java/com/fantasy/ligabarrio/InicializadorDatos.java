@@ -90,6 +90,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Alejandro", "MEDIO", 32, 8.16, "/images/alejandro.png"));
         lista.add(new Jugador("Alejandro G.", "MEDIO", 30, 8.52, "/images/alejandrogarrocho.png"));
         lista.add(new Jugador("Álvaro", "MEDIO", 33, 7.52, "/images/alvaro.png"));
+        lista.add(new Jugador("Álvaro O.", "MEDIO", 25, 7.5, "/images/alvaroO.png"));
         lista.add(new Jugador("Cardenas", "MEDIO", 45, 6.8, "/images/cardenas.png"));
         lista.add(new Jugador("Chico", "MEDIO", 46, 5.29, "/images/chico.png"));
         lista.add(new Jugador("Conce", "MEDIO", 29, 7.13, "/images/conce.png"));
@@ -116,6 +117,7 @@ public class InicializadorDatos implements CommandLineRunner {
 
         //DELANTEROS
         lista.add(new Jugador("Alejandro", "DELANTERO", 32, 6.1, "/images/alejandro.png"));
+        lista.add(new Jugador("Álvaro O.", "DELANTERO", 25, 7, "/images/alvaroO.png"));
         lista.add(new Jugador("Cristian", "DELANTERO", 24, 7.96, "/images/cristian.png"));
         lista.add(new Jugador("David", "DELANTERO", 36, 6.19, "/images/david.png"));
         lista.add(new Jugador("Felipe", "DELANTERO", 31, 7.79, "/images/felipe.png"));
