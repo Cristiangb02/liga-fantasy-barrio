@@ -193,4 +193,3 @@ function alternarVista() {
         vistaLista.classList.remove('oculto');
     }
 }
-}
