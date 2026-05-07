@@ -37,6 +37,7 @@ function cargarTodo() {
     areaA.innerHTML = "";
     areaB.innerHTML = "";
 
+    // 1. Cargar datos del campo de fútbol
     fetch(`/jornada/${numeroJornada}/resumen-partido`)
         .then(res => res.json())
         .then(data => {
@@ -57,6 +58,37 @@ function cargarTodo() {
             console.error("Error al cargar la jornada:", err);
             marcador.innerText = "Error de conexión con el servidor";
         });
+
+    // 2. Cargar datos de la lista de mánagers
+    fetch(`/jornada/${numeroJornada}/resumen-managers`)
+        .then(res => res.json())
+        .then(managers => {
+            const listaDiv = document.getElementById('lista-contenido');
+            if (!managers || managers.length === 0) {
+                listaDiv.innerHTML = '<p style="text-align:center; padding:20px;">No hay datos de mánagers.</p>';
+                return;
+            }
+
+            listaDiv.innerHTML = managers.map(m => `
+                <div class="manager-card">
+                    <div class="manager-header">
+                        <span>${m.manager}</span>
+                        <span class="pts-badge">${m.puntosTotal} pts</span>
+                    </div>
+                    <div>
+                        ${m.jugadores.map(j => {
+                            let colorPuntos = j.puntos > 0 ? '#2e7d32' : (j.puntos < 0 ? '#d32f2f' : '#f57c00');
+                            return `
+                            <div class="player-row">
+                                <span>${j.nombre} <small style="color:#666;">(${j.posicion})</small></span>
+                                <strong style="color:${colorPuntos};">${j.puntos}</strong>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+        })
+        .catch(err => console.error("Error cargando vista lista:", err));
 }
 
 function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
@@ -159,6 +191,6 @@ function alternarVista() {
     } else {
         vistaCampo.classList.add('oculto');
         vistaLista.classList.remove('oculto');
-        document.getElementById('lista-contenido').innerHTML = "<p style='text-align:center; padding: 20px;'>Vista de lista en desarrollo...</p>";
     }
+}
 }
