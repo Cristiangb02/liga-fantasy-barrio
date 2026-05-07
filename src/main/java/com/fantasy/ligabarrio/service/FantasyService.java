@@ -46,7 +46,7 @@ public class FantasyService {
 
     public Jornada getJornadaActiva() {
         List<Jornada> jornadas = jornadaRepository.findAll();
-        Jornada jornadaResultado;
+        Jornada jornadaResultado; //Res
 
         if (jornadas.isEmpty()) {
             Jornada j1 = new Jornada();
