@@ -314,10 +314,19 @@ public class AdminController {
                 j.setPropietario(null);
                 jR.save(j);
             }
+
             aR.deleteAll(aR.findByJugador(j));
             oR.deleteAll(oR.findByJugador(j));
-            jR.delete(j);
 
+            List<Equipo> todosEquipos = er.findAll();
+            for (Equipo equipo : todosEquipos) {
+                if (equipo.getJugadoresAlineados().contains(j)) {
+                    equipo.getJugadoresAlineados().remove(j);
+                    er.save(equipo);
+                }
+            }
+
+            jR.delete(j);
             msj = "✅ El jugador " + j.getNombre() + "(" + j.getPosicion() + ") ha sido eliminado.";
         }
         return msj;
@@ -329,21 +338,27 @@ public class AdminController {
         Jugador jug = jR.findById(idJugador).orElseThrow();
         Jornada jornada = joR.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
 
-        Optional<Actuacion> actaOpt = aR.findByJugadorAndJornada(jug, jornada);
-        if (actaOpt.isEmpty())  {
+        List<Actuacion> actas = aR.findAll().stream()
+                .filter(a -> a.getJugador().getId().equals(idJugador) && a.getJornada().getId().equals(jornada.getId()))
+                .collect(Collectors.toList());
+
+        if (actas.isEmpty())  {
             msj = "❌ Este jugador no tiene puntos registrados en la jornada " + numJornada + ".";
         } else {
-            Actuacion acta = actaOpt.get();
-            int puntosRestar = acta.getPuntosTotales();
-            int valorRestar = puntosRestar * 100_000;
+            int clonesBorrados = 0;
+            for (Actuacion acta : actas) {
+                int puntosRestar = acta.getPuntosTotales();
+                int valorRestar = puntosRestar * 100_000;
 
-            jug.setPuntosAcumulados(jug.getPuntosAcumulados() - puntosRestar);
-            jug.setValor(jug.getValor() - valorRestar);
-            jug.setClausula(jug.getClausula() - valorRestar);
+                jug.setPuntosAcumulados(jug.getPuntosAcumulados() - puntosRestar);
+                jug.setValor(jug.getValor() - valorRestar);
+                jug.setClausula(jug.getClausula() - valorRestar);
 
-            aR.delete(acta);
+                aR.delete(acta);
+                clonesBorrados++;
+            }
             jR.save(jug);
-            msj = "✅ Los puntos de " + jug.getNombre() + "(" + jug.getPosicion() + ") han sido eliminados de la jornada " + numJornada + ".";
+            msj = "✅ Se eliminaron " + clonesBorrados + " registros de " + jug.getNombre() + "(" + jug.getPosicion() + ") en la jornada " + numJornada + ".";
         }
         return msj;
     }

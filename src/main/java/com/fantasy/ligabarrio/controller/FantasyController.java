@@ -209,15 +209,35 @@ public class FantasyController {
     @GetMapping("/historial/{usuarioId}")
     public List<Map<String, Object>> getHistorialUsuario(@PathVariable Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+
         return equipoRepository.findByUsuario(usuario).stream()
                 .sorted((e1, e2) -> Integer.compare(e2.getJornada().getNumero(), e1.getJornada().getNumero()))
                 .map(e -> {
                     List<Map<String, Object>> detalles = new ArrayList<>();
-                    for (Jugador j : e.getJugadoresAlineados()) {
-                        int p = actuacionRepository.findByJugadorAndJornada(j, e.getJornada()).map(Actuacion::getPuntosTotales).orElse(0);
-                        detalles.add(Map.of("nombre", j.getNombre(), "posicion", j.getPosicion(), "puntos", p));
+
+                    if (e.getJugadoresAlineados() != null) {
+                        for (Jugador j : e.getJugadoresAlineados()) {
+                            // SOLUCIÓN: Comprobamos que el jugador no sea nulo (es decir, que no haya sido borrado)
+                            if (j != null) {
+                                int p = actuacionRepository.findByJugadorAndJornada(j, e.getJornada())
+                                        .map(Actuacion::getPuntosTotales).orElse(0);
+
+                                // Usamos HashMap en lugar de Map.of() porque es más seguro contra posibles fallos de datos
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("nombre", j.getNombre() != null ? j.getNombre() : "Jugador Eliminado");
+                                map.put("posicion", j.getPosicion() != null ? j.getPosicion() : "MED");
+                                map.put("puntos", p);
+                                detalles.add(map);
+                            }
+                        }
                     }
-                    return Map.<String, Object>of("jornadaNumero", e.getJornada().getNumero(), "puntosTotal", e.getPuntosTotalesJornada(), "jugadores", detalles);
+
+                    Map<String, Object> resultado = new HashMap<>();
+                    resultado.put("jornadaNumero", e.getJornada() != null ? e.getJornada().getNumero() : 0);
+                    resultado.put("puntosTotal", e.getPuntosTotalesJornada());
+                    resultado.put("jugadores", detalles);
+
+                    return resultado;
                 }).collect(Collectors.toList());
     }
 

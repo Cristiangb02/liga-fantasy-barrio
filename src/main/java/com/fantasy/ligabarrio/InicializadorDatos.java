@@ -62,7 +62,7 @@ public class InicializadorDatos implements CommandLineRunner {
         lista.add(new Jugador("Alejandro G.", "DEFENSA", 30, 6.58, "/images/alejandrogarrocho.png"));
         lista.add(new Jugador("Álvaro", "DEFENSA", 33, 6.08, "/images/alvaro.png"));
         lista.add(new Jugador("Andrés", "DEFENSA", 52, 4.72, "/images/andres.png"));
-        lista.add(new Jugador("Cárdenas", "DEFENSA", 45, 6.20, "/images/cardenas.png"));
+        lista.add(new Jugador("Cardenas", "DEFENSA", 45, 6.20, "/images/cardenas.png"));
         lista.add(new Jugador("Chico", "DEFENSA", 46, 5.79, "/images/chico.png"));
         lista.add(new Jugador("Conce", "DEFENSA", 29, 5.84, "/images/conce.png"));
         lista.add(new Jugador("Cristian", "DEFENSA", 24, 7.08, "/images/cristian.png"));
