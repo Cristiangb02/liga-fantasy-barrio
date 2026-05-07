@@ -11,12 +11,13 @@ public class CalculadoraPuntosService {
     private final Random random = new Random();
 
     public int calcularPuntos(Actuacion a) {
+        int puntos = 1; //Por jugar el partido, +1
         //Si no ha jugado, no suma
+
         if (!a.isJugado()) {
-            return 0;
+             puntos = 0;
         }
 
-        int puntos = 1; //Por jugar el partido, +1
         String pos = a.getJugador().getPosicion().toUpperCase();
 
         if (a.isVictoria()) { //VICTORIA --> +2 ASEGURADOS

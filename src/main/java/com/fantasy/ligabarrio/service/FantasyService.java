@@ -54,7 +54,10 @@ public class FantasyService {
             j1.setBloqueada(false);
             jornadaResultado = jornadaRepository.save(j1);
         } else {
-            Jornada activa = jornadas.get(jornadas.size() - 1);
+            jornadas.sort(java.util.Comparator.comparing(Jornada::getNumero));
+
+             Jornada activa = jornadas.get(jornadas.size() - 1);
+
             if (activa.getNumero() <= 0) {
                 activa.setNumero(1);
                 jornadaRepository.save(activa);
