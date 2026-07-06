@@ -151,6 +151,7 @@ window.onload = function() {
     iniciarContadorMercado();
     iniciarRelojesBlindaje();
     pingOnline();
+    checkMantenimiento();
 };
 
 function iniciarContadorMercado() {
@@ -1054,13 +1055,22 @@ function cerrarModalPerfil() {
 function checkMantenimiento() {
     let resultado = true;
 
-    // El "?t=" evita el caché del navegador obligando a descargar el estado real
+    // El "?t=" evita el caché del navegador
     fetch('/estado-mantenimiento?t=' + new Date().getTime())
-    .then(r => r.json())
-    .then(isMantenimiento => {
+    .then(r => r.text()) // Leemos como texto puro para evitar el fallo de JSON
+    .then(texto => {
+        let isMantenimiento = false;
+
+        if (texto === 'true') {
+            isMantenimiento = true;
+        } else {
+            isMantenimiento = false;
+        }
+
         const pantalla = document.getElementById('pantalla-mantenimiento');
         const btnAdmin = document.getElementById('btn-mantenimiento');
 
+        // Control del botón de Admin
         if (esAdmin) {
             if (btnAdmin) {
                 if (isMantenimiento) {
@@ -1073,23 +1083,36 @@ function checkMantenimiento() {
                     btnAdmin.style.color = "white";
                 }
             } else {
-                // No hay botón en esta pantalla
+                // No hay botón
             }
         } else {
-            // No es admin, no actualizamos botón
+            // No es admin
         }
 
+        // Control de la pantalla para usuarios normales
         if (isMantenimiento) {
             if (!esAdmin) {
-                pantalla.classList.remove('oculto');
-                document.body.style.overflow = 'hidden';
+                if (pantalla) {
+                    pantalla.classList.remove('oculto');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    // No hay pantalla en el HTML
+                }
             } else {
-                pantalla.classList.add('oculto');
-                document.body.style.overflow = 'auto';
+                if (pantalla) {
+                    pantalla.classList.add('oculto');
+                    document.body.style.overflow = 'auto';
+                } else {
+                    // No hay pantalla en el HTML
+                }
             }
         } else {
-            pantalla.classList.add('oculto');
-            document.body.style.overflow = 'auto';
+            if (pantalla) {
+                pantalla.classList.add('oculto');
+                document.body.style.overflow = 'auto';
+            } else {
+                // No hay pantalla en el HTML
+            }
         }
     })
     .catch(err => {
@@ -1103,8 +1126,8 @@ function toggleMantenimiento() {
     let resultado = true;
 
     post('/admin/toggle-mantenimiento', {}, 0);
-    // Le damos 500ms al backend para procesar antes de volver a preguntar
-    setTimeout(checkMantenimiento, 500);
+    // Le damos 1000ms a Render para que le dé tiempo de sobra a actualizar la variable
+    setTimeout(checkMantenimiento, 1000);
 
     return resultado;
 }
