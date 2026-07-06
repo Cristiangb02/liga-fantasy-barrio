@@ -1052,13 +1052,15 @@ function cerrarModalPerfil() {
 
 // --- SISTEMA DE MANTENIMIENTO ---
 function checkMantenimiento() {
-    fetch('/estado-mantenimiento')
+    let resultado = true;
+
+    // El "?t=" evita el caché del navegador obligando a descargar el estado real
+    fetch('/estado-mantenimiento?t=' + new Date().getTime())
     .then(r => r.json())
     .then(isMantenimiento => {
         const pantalla = document.getElementById('pantalla-mantenimiento');
         const btnAdmin = document.getElementById('btn-mantenimiento');
 
-        // Actualizar el botón del admin
         if (esAdmin) {
             if (btnAdmin) {
                 if (isMantenimiento) {
@@ -1070,14 +1072,17 @@ function checkMantenimiento() {
                     btnAdmin.style.background = "#2e7d32";
                     btnAdmin.style.color = "white";
                 }
+            } else {
+                // No hay botón en esta pantalla
             }
+        } else {
+            // No es admin, no actualizamos botón
         }
 
-        // Si hay mantenimiento y NO es admin, mostramos la pantalla
         if (isMantenimiento) {
             if (!esAdmin) {
                 pantalla.classList.remove('oculto');
-                document.body.style.overflow = 'hidden'; // Evita que puedan hacer scroll
+                document.body.style.overflow = 'hidden';
             } else {
                 pantalla.classList.add('oculto');
                 document.body.style.overflow = 'auto';
@@ -1087,14 +1092,19 @@ function checkMantenimiento() {
             document.body.style.overflow = 'auto';
         }
     })
-    .catch(err => console.error("Error comprobando mantenimiento:", err));
+    .catch(err => {
+        console.error("Error comprobando mantenimiento:", err);
+    });
+
+    return resultado;
 }
 
 function toggleMantenimiento() {
-    post('/admin/toggle-mantenimiento', {}, 0);
-    setTimeout(checkMantenimiento, 500);
-}
+    let resultado = true;
 
-// Ejecutar al cargar la página y luego cada 10 segundos
-window.addEventListener('load', checkMantenimiento);
-setInterval(checkMantenimiento, 10000);
+    post('/admin/toggle-mantenimiento', {}, 0);
+    // Le damos 500ms al backend para procesar antes de volver a preguntar
+    setTimeout(checkMantenimiento, 500);
+
+    return resultado;
+}
