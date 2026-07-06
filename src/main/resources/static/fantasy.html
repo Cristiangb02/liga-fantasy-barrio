@@ -140,11 +140,16 @@
     <h3 style="color:#c62828">Panel Admin</h3>
 
     <div style="background:#fff9c4; padding:15px; border-radius:10px; border:2px dashed #fbc02d; margin-bottom: 20px; text-align:center;">
-        <h4 style="color:#f57f17; margin-top:0;">MODO MANTENIMIENTO</h4>
-        <p style="font-size:0.85em; color:#795548;">Bloquea el acceso a todos los usuarios excepto el admin.</p>
-        <button id="btn-mantenimiento" onclick="toggleMantenimiento()" style="width:100%; padding:15px; border:none; border-radius:8px; font-weight:900; font-size:1.1em; cursor:pointer; transition:0.3s;">
-            CARGANDO ESTADO...
+        <h4 style="color:#f57f17; margin-top:0;">🚧 MODO MANTENIMIENTO</h4>
+        <p style="font-size:0.85em; color:#795548;">Bloquea el acceso a todos los usuarios (excepto a ti) mientras haces cambios en el código.</p>
+
+        <button id="btn-mantenimiento" onclick="toggleMantenimiento()" style="width:100%; padding:15px; border:none; border-radius:8px; font-weight:900; font-size:1.1em; cursor:pointer; transition:0.3s; background:#37474f; color:white;">
+            CAMBIAR ESTADO
         </button>
+
+        <div id="indicador-mantenimiento" style="margin-top: 15px; font-weight: bold; font-size: 1.2em;">
+            Cargando estado...
+        </div>
     </div>
 
     <div style="background:#263238; padding:15px; border-radius:10px; border:2px solid #546e7a; margin-bottom: 20px; text-align:center;">
@@ -373,7 +378,6 @@
 </div>
 
 <script src="js/utiles.js"></script>
-<script src="js/fantasy.js"></script>
-
+<script src="js/fantasy.js?v=2"></script>
 </body>
 </html>
