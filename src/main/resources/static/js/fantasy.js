@@ -1059,10 +1059,46 @@ function checkMantenimiento() {
     let resultado = true;
 
     fetch('/estado-mantenimiento?t=' + new Date().getTime())
-    .then(r => r.json())
-    .then(isMantenimiento => {
-        const pantalla = document.getElementById('pantalla-mantenimiento');
-        const indicador = document.getElementById('indicador-mantenimiento');
+    .then(r => r.text())
+    .then(texto => {
+        let isMantenimiento = false;
+        let textoLimpio = texto.trim();
+
+        if (textoLimpio === "true") {
+            isMantenimiento = true;
+        } else {
+            isMantenimiento = false;
+        }
+
+        let pantalla = document.getElementById('pantalla-mantenimiento');
+
+        // Si la pantalla no existe (porque el HTML del móvil de tu hermana está en caché), la inyectamos a la fuerza
+        if (!pantalla) {
+            pantalla = document.createElement('div');
+            pantalla.id = 'pantalla-mantenimiento';
+            pantalla.style.position = 'fixed';
+            pantalla.style.top = '0';
+            pantalla.style.left = '0';
+            pantalla.style.width = '100%';
+            pantalla.style.height = '100%';
+            pantalla.style.background = '#1a237e';
+            pantalla.style.zIndex = '99999';
+            pantalla.style.display = 'none';
+            pantalla.style.flexDirection = 'column';
+            pantalla.style.alignItems = 'center';
+            pantalla.style.justifyContent = 'center';
+            pantalla.style.color = 'white';
+            pantalla.style.textAlign = 'center';
+            pantalla.style.padding = '20px';
+
+            pantalla.innerHTML = '<h1 style="font-size:4rem; margin-bottom:10px;">🚧</h1><h2>App en Mantenimiento</h2><p>Estoy realizando mejoras y correcciones en la liga.<br>Vuelve a intentarlo en un ratito.</p>';
+
+            document.body.appendChild(pantalla);
+        } else {
+            // La pantalla ya existe, no hacemos nada
+        }
+
+        let indicador = document.getElementById('indicador-mantenimiento');
 
         if (esAdmin) {
             if (indicador) {
@@ -1074,22 +1110,25 @@ function checkMantenimiento() {
                     indicador.style.color = "#d32f2f";
                 }
             } else {
-                // No hay indicador en esta vista
+                 // Bloque else vacío
             }
         } else {
-            // El usuario no es admin
+             // Bloque else vacío
         }
 
         if (isMantenimiento) {
             if (!esAdmin) {
                 pantalla.classList.remove('oculto');
+                pantalla.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             } else {
                 pantalla.classList.add('oculto');
+                pantalla.style.display = 'none';
                 document.body.style.overflow = 'auto';
             }
         } else {
             pantalla.classList.add('oculto');
+            pantalla.style.display = 'none';
             document.body.style.overflow = 'auto';
         }
     })
@@ -1103,8 +1142,21 @@ function checkMantenimiento() {
 function toggleMantenimiento() {
     let resultado = true;
 
-    post('/admin/toggle-mantenimiento', {}, 0);
-    setTimeout(checkMantenimiento, 1000);
+    // Hacemos el fetch manual en lugar de usar post() para controlar exactamente el orden
+    fetch('/admin/toggle-mantenimiento', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'}
+    })
+    .then(r => r.text())
+    .then(msg => {
+        mostrarModal("Mantenimiento", msg, 'confirm', () => {
+            // SOLO comprueba el estado una vez que hayas cerrado el modal
+            checkMantenimiento();
+        });
+    })
+    .catch(err => {
+        console.error("Error al cambiar estado:", err);
+    });
 
     return resultado;
 }
