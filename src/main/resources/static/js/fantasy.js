@@ -151,7 +151,7 @@ window.onload = function() {
     iniciarContadorMercado();
     iniciarRelojesBlindaje();
     pingOnline();
-    checkMantenimiento();
+    checkMantenimiento(); //Nuevo
 };
 
 function iniciarContadorMercado() {
