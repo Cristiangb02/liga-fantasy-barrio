@@ -21,6 +21,15 @@ public class FantasyService {
     private final JornadaRepository jornadaRepository;
     private final OfertaRepository ofertaRepository;
     private long desplazamiento = 0;
+    private boolean mantenimientoActivo = false;
+
+    public boolean isMantenimientoActivo() {
+        return mantenimientoActivo;
+    }
+
+    public void setMantenimientoActivo(boolean mantenimientoActivo) {
+        this.mantenimientoActivo = mantenimientoActivo;
+    }
 
     public FantasyService(JornadaRepository jornadaRepository, OfertaRepository ofertaRepository) {
         this.jornadaRepository = jornadaRepository;

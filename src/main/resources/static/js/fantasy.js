@@ -739,7 +739,6 @@ function registrarActa() {
     const resultado = document.getElementById('select-resultado').value;
     const datos = {
         idJugador: parseInt(document.getElementById('admin-jugador').value),
-        idJornada: 1,
         jugado: document.getElementById('check-jugado').checked,
         victoria: resultado === 'victoria',
         derrota: resultado === 'derrota',
@@ -1050,3 +1049,52 @@ function verMiFichaPerfil() {
 function cerrarModalPerfil() {
     document.getElementById('modal-perfil-wrapper').classList.add('oculto');
 }
+
+// --- SISTEMA DE MANTENIMIENTO ---
+function checkMantenimiento() {
+    fetch('/estado-mantenimiento')
+    .then(r => r.json())
+    .then(isMantenimiento => {
+        const pantalla = document.getElementById('pantalla-mantenimiento');
+        const btnAdmin = document.getElementById('btn-mantenimiento');
+
+        // Actualizar el botón del admin
+        if (esAdmin) {
+            if (btnAdmin) {
+                if (isMantenimiento) {
+                    btnAdmin.innerText = "🚧 DESACTIVAR MANTENIMIENTO";
+                    btnAdmin.style.background = "#d32f2f";
+                    btnAdmin.style.color = "white";
+                } else {
+                    btnAdmin.innerText = "✅ ACTIVAR MANTENIMIENTO";
+                    btnAdmin.style.background = "#2e7d32";
+                    btnAdmin.style.color = "white";
+                }
+            }
+        }
+
+        // Si hay mantenimiento y NO es admin, mostramos la pantalla
+        if (isMantenimiento) {
+            if (!esAdmin) {
+                pantalla.classList.remove('oculto');
+                document.body.style.overflow = 'hidden'; // Evita que puedan hacer scroll
+            } else {
+                pantalla.classList.add('oculto');
+                document.body.style.overflow = 'auto';
+            }
+        } else {
+            pantalla.classList.add('oculto');
+            document.body.style.overflow = 'auto';
+        }
+    })
+    .catch(err => console.error("Error comprobando mantenimiento:", err));
+}
+
+function toggleMantenimiento() {
+    post('/admin/toggle-mantenimiento', {}, 0);
+    setTimeout(checkMantenimiento, 500);
+}
+
+// Ejecutar al cargar la página y luego cada 10 segundos
+window.addEventListener('load', checkMantenimiento);
+setInterval(checkMantenimiento, 10000);

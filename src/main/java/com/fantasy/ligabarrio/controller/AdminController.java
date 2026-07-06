@@ -79,7 +79,7 @@ public class AdminController {
     //BOTÓN PARA BORRAR CLONES
     @GetMapping("/limpiar-clones/{numJornada}")
     public String limpiarClonesJornada(@PathVariable int numJornada) {
-        String msj = "";
+        String msj;
         Jornada jornada = joR.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
 
         List<Actuacion> todas = aR.findAll().stream().filter(a -> a.getJornada().getId().equals(jornada.getId()))
@@ -119,6 +119,13 @@ public class AdminController {
         return msj;
     }
 
+    @GetMapping("/estado-mantenimiento")
+    public boolean getEstadoMantenimiento() {
+        boolean resultado;
+        resultado = fS.isMantenimientoActivo();
+        return resultado;
+    }
+
     //POST-MAPPING
     @PostMapping("/toggle-bloqueo")
     public String toggleBloqueo() {
@@ -134,6 +141,22 @@ public class AdminController {
         return "Bloqueo de acciones " + (actual.isBloqueada() ? "ACTIVADO 🔒" : "DESACTIVADO 🔓");
     }
 
+    @PostMapping("/toggle-mantenimiento")
+    public String toggleMantenimiento() {
+        String msj = "";
+        boolean estadoActual = fS.isMantenimientoActivo();
+
+        fS.setMantenimientoActivo(!estadoActual);
+
+        if (!estadoActual) {
+            msj = "Mantenimiento ACTIVO";
+        } else {
+            msj = "Mantenimiento DESACTIVADO";
+        }
+
+        return msj;
+    }
+
     @PostMapping("/aprobar/{idUsuario}")
     public String aprobarUsuario(@PathVariable Long idUsuario) {
         Usuario u = uR.findById(idUsuario).orElseThrow();
@@ -146,7 +169,7 @@ public class AdminController {
     @PostMapping("/editar-usuario/{idUsuario}")
     public String editarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
         String nuevoNombre = datos.get("nombre");
-        String msj = "";
+        String msj;
         Usuario existente = uR.findByNombre(nuevoNombre);
 
         if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
@@ -165,7 +188,7 @@ public class AdminController {
 
     @PostMapping("/registrar")
     public String registrarPartido(@RequestBody DatosPartido datos) {
-        String msj = "";
+        String msj;
         Jugador jugador = jR.findById(datos.idJugador).orElseThrow();
         Jornada jornada = fS.getJornadaActiva();
         Actuacion actuacion = aR.findByJugadorAndJornada(jugador, jornada).orElse(new Actuacion(jugador, jornada));
@@ -197,7 +220,7 @@ public class AdminController {
 
     @PostMapping("/cerrar-jornada")
     public String cerrarJornada() {
-        String msj = "";
+        String msj;
         Jornada actual = fS.getJornadaActiva();
         List<Equipo> equipos = er.findByJornada(actual);
         StringBuilder res = new StringBuilder();
@@ -232,7 +255,7 @@ public class AdminController {
 
     @PostMapping("/reset-mercado")
     public String resetMercado() {
-        String msj = "";
+        String msj;
         fS.incrementarDesplazamiento();
         msj =  "✅ Mercado renovado con éxito.";
         return msj;
@@ -240,7 +263,7 @@ public class AdminController {
 
     @PostMapping("/reset-liga")
     public String resetearLiga() {
-        String msj = "";
+        String msj;
         List<Jugador> jugadores = jR.findAll();
         for (Jugador j : jugadores) {
             j.setPropietario(null);
@@ -278,7 +301,7 @@ public class AdminController {
 
     @PostMapping("/reset-puntos/{idJugador}")
     public String resetearPuntosJugador(@PathVariable Long idJugador) {
-        String msj = "";
+        String msj;
         Jugador jugador = jR.findById(idJugador).orElseThrow();
         Jornada jornada = fS.getJornadaActiva();
         Optional<Actuacion> actaOpt = aR.findByJugadorAndJornada(jugador, jornada);
@@ -304,7 +327,7 @@ public class AdminController {
 
     @PostMapping("/eliminar-jugador/{id}")
     public String eliminarJugador(@PathVariable Long id) {
-        String msj = "";
+        String msj;
         Optional<Jugador> jOpt = jR.findById(id);
         if (jOpt.isEmpty()) {
             msj = "❌ Error: El jugador no existe.";
@@ -334,7 +357,7 @@ public class AdminController {
 
     @PostMapping("/reset-puntos-jornada/{idJugador}/{numJornada}")
     public String resetPuntosJornada(@PathVariable Long idJugador, @PathVariable int numJornada) {
-        String msj = "";
+        String msj;
         Jugador jug = jR.findById(idJugador).orElseThrow();
         Jornada jornada = joR.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
 
@@ -365,7 +388,7 @@ public class AdminController {
 
     @PostMapping("/add-puntos-jornada/{idJugador}/{numJornada}/{puntos}/{color}")
     public String addPuntosJornada(@PathVariable Long idJugador, @PathVariable int numJornada, @PathVariable int puntos, @PathVariable String color) {
-        String msj = "";
+        String msj;
         Jugador jugador = jR.findById(idJugador).orElseThrow();
         Jornada jornada = joR.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
 
@@ -400,7 +423,7 @@ public class AdminController {
 
     @PostMapping("/modificar-puntos-extra/{idUsuario}/{puntos}")
     public String modificarPuntosExtra(@PathVariable Long idUsuario, @PathVariable int puntos) {
-        String msj = "";
+        String msj;
         Usuario u = uR.findById(idUsuario).orElseThrow();
         u.setPuntosExtra(u.getPuntosExtra() + puntos);
         uR.save(u);
@@ -417,7 +440,7 @@ public class AdminController {
 
     @PostMapping("/cambiar-estado/{idJugador}/{nuevoEstado}")
     public String cambiarEstadoJugador(@PathVariable Long idJugador, @PathVariable String nuevoEstado) {
-        String msj = "";
+        String msj;
         Jugador j = jR.findById(idJugador).orElseThrow();
 
         String estadoLimpio = nuevoEstado.replace("-", " ");
@@ -430,7 +453,7 @@ public class AdminController {
 
     @PostMapping("/actualizar-imagen/{idJugador}")
     public String actualizarImagen(@PathVariable Long idJugador, @RequestBody Map<String, String> datos) {
-        String msj = "";
+        String msj;
         String nuevaUrl = datos.get("urlImagen");
         if (nuevaUrl == null || nuevaUrl.trim().isEmpty()) {
             msj = "❌ Error: La ruta de la imagen no puede estar vacía.";
@@ -445,7 +468,7 @@ public class AdminController {
 
     @PostMapping("/actualizar-avatar/{idUsuario}")
     public String actualizarAvatarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
-        String msj = "";
+        String msj;
         String nuevaUrl = datos.get("urlImagen");
         if (nuevaUrl == null || nuevaUrl.trim().isEmpty()) {
             msj = "❌ Error. La ruta de la imagen no puede estar vacía.";
@@ -463,9 +486,15 @@ public class AdminController {
     public String modificarSaldo(@PathVariable Long idUsuario, @PathVariable int cantidad) {
         String msj = "";
         if (cantidad == 0) return "❌ La cantidad no puede ser cero.";
+        String accion;
 
-        String accion = cantidad > 0 ? "ingresado" : "retirado";
-        //Si el ID es 0, es para a TODOS los mánagers
+        if (cantidad > 0) {
+            accion = "ingresado";
+        } else {
+            accion = "retirado";
+        }
+
+        //Si el ID es 0, es para TODOS los mánagers
         if (idUsuario == 0L) {
             List<Usuario> usuarios = uR.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList());
             for (Usuario u : usuarios) {
@@ -485,7 +514,7 @@ public class AdminController {
     //DELETE-MAPPING
     @DeleteMapping("/rechazar/{idUsuario}")
     public String rechazarUsuario(@PathVariable Long idUsuario) {
-        String msj = "";
+        String msj;
         uR.deleteById(idUsuario);
         msj = "Solicitud rechazada.";
         return msj;

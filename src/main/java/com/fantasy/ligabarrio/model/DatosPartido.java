@@ -2,7 +2,6 @@
 
     public class DatosPartido {
         public Long idJugador;
-        public Long idJornada;
         public boolean jugado;
         public boolean victoria;
         public boolean derrota;
