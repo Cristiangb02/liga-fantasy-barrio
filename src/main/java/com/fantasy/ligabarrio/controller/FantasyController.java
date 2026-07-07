@@ -45,6 +45,12 @@ public class FantasyController {
         return fantasyService.getNumeroJornadaReal();
     }
 
+    @GetMapping("/estado-mantenimiento")
+    public boolean getEstadoMantenimiento() {
+        boolean resultado= fantasyService.isMantenimientoActivo();
+        return resultado;
+    }
+
     @GetMapping("/usuarios")
     public List<Usuario> verRivales() {
         return usuarioRepository.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList());
