@@ -119,13 +119,6 @@ public class AdminController {
         return msj;
     }
 
-    @GetMapping("/estado-mantenimiento")
-    public boolean getEstadoMantenimiento() {
-        boolean resultado;
-        resultado = fS.isMantenimientoActivo();
-        return resultado;
-    }
-
     //POST-MAPPING
     @PostMapping("/toggle-bloqueo")
     public String toggleBloqueo() {
@@ -143,18 +136,17 @@ public class AdminController {
 
     @PostMapping("/toggle-mantenimiento")
     public String toggleMantenimiento() {
-        String msj = "";
+        String resultado;
         boolean estadoActual = fS.isMantenimientoActivo();
 
         fS.setMantenimientoActivo(!estadoActual);
 
         if (!estadoActual) {
-            msj = "Mantenimiento ACTIVO";
+            resultado = "Mantenimiento ACTIVO";
         } else {
-            msj = "Mantenimiento DESACTIVADO";
+            resultado = "Mantenimiento DESACTIVADO";
         }
-
-        return msj;
+        return resultado;
     }
 
     @PostMapping("/aprobar/{idUsuario}")
