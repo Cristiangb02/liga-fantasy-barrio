@@ -5,6 +5,7 @@ import com.fantasy.ligabarrio.model.Jugador;
 import com.fantasy.ligabarrio.model.Temporada;
 import com.fantasy.ligabarrio.model.Usuario;
 import com.fantasy.ligabarrio.repository.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
@@ -21,6 +22,12 @@ public class InicializadorDatos implements CommandLineRunner {
     private final EquipoRepository eR;
     private final ActuacionRepository aR;
     private final NoticiaRepository nR;
+
+    @Value("${admin.usuario}")
+    private String adminUser;
+
+    @Value("${admin.password}")
+    private String adminPass;
 
     public InicializadorDatos(JugadorRepository juR, TemporadaRepository tR, JornadaRepository joR, UsuarioRepository uR,
                               EquipoRepository eR, ActuacionRepository aR, NoticiaRepository nR) {
@@ -144,8 +151,8 @@ public class InicializadorDatos implements CommandLineRunner {
             joR.save(jornada1);
         }
 
-        if (uR.findByNombre("Cristiangb02") == null) {
-            Usuario admin = new Usuario("Cristiangb02", "Huelvamolamazo", 100_000_000, true);
+        if (uR.findByNombre(adminUser) == null) {
+            Usuario admin = new Usuario(adminUser, adminPass, 100_000_000, true);
             admin.setActivo(true);
             uR.save(admin);
         }

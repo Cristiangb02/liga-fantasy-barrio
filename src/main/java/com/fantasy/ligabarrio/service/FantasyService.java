@@ -14,18 +14,17 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
+import java.util.Comparator;
 
 @Service
 public class FantasyService {
 
     private final JornadaRepository jornadaRepository;
     private final OfertaRepository ofertaRepository;
-    private long desplazamiento = 0;
+    private long desplazamiento = 0; //Para la semilla de generación de mercado
     private boolean mantenimientoActivo = false;
 
-    public boolean isMantenimientoActivo() {
-        return mantenimientoActivo;
-    }
+    public boolean isMantenimientoActivo() { return mantenimientoActivo; }
 
     public void setMantenimientoActivo(boolean mantenimientoActivo) {
         this.mantenimientoActivo = mantenimientoActivo;
@@ -36,9 +35,7 @@ public class FantasyService {
         this.ofertaRepository = ofertaRepository;
     }
 
-    public long getDesplazamiento() {
-        return desplazamiento;
-    }
+    public long getDesplazamiento() { return desplazamiento; }
 
     public void incrementarDesplazamiento() {
         this.desplazamiento++;
@@ -55,7 +52,7 @@ public class FantasyService {
 
     public Jornada getJornadaActiva() {
         List<Jornada> jornadas = jornadaRepository.findAll();
-        Jornada jornadaResultado; //Res
+        Jornada jornadaResultado;
 
         if (jornadas.isEmpty()) {
             Jornada j1 = new Jornada();
@@ -63,8 +60,7 @@ public class FantasyService {
             j1.setBloqueada(false);
             jornadaResultado = jornadaRepository.save(j1);
         } else {
-            jornadas.sort(java.util.Comparator.comparing(Jornada::getNumero));
-
+            jornadas.sort(Comparator.comparing(Jornada::getNumero));
              Jornada activa = jornadas.get(jornadas.size() - 1);
 
             if (activa.getNumero() <= 0) {
@@ -102,10 +98,14 @@ public class FantasyService {
             return 5; //Un peso mayor para después el orden
         }
         switch(pos.toUpperCase()) {
-            case "PORTERO": return 1;
-            case "DEFENSA": return 2;
-            case "MEDIO": return 3;
-            case "DELANTERO": return 4;
+            case "PORTERO":
+                return 1;
+            case "DEFENSA":
+                return 2;
+            case "MEDIO":
+                return 3;
+            case "DELANTERO":
+                return 4;
             default: return 5;
         }
     }
@@ -129,10 +129,5 @@ public class FantasyService {
                 ofertaRepository.save(o);
             }
         }
-    }
-
-    @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Madrid")
-    public void resetDiario() {
-        System.out.println("Mercado renovado: " + LocalDate.now());
     }
 }

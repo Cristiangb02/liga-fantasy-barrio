@@ -50,7 +50,7 @@ public class Jugador {
         double factorEdad = 1.0;
 
         if (edad < 27) {
-            //JUVENTUD: +16% por año
+            //Joven: +16% por año
             factorEdad += (27 - edad) * 0.16;
         } else if (edad <= 40) {
             //Entre 27 y 40 años: -1.2% suave por cada año.

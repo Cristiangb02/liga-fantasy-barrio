@@ -31,13 +31,6 @@ public class Equipo {
         this.reclamado = false; 
     }
 
-    public void alinearJugador(Jugador jugador) {
-        if (this.jugadoresAlineados == null) {
-            this.jugadoresAlineados = new ArrayList<>();
-        }
-        this.jugadoresAlineados.add(jugador);
-    }
-
     public Long getId() { return id; }
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }

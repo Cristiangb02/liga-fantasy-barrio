@@ -11,8 +11,7 @@ public class CalculadoraPuntosService {
     private final Random random = new Random();
 
     public int calcularPuntos(Actuacion a) {
-        int puntos = 1; //Por jugar el partido, +1
-        //Si no ha jugado, no suma
+        int puntos = 1; //Por jugar el partido, +1. Si no ha jugado, no suma
 
         if (!a.isJugado()) {
              puntos = 0;
@@ -24,7 +23,7 @@ public class CalculadoraPuntosService {
             puntos += 2;
             puntos += random.nextInt(4); //Extras 0, 1, 2 O 3
         } else if (a.isDerrota()) { //DERROTA --> -2 ASEGURADOS
-            puntos -= 2;
+            puntos -= 2; //Lo cambiaré a -1 en la temporada 2027
             puntos += random.nextInt(2); //0 o +1
         } else {
             puntos += random.nextInt(2); //0 o +1
@@ -104,9 +103,5 @@ public class CalculadoraPuntosService {
         } else {
             return pMas6;
         }
-    }
-
-    public int calcularTotalEquipo(Equipo equipo) {
-        return equipo.getPuntosTotalesJornada();
     }
 }

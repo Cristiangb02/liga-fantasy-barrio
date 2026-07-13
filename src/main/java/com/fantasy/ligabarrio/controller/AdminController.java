@@ -237,8 +237,9 @@ public class AdminController {
         Jornada nueva = new Jornada();
         nueva.setNumero(actual.getNumero() + 1);
         nueva.setBloqueada(actual.isBloqueada());
-
+        nueva.setDiaBloqueo(actual.getDiaBloqueo());
         joR.save(nueva);
+
         nR.save(new Noticia("🏁 JORNADA " + actual.getNumero() + " FINALIZADA.\n" + res));
 
         msj = "✅ Jornada terminada.";
