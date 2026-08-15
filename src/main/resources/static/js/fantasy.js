@@ -152,9 +152,12 @@ window.onload = function() {
     iniciarRelojesBlindaje();
     pingOnline();
 
-    // Añade estas dos líneas aquí:
     checkMantenimiento();
-    setInterval(checkMantenimiento, 10000);
+    setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                checkMantenimiento();
+            }
+        }, 120000);
 };
 
 function iniciarContadorMercado() {

@@ -10,33 +10,39 @@ import java.util.Map;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/auth")
-public class AuthController {
+public class LoginController {
 
     private final UsuarioRepository usuarioRepository;
     private final NoticiaRepository noticiaRepository;
 
-    public AuthController(UsuarioRepository usuarioRepository, NoticiaRepository noticiaRepository) {
+    public LoginController(UsuarioRepository usuarioRepository, NoticiaRepository noticiaRepository) {
         this.usuarioRepository = usuarioRepository;
         this.noticiaRepository = noticiaRepository;
     }
 
     @PostMapping("/registro")
     public String registrarUsuario(@RequestBody Usuario datos) {
+        String msj;
         if (usuarioRepository.findByNombre(datos.getNombre()) != null) {
             return "❌ El nombre ya existe.";
         }
 
-        boolean esPrimero = usuarioRepository.count() == 0;
+        boolean esPrimero = false;
+        if (usuarioRepository.count() == 0) {
+            esPrimero = true;
+        }
+
         Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, esPrimero);
         nuevo.setActivo(esPrimero);
         usuarioRepository.save(nuevo);
 
         if (esPrimero) {
-            noticiaRepository.save(new Noticia("👑 FUNDADOR: " + datos.getNombre() + " ha inaugurado la liga como Admin."));
-            return "✅ ¡Liga inaugurada! Eres el Admin.";
+            noticiaRepository.save(new Noticia(datos.getNombre() + " ha inaugurado la liga como Admin."));
+            msj = "✅ ¡Liga inaugurada! Eres el Admin.";
         } else {
-            return "✅ Solicitud enviada. Contacta con el creador de la app por Whatsapp para que te acepte y luego pulsa el botón 'Entrar'.";
+            msj = "✅ Solicitud enviada. Contacta con el creador de la app por Whatsapp para que te acepte y luego pulsa el botón 'Entrar'.";
         }
+        return msj;
     }
 
     @PostMapping("/login")
