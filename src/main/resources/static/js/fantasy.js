@@ -157,7 +157,7 @@ window.onload = function() {
             if (document.visibilityState === 'visible') {
                 checkMantenimiento();
             }
-        }, 120000);
+        }, 300000);
 };
 
 function iniciarContadorMercado() {
