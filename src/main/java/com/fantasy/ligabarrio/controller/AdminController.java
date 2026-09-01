@@ -40,105 +40,177 @@ public class AdminController {
     //GET-MAPPPING
     @GetMapping("/estado-bloqueo")
     public boolean getEstadoBloqueo() {
-        return fS.getJornadaActiva().isBloqueada();
+        boolean resultado = fS.getJornadaActiva().isBloqueada();
+        return resultado;
     }
 
     @GetMapping("/usuarios-gestion")
     public List<Usuario> getUsuariosGestion() {
-        return uR.findAll();
+        List<Usuario> resultado = uR.findAll();
+        return resultado;
     }
 
     @GetMapping("/pendientes")
     public List<Usuario> verUsuariosPendientes() {
-        return uR.findAll().stream().filter(u -> !u.isActivo()).collect(Collectors.toList());
+        List<Usuario> resultado = new ArrayList<>();
+        List<Usuario> todos = uR.findAll();
+
+        for (Usuario u : todos) {
+            if (!u.isActivo()) {
+                resultado.add(u);
+            }
+        }
+
+        return resultado;
     }
 
     @GetMapping("/jugadores-puntuados")
     public List<Jugador> getJugadoresPuntuados() {
+        List<Jugador> resultado = new ArrayList<>();
         Jornada actual = fS.getJornadaActiva();
-        return jR.findAll().stream().filter(j -> aR.findByJugadorAndJornada(j, actual).isPresent())
-                .sorted((j1, j2) -> {
-                    int p1 = fS.getPesoPosicion(j1.getPosicion());
-                    int p2 = fS.getPesoPosicion(j2.getPosicion());
-                    if (p1 != p2) return Integer.compare(p1, p2);
-                    else return j1.getNombre().compareToIgnoreCase(j2.getNombre());
-                }).collect(Collectors.toList());
+        List<Jugador> todos = jR.findAll();
+
+        for (Jugador j : todos) { //Los que tienen puntuación
+            Optional<Actuacion> actuacionOpt = aR.findByJugadorAndJornada(j, actual);
+            if (actuacionOpt.isPresent()) {
+                resultado.add(j);
+            }
+        }
+
+        resultado.sort((j1, j2) -> {
+            int p1 = fS.getPesoPosicion(j1.getPosicion());
+            int p2 = fS.getPesoPosicion(j2.getPosicion());
+
+            if (p1 != p2) {
+                return Integer.compare(p1, p2);
+            } else {
+                return j1.getNombre().compareToIgnoreCase(j2.getNombre());
+            }
+        });
+        return resultado;
     }
 
     @GetMapping("/jugadores-pendientes")
     public List<Jugador> getJugadoresPendientes() {
+        List<Jugador> resultado = new ArrayList<>();
         Jornada actual = fS.getJornadaActiva();
         List<Jugador> todos = jR.findAll();
-        List<Long> idsPuntuados = aR.findAll().stream().filter(a -> a.getJornada().getId().equals(actual.getId()))
-                .map(a -> a.getJugador().getId()).collect(Collectors.toList());
+        List<Actuacion> todasActuaciones = aR.findAll();
+        List<Long> idsPuntuados = new ArrayList<>();
 
-        return todos.stream().filter(j -> !idsPuntuados.contains(j.getId())).sorted(Comparator.comparing(Jugador::getNombre))
-                .collect(Collectors.toList());
+        for (Actuacion a : todasActuaciones) {
+            if (a.getJornada().getId().equals(actual.getId())) {
+                idsPuntuados.add(a.getJugador().getId());
+            }
+        }
+
+        for (Jugador j : todos) {
+            if (!idsPuntuados.contains(j.getId())) {
+                resultado.add(j);
+            }
+        }
+
+        resultado.sort(Comparator.comparing(Jugador::getNombre));
+
+        return resultado;
     }
 
-    //BOTÓN PARA BORRAR CLONES
     @GetMapping("/limpiar-clones/{numJornada}")
     public String limpiarClonesJornada(@PathVariable int numJornada) {
         String msj;
-        Jornada jornada = joR.findAll().stream().filter(j -> j.getNumero() == numJornada).findFirst().orElseThrow();
 
-        List<Actuacion> todas = aR.findAll().stream().filter(a -> a.getJornada().getId().equals(jornada.getId()))
-                .collect(Collectors.toList());
-
-        Map<Long, List<Actuacion>> porJugador = todas.stream().collect(Collectors.groupingBy(a -> a.getJugador().getId()));
-        int borrados = 0;
-
-        for (List<Actuacion> lista : porJugador.values()) {
-            //Si hay más de 1 actuación para el mismo jugador, es un clon!
-            if (lista.size() > 1) {
-                //Ordenamos para mantener el que tenga color guardado
-                lista.sort((a, b) -> {
-                    if (a.getColorEquipo() != null && b.getColorEquipo() == null) return -1;
-                    if (b.getColorEquipo() != null && a.getColorEquipo() == null) return 1;
-                    return b.getId().compareTo(a.getId());
-                });
-
-                for (int i = 1; i < lista.size(); i++) {
-                    Actuacion clon = lista.get(i);
-                    Jugador j = clon.getJugador();
-
-                    int puntosSobrantes = clon.getPuntosTotales();
-                    int valorSobrante = puntosSobrantes * 100_000;
-
-                    j.setPuntosAcumulados(j.getPuntosAcumulados() - puntosSobrantes);
-                    j.setValor(j.getValor() - valorSobrante);
-                    j.setClausula(j.getClausula() - valorSobrante);
-
-                    jR.save(j);
-                    aR.delete(clon);
-                    borrados++;
-                }
+        Jornada jornada = null;
+        List<Jornada> todasLasJornadas = joR.findAll();
+        for (int i = 0; i < todasLasJornadas.size() && jornada == null; i++) {
+            if (todasLasJornadas.get(i).getNumero() == numJornada) {
+                jornada = todasLasJornadas.get(i);
             }
         }
-        msj = "Se han eliminado  " + borrados + " clones y se ajustaron sus puntos generales.";
+
+        if (jornada == null) {
+            msj = "❌ Error: Jornada no encontrada.";
+        } else {
+            List<Actuacion> todas = new ArrayList<>();
+            List<Actuacion> actuacionesBD = aR.findAll();
+
+            for (Actuacion a : actuacionesBD) {
+                if (a.getJornada().getId().equals(jornada.getId())) {
+                    todas.add(a);
+                }
+            }
+
+            // 5. Agrupamos por el ID de jugador
+            Map<Long, List<Actuacion>> porJugador = new HashMap<>();
+            for (Actuacion a : todas) {
+                Long idJugador = a.getJugador().getId();
+
+                if (!porJugador.containsKey(idJugador)) {
+                    porJugador.put(idJugador, new ArrayList<>());
+                }
+                porJugador.get(idJugador).add(a);
+            }
+
+            int borrados = 0;
+
+            for (Map.Entry<Long, List<Actuacion>> entrada : porJugador.entrySet()) {
+                List<Actuacion> lista = entrada.getValue();
+
+                if (lista.size() > 1) {
+
+                    lista.sort((a, b) -> {
+                        if (a.getColorEquipo() != null && b.getColorEquipo() == null) {
+                            return -1;
+                        } else if (b.getColorEquipo() != null && a.getColorEquipo() == null) {
+                            return 1;
+                        } else {
+                            return b.getId().compareTo(a.getId());
+                        }
+                    });
+
+                    for (int i = 1; i < lista.size(); i++) {
+                        Actuacion clon = lista.get(i);
+                        Jugador j = clon.getJugador();
+
+                        int puntosSobrantes = clon.getPuntosTotales();
+                        int valorSobrante = puntosSobrantes * 100_000;
+                        j.setPuntosAcumulados(j.getPuntosAcumulados() - puntosSobrantes);
+                        j.setValor(j.getValor() - valorSobrante);
+                        j.setClausula(j.getClausula() - valorSobrante);
+
+                        jR.save(j);
+                        aR.delete(clon);
+                        borrados++;
+                    }
+                }
+            }
+            msj = "Se han eliminado " + borrados + " clones.";
+        }
         return msj;
     }
 
     //POST-MAPPING
     @PostMapping("/toggle-bloqueo")
     public String toggleBloqueo() {
+        String resultado;
         Jornada actual = fS.getJornadaActiva();
+
         if (actual.isBloqueada()) {
             actual.setBloqueada(false);
             actual.setDiaBloqueo(null);
+            resultado = "Bloqueo de acciones DESACTIVADO 🔓";
         } else {
             actual.setBloqueada(true);
             actual.setDiaBloqueo(java.time.LocalDate.now(java.time.ZoneId.of("Europe/Madrid")));
+            resultado = "Bloqueo de acciones ACTIVADO 🔒";
         }
         joR.save(actual);
-        return "Bloqueo de acciones " + (actual.isBloqueada() ? "ACTIVADO 🔒" : "DESACTIVADO 🔓");
+        return resultado;
     }
 
     @PostMapping("/toggle-mantenimiento")
     public String toggleMantenimiento() {
         String resultado;
         boolean estadoActual = fS.isMantenimientoActivo();
-
         fS.setMantenimientoActivo(!estadoActual);
 
         if (!estadoActual) {
@@ -149,13 +221,57 @@ public class AdminController {
         return resultado;
     }
 
+    @PostMapping("/cerrar-jornada")
+    public String cerrarJornada() {
+        String msj;
+        Jornada actual = fS.getJornadaActiva();
+        List<Equipo> equipos = er.findByJornada(actual);
+        StringBuilder res = new StringBuilder();
+
+        for (Equipo e : equipos) {
+            Usuario u = e.getUsuario();
+
+            if (u.getPresupuesto() < 0) {
+                e.setPuntosTotalesJornada(0);
+                er.save(e);
+                res.append("🚫 ").append(u.getNombre()).append(" (Saldo Negativo)\n");
+
+            } else {
+                int total = 0;
+
+                for (Jugador j : e.getJugadoresAlineados()) {
+                    Optional<Actuacion> actuacionOpt = aR.findByJugadorAndJornada(j, actual);
+                    if (actuacionOpt.isPresent()) {
+                        total = total + actuacionOpt.get().getPuntosTotales();
+                    }
+                }
+
+                e.setPuntosTotalesJornada(total);
+                er.save(e);
+                res.append("✅ ").append(u.getNombre()).append(": ").append(total).append("p\n");
+            }
+        }
+
+        Jornada nueva = new Jornada();
+        nueva.setNumero(actual.getNumero() + 1);
+        nueva.setBloqueada(actual.isBloqueada());
+        nueva.setDiaBloqueo(actual.getDiaBloqueo());
+        joR.save(nueva);
+
+        nR.save(new Noticia("🏁 JORNADA " + actual.getNumero() + " FINALIZADA con éxito."));
+        msj = "✅ Jornada terminada.";
+        return msj;
+    }
+
     @PostMapping("/aprobar/{idUsuario}")
     public String aprobarUsuario(@PathVariable Long idUsuario) {
+        String msj;
         Usuario u = uR.findById(idUsuario).orElseThrow();
         u.setActivo(true);
         uR.save(u);
         nR.save(new Noticia("👋 BIENVENIDA: " + u.getNombre() + " ha entrado a la liga."));
-        return "✅ Usuario aprobado.";
+        msj = "✅ Usuario aprobado.";
+        return msj;
     }
 
     @PostMapping("/editar-usuario/{idUsuario}")
@@ -178,79 +294,72 @@ public class AdminController {
         return msj;
     }
 
-    @PostMapping("/registrar")
-    public String registrarPartido(@RequestBody DatosPartido datos) {
+    @PostMapping("/modificar-saldo/{idUsuario}/{cantidad}")
+    public String modificarSaldo(@PathVariable Long idUsuario, @PathVariable int cantidad) {
         String msj;
-        Jugador jugador = jR.findById(datos.idJugador).orElseThrow();
-        Jornada jornada = fS.getJornadaActiva();
-        Actuacion actuacion = aR.findByJugadorAndJornada(jugador, jornada).orElse(new Actuacion(jugador, jornada));
 
-        actuacion.setJugado(datos.jugado);
-        actuacion.setVictoria(datos.victoria);
-        actuacion.setDerrota(datos.derrota);
-        actuacion.setGolesMarcados(datos.goles);
-        actuacion.setGolesEncajados(datos.golesEncajados);
-        actuacion.setAutogoles(datos.autogoles);
-        actuacion.setColorEquipo(datos.colorEquipo);
+        if (cantidad == 0) {
+            msj = "❌ La cantidad no puede ser cero.";
+        } else {
+            String accion;
+            if (cantidad > 0) {
+                accion = "ingresado";
+            } else {
+                accion = "retirado";
+            }
 
-        int puntos = calculadora.calcularPuntos(actuacion);
-        actuacion.setPuntosTotales(puntos);
-        aR.save(actuacion);
+            if (idUsuario == 0L) {
+                List<Usuario> todosLosUsuarios = uR.findAll();
+                List<Usuario> usuariosModificados = new ArrayList<>();
 
-        jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() + puntos);
-        int nuevoValor = Math.max(150_000, jugador.getValor() + (puntos * 100_000)); //Un jugador no valdrá menos de 150.000€
-        jugador.setValor(nuevoValor);
+                for (Usuario u : todosLosUsuarios) {
+                    if (u.isActivo()) {
+                        u.setPresupuesto(u.getPresupuesto() + cantidad);
+                        usuariosModificados.add(u);
+                    }
+                }
+                uR.saveAll(usuariosModificados);
+                msj = "✅ Se han " + accion + " " + fS.formatearDinero(Math.abs(cantidad)) + " a todos los mánagers.";
 
-        //Si lo tiene alguien y la clausula es menor que su valor, se pone la cláusula al valor de mercado
-        if ((jugador.getPropietario() != null) && (jugador.getClausula() < jugador.getValor())) {
-            jugador.setClausula(jugador.getValor());
+            } else {
+                Usuario u = uR.findById(idUsuario).orElseThrow();
+                u.setPresupuesto(u.getPresupuesto() + cantidad);
+                uR.save(u);
+                msj = "✅ Se han " + accion + " " + fS.formatearDinero(Math.abs(cantidad)) + " a " + u.getNombre() + ".";
+            }
         }
-        jR.save(jugador);
-        msj = "✅ Puntos de " + jugador.getNombre() + " en esta jornada: " + puntos;
         return msj;
     }
 
-    @PostMapping("/cerrar-jornada")
-    public String cerrarJornada() {
+    @PostMapping("/modificar-puntos-extra/{idUsuario}/{puntos}")
+    public String modificarPuntosExtra(@PathVariable Long idUsuario, @PathVariable int puntos) {
         String msj;
-        Jornada actual = fS.getJornadaActiva();
-        List<Equipo> equipos = er.findByJornada(actual);
-        StringBuilder res = new StringBuilder();
+        Usuario u = uR.findById(idUsuario).orElseThrow();
+        u.setPuntosExtra(u.getPuntosExtra() + puntos);
+        uR.save(u);
 
-        for (Equipo e : equipos) {
-            Usuario u = e.getUsuario();
-            if (u.getPresupuesto() < 0) {
-                e.setPuntosTotalesJornada(0);
-                er.save(e);
-                res.append("🚫 ").append(u.getNombre()).append(" (Saldo Negativo)\n");
-                continue;
-            }
-            int total = 0;
-            for(Jugador j : e.getJugadoresAlineados()) {
-                total += aR.findByJugadorAndJornada(j, actual).map(Actuacion::getPuntosTotales).orElse(0);
-            }
-            e.setPuntosTotalesJornada(total);
-            er.save(e);
-            res.append("✅ ").append(u.getNombre()).append(": ").append(total).append("p\n");
+        String accion;
+        if (puntos >= 0) {
+            accion = "añadido";
+        } else {
+            accion = "restado";
         }
-
-        Jornada nueva = new Jornada();
-        nueva.setNumero(actual.getNumero() + 1);
-        nueva.setBloqueada(actual.isBloqueada());
-        nueva.setDiaBloqueo(actual.getDiaBloqueo());
-        joR.save(nueva);
-
-        nR.save(new Noticia("🏁 JORNADA " + actual.getNumero() + " FINALIZADA.\n" + res));
-
-        msj = "✅ Jornada terminada.";
+        msj = "✅ Se han " + accion + " " + Math.abs(puntos) + " puntos a " + u.getNombre() + " en la clasificación general.";
         return msj;
     }
 
-    @PostMapping("/reset-mercado")
-    public String resetMercado() {
+    @PostMapping("/actualizar-avatar/{idUsuario}")
+    public String actualizarAvatarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
         String msj;
-        fS.incrementarDesplazamiento();
-        msj =  "✅ Mercado renovado con éxito.";
+        String nuevaUrl = datos.get("urlImagen");
+        if (nuevaUrl == null || nuevaUrl.trim().isEmpty()) {
+            msj = "❌ Error. La ruta de la imagen no puede estar vacía.";
+        } else {
+            Usuario u = uR.findById(idUsuario).orElseThrow();
+            u.setUrlImagen(nuevaUrl.trim());
+            uR.save(u);
+            msj = "✅ La foto de perfil de " + u.getNombre() + " ha sido actualizada.";
+        }
         return msj;
     }
 
@@ -414,22 +523,6 @@ public class AdminController {
         return msj;
     }
 
-    @PostMapping("/modificar-puntos-extra/{idUsuario}/{puntos}")
-    public String modificarPuntosExtra(@PathVariable Long idUsuario, @PathVariable int puntos) {
-        String msj;
-        Usuario u = uR.findById(idUsuario).orElseThrow();
-        u.setPuntosExtra(u.getPuntosExtra() + puntos);
-        uR.save(u);
-
-        String accion = "";
-        if (puntos >=0 ) {
-            accion = "añadido";
-        } else {
-            accion = "restado";
-        }
-        msj = "✅ Se han " + accion + " " + Math.abs(puntos) + " puntos a " + u.getNombre() + " en la clasificación general.";
-        return msj;
-    }
 
     @PostMapping("/cambiar-estado/{idJugador}/{nuevoEstado}")
     public String cambiarEstadoJugador(@PathVariable Long idJugador, @PathVariable String nuevoEstado) {
@@ -457,51 +550,6 @@ public class AdminController {
             msj = " ✅ La foto de " + j.getNombre() + " (" + j.getPosicion() + ") " + " ha sido actualizada.";
         }
         return msj;
-    }
-
-    @PostMapping("/actualizar-avatar/{idUsuario}")
-    public String actualizarAvatarUsuario(@PathVariable Long idUsuario, @RequestBody Map<String, String> datos) {
-        String msj;
-        String nuevaUrl = datos.get("urlImagen");
-        if (nuevaUrl == null || nuevaUrl.trim().isEmpty()) {
-            msj = "❌ Error. La ruta de la imagen no puede estar vacía.";
-        } else {
-            Usuario u = uR.findById(idUsuario).orElseThrow();
-            u.setUrlImagen(nuevaUrl.trim());
-            uR.save(u);
-
-            msj = "✅ La foto de perfil de " + u.getNombre() + " ha sido actualizada.";
-        }
-        return msj;
-    }
-
-    @PostMapping("/modificar-saldo/{idUsuario}/{cantidad}")
-    public String modificarSaldo(@PathVariable Long idUsuario, @PathVariable int cantidad) {
-        String msj = "";
-        if (cantidad == 0) return "❌ La cantidad no puede ser cero.";
-        String accion;
-
-        if (cantidad > 0) {
-            accion = "ingresado";
-        } else {
-            accion = "retirado";
-        }
-
-        //Si el ID es 0, es para TODOS los mánagers
-        if (idUsuario == 0L) {
-            List<Usuario> usuarios = uR.findAll().stream().filter(Usuario::isActivo).collect(Collectors.toList());
-            for (Usuario u : usuarios) {
-                u.setPresupuesto(u.getPresupuesto() + cantidad);
-            }
-            uR.saveAll(usuarios);
-            return "✅ Se han " + accion + " " + fS.formatearDinero(Math.abs(cantidad)) + " a todos los mánagers.";
-        }
-        else {
-            Usuario u = uR.findById(idUsuario).orElseThrow();
-            u.setPresupuesto(u.getPresupuesto() + cantidad);
-            uR.save(u);
-            return "✅ Se han " + accion + " " + fS.formatearDinero(Math.abs(cantidad)) + " a " + u.getNombre() + ".";
-        }
     }
 
     //DELETE-MAPPING
