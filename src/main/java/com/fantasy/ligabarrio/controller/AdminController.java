@@ -96,23 +96,37 @@ public class AdminController {
     public List<Jugador> getJugadoresPendientes() {
         List<Jugador> resultado = new ArrayList<>();
         Jornada actual = fS.getJornadaActiva();
-        List<Jugador> todos = jR.findAll();
-        List<Actuacion> todasActuaciones = aR.findAll();
-        List<Long> idsPuntuados = new ArrayList<>();
 
+        // 1. Traemos TODOS los jugadores y TODAS las actuaciones de golpe (2 consultas)
+        List<Jugador> todosJugadores = jR.findAll(); // (O jR.findAll() según lo llames)
+        List<Actuacion> todasActuaciones = aR.findAll();
+
+        // 2. Apuntamos los IDs de los que YA han puntuado esta jornada
+        List<Long> idsPuntuados = new ArrayList<>();
         for (Actuacion a : todasActuaciones) {
             if (a.getJornada().getId().equals(actual.getId())) {
                 idsPuntuados.add(a.getJugador().getId());
             }
         }
 
-        for (Jugador j : todos) {
+        // 3. Filtramos: Si el jugador NO está en la lista de puntuados, es que está pendiente
+        for (Jugador j : todosJugadores) {
             if (!idsPuntuados.contains(j.getId())) {
                 resultado.add(j);
             }
         }
 
-        resultado.sort(Comparator.comparing(Jugador::getNombre));
+        // 4. Ordenamos (igual que tenías en el otro)
+        resultado.sort((j1, j2) -> {
+            int p1 = fS.getPesoPosicion(j1.getPosicion());
+            int p2 = fS.getPesoPosicion(j2.getPosicion());
+
+            if (p1 != p2) {
+                return Integer.compare(p1, p2);
+            } else {
+                return j1.getNombre().compareToIgnoreCase(j2.getNombre());
+            }
+        });
 
         return resultado;
     }
