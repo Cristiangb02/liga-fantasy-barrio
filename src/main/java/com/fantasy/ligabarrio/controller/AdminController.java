@@ -68,15 +68,16 @@ public class AdminController {
     public List<Jugador> getJugadoresPuntuados() {
         List<Jugador> resultado = new ArrayList<>();
         Jornada actual = fS.getJornadaActiva();
-        List<Jugador> todos = jR.findAll();
 
-        for (Jugador j : todos) { //Los que tienen puntuación
-            Optional<Actuacion> actuacionOpt = aR.findByJugadorAndJornada(j, actual);
-            if (actuacionOpt.isPresent()) {
-                resultado.add(j);
+        List<Actuacion> todasActuaciones = aR.findAll();
+
+        for (Actuacion a : todasActuaciones) {
+            if (a.getJornada().getId().equals(actual.getId())) {
+                resultado.add(a.getJugador());
             }
         }
 
+        // Ordenamos
         resultado.sort((j1, j2) -> {
             int p1 = fS.getPesoPosicion(j1.getPosicion());
             int p2 = fS.getPesoPosicion(j2.getPosicion());
@@ -87,6 +88,7 @@ public class AdminController {
                 return j1.getNombre().compareToIgnoreCase(j2.getNombre());
             }
         });
+
         return resultado;
     }
 
