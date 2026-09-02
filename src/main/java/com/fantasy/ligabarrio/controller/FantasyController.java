@@ -59,39 +59,26 @@ public class FantasyController {
     public List<Map<String, Object>> verTodosLosJugadores() {
         List<Map<String, Object>> resultado = new ArrayList<>();
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("Europe/Madrid"));
-        List<Jugador> todosLosJugadores = jugadorRepository.findAll();
-        long segundosRestantes = 0;
-        boolean blindado = false;
-
-        String urlImagen;
-        Object propietarioObj;
-        String estado;
+        List<Jugador> todosLosJugadores = jugadorRepository.findAll(); // O jR.findAll()
 
         for (Jugador j : todosLosJugadores) {
+            // 1. Declaramos DENTRO del bucle para que cada jugador empiece de cero
+            long segundosRestantes = 0;
+            boolean blindado = false;
 
+            // Calculamos el blindaje de forma segura
             if (j.getFechaFinBlindaje() != null && j.getFechaFinBlindaje().isAfter(ahora)) {
                 blindado = true;
-            }
-            if (blindado) {
                 segundosRestantes = ChronoUnit.SECONDS.between(ahora, j.getFechaFinBlindaje());
             }
 
-            if (j.getUrlImagen() != null) {
-                urlImagen = j.getUrlImagen();
-            } else {
-                urlImagen = "";
-            }
-
+            // 2. Cortamos el bucle SQL enviando solo el ID y Nombre del dueño
+            Object propietarioObj = null;
             if (j.getPropietario() != null) {
-                propietarioObj = j.getPropietario();
-            } else {
-                propietarioObj = Map.of();
-            }
-
-            if (j.getEstado() != null) {
-                estado = j.getEstado();
-            } else {
-                estado = "DISPONIBLE";
+                Map<String, Object> propMap = new HashMap<>();
+                propMap.put("id", j.getPropietario().getId());
+                propMap.put("nombre", j.getPropietario().getNombre());
+                propietarioObj = propMap;
             }
 
             Map<String, Object> mapJugador = new HashMap<>();
@@ -101,11 +88,11 @@ public class FantasyController {
             mapJugador.put("valor", j.getValor());
             mapJugador.put("clausula", j.getClausula());
             mapJugador.put("puntosAcumulados", j.getPuntosAcumulados());
-            mapJugador.put("urlImagen", urlImagen);
+            mapJugador.put("urlImagen", j.getUrlImagen() != null ? j.getUrlImagen() : "");
             mapJugador.put("propietario", propietarioObj);
             mapJugador.put("blindado", blindado);
             mapJugador.put("segundosBlindaje", segundosRestantes);
-            mapJugador.put("estado", estado);
+            mapJugador.put("estado", j.getEstado() != null ? j.getEstado() : "DISPONIBLE");
 
             resultado.add(mapJugador);
         }
