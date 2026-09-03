@@ -17,12 +17,6 @@
 </head>
 <body>
 
-<div id="pantalla-mantenimiento" class="oculto" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#1a237e; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; text-align:center; padding:20px;">
-    <h1 style="font-size:4rem; margin-bottom:10px;">🚧</h1>
-    <h2>App en Mantenimiento</h2>
-    <p>Realizando labores de mantenimiento...<br>Vuelve a intentarlo en un ratito.</p>
-</div>
-
 <header>
     <div class="user-info">
         <img id="dashboard-avatar" src="/images/avatars/user.png" onclick="verMiFichaPerfil()" style="width:50px; height:50px; object-fit:cover; border-radius:50%; border:2px solid #fff; cursor:pointer; margin-right: 10px; box-shadow:0 2px 5px rgba(0,0,0,0.2);" title="Ver mi perfil">
@@ -138,19 +132,6 @@
 
 <div id="sec-admin" class="seccion oculto">
     <h3 style="color:#c62828">Panel Admin</h3>
-
-    <div style="background:#fff9c4; padding:15px; border-radius:10px; border:2px dashed #fbc02d; margin-bottom: 20px; text-align:center;">
-        <h4 style="color:#f57f17; margin-top:0;">🚧 MODO MANTENIMIENTO</h4>
-        <p style="font-size:0.85em; color:#795548;">Bloquea el acceso a todos los usuarios (excepto a ti) mientras haces cambios en el código.</p>
-
-        <button id="btn-mantenimiento" onclick="toggleMantenimiento()" style="width:100%; padding:15px; border:none; border-radius:8px; font-weight:900; font-size:1.1em; cursor:pointer; transition:0.3s; background:#37474f; color:white;">
-            CAMBIAR ESTADO
-        </button>
-
-        <div id="indicador-mantenimiento" style="margin-top: 15px; font-weight: bold; font-size: 1.2em;">
-            Cargando estado...
-        </div>
-    </div>
 
     <div style="background:#263238; padding:15px; border-radius:10px; border:2px solid #546e7a; margin-bottom: 20px; text-align:center;">
         <h4 style="color:#cfd8dc; margin-top:0;">BLOQUEO</h4>
@@ -330,7 +311,7 @@
 
         <input type="text" id="admin-nuevo-avatar-url" placeholder="/images/avatars/nueva_foto.png" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;">
 
-        <button onclick="actualizarAvatarManager()" style="background:#8e24aa; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">📸 GUARDAR NUEVO AVATAR</button>
+        <button onclick="actualizarAvatarManager()" style="background:#8e24aa; color:white; width:100%; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">📸 GUARDAR NUEVA AVATAR</button>
     </div>
 
     <div style="background:#ffebee; padding:15px; border-radius:10px; border:2px dashed #c62828;">
@@ -377,7 +358,7 @@
     </div>
 </div>
 
-<script src="js/utiles.js"></script>
-<script src="js/fantasy.js?v=4"></script>
+<script src="js/utiles.js?v=5"></script>
+<script src="js/fantasy.js?v=5"></script>
 </body>
 </html>
