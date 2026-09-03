@@ -153,11 +153,6 @@ window.onload = function() {
     pingOnline();
 
     checkMantenimiento();
-    setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                checkMantenimiento();
-            }
-        }, 300000);
 };
 
 function iniciarContadorMercado() {
