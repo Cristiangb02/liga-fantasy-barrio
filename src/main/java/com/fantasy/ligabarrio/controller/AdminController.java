@@ -205,6 +205,52 @@ public class AdminController {
     }
 
     //POST-MAPPING
+    @PostMapping("/registrar")
+    public String registrarActa(@RequestBody Map<String, Object> datos) {
+        Long idJugador = Long.valueOf(datos.get("idJugador").toString());
+        boolean jugado = (Boolean) datos.get("jugado");
+        boolean victoria = (Boolean) datos.get("victoria");
+        boolean derrota = (Boolean) datos.get("derrota");
+        int goles = Integer.parseInt(datos.get("goles").toString());
+        int golesEncajados = Integer.parseInt(datos.get("golesEncajados").toString());
+        int autogoles = Integer.parseInt(datos.get("autogoles").toString());
+        String colorEquipo = (String) datos.get("colorEquipo");
+
+        Jugador jugador = jR.findById(idJugador).orElseThrow();
+        Jornada jornada = fS.getJornadaActiva();
+
+        Optional<Actuacion> actaExistente = aR.findByJugadorAndJornada(jugador, jornada);
+        if (actaExistente.isPresent()) {
+            return "❌ Error: Este jugador ya tiene puntos en esta jornada.";
+        }
+
+        Actuacion acta = new Actuacion(jugador, jornada);
+        acta.setJugado(jugado);
+        acta.setVictoria(victoria);
+        acta.setDerrota(derrota);
+        acta.setGolesMarcados(goles);
+        acta.setGolesEncajados(golesEncajados);
+        acta.setAutogoles(autogoles);
+        acta.setColorEquipo(colorEquipo);
+
+        // Aquí está la corrección: le pasamos solo el 'acta'
+        int puntos = calculadora.calcularPuntos(acta);
+
+        acta.setPuntosTotales(puntos);
+        aR.save(acta);
+
+        int valorSumar = puntos * 100_000;
+        jugador.setPuntosAcumulados(jugador.getPuntosAcumulados() + puntos);
+        jugador.setValor(jugador.getValor() + valorSumar);
+
+        if (jugador.getClausula() < jugador.getValor()) {
+            jugador.setClausula(jugador.getValor());
+        }
+        jR.save(jugador);
+
+        return "✅ Puntos registrados: " + jugador.getNombre() + " (" + puntos + " pts)";
+    }
+
     @PostMapping("/toggle-bloqueo")
     public String toggleBloqueo() {
         String resultado;
@@ -220,20 +266,6 @@ public class AdminController {
             resultado = "Bloqueo de acciones ACTIVADO 🔒";
         }
         joR.save(actual);
-        return resultado;
-    }
-
-    @PostMapping("/toggle-mantenimiento")
-    public String toggleMantenimiento() {
-        String resultado;
-        boolean estadoActual = fS.isMantenimientoActivo();
-        fS.setMantenimientoActivo(!estadoActual);
-
-        if (!estadoActual) {
-            resultado = "Mantenimiento ACTIVO";
-        } else {
-            resultado = "Mantenimiento DESACTIVADO";
-        }
         return resultado;
     }
 
