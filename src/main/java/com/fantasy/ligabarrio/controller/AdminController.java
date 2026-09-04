@@ -69,26 +69,20 @@ public class AdminController {
         List<Jugador> resultado = new ArrayList<>();
         Jornada actual = fS.getJornadaActiva();
 
-        List<Actuacion> todasActuaciones = aR.findAll();
+        // 💥 EL ARREGLO: Solo traemos las actuaciones de esta jornada, no las de toda la base de datos
+        List<Actuacion> actuacionesJornada = aR.findByJornada(actual);
 
-        for (Actuacion a : todasActuaciones) {
-            if (a.getJornada().getId().equals(actual.getId())) {
-                resultado.add(a.getJugador());
-            }
+        for (Actuacion a : actuacionesJornada) {
+            resultado.add(a.getJugador());
         }
 
         // Ordenamos
         resultado.sort((j1, j2) -> {
             int p1 = fS.getPesoPosicion(j1.getPosicion());
             int p2 = fS.getPesoPosicion(j2.getPosicion());
-
-            if (p1 != p2) {
-                return Integer.compare(p1, p2);
-            } else {
-                return j1.getNombre().compareToIgnoreCase(j2.getNombre());
-            }
+            if (p1 != p2) return Integer.compare(p1, p2);
+            else return j1.getNombre().compareToIgnoreCase(j2.getNombre());
         });
-
         return resultado;
     }
 
@@ -97,37 +91,26 @@ public class AdminController {
         List<Jugador> resultado = new ArrayList<>();
         Jornada actual = fS.getJornadaActiva();
 
-        // 1. Traemos TODOS los jugadores y TODAS las actuaciones de golpe (2 consultas)
-        List<Jugador> todosJugadores = jR.findAll(); // (O jR.findAll() según lo llames)
-        List<Actuacion> todasActuaciones = aR.findAll();
+        List<Jugador> todosJugadores = jR.findAll();
+        List<Actuacion> actuacionesJornada = aR.findByJornada(actual);
 
-        // 2. Apuntamos los IDs de los que YA han puntuado esta jornada
         List<Long> idsPuntuados = new ArrayList<>();
-        for (Actuacion a : todasActuaciones) {
-            if (a.getJornada().getId().equals(actual.getId())) {
-                idsPuntuados.add(a.getJugador().getId());
-            }
+        for (Actuacion a : actuacionesJornada) {
+            idsPuntuados.add(a.getJugador().getId());
         }
 
-        // 3. Filtramos: Si el jugador NO está en la lista de puntuados, es que está pendiente
         for (Jugador j : todosJugadores) {
             if (!idsPuntuados.contains(j.getId())) {
                 resultado.add(j);
             }
         }
 
-        // 4. Ordenamos (igual que tenías en el otro)
         resultado.sort((j1, j2) -> {
             int p1 = fS.getPesoPosicion(j1.getPosicion());
             int p2 = fS.getPesoPosicion(j2.getPosicion());
-
-            if (p1 != p2) {
-                return Integer.compare(p1, p2);
-            } else {
-                return j1.getNombre().compareToIgnoreCase(j2.getNombre());
-            }
+            if (p1 != p2) return Integer.compare(p1, p2);
+            else return j1.getNombre().compareToIgnoreCase(j2.getNombre());
         });
-
         return resultado;
     }
 
