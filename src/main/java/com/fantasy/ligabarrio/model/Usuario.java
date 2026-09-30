@@ -14,7 +14,7 @@ public class Usuario {
     private boolean esAdmin;
     private boolean activo;
     private int puntosExtra = 0;
-    private String urlImagen = "/images/avatars/user.png";
+    private String urlImagen = "https://res.cloudinary.com/w1zhmtmj/image/upload/v1790791819/user.png";
 
     public Usuario() {
     }
@@ -26,7 +26,7 @@ public class Usuario {
         this.esAdmin = esAdmin;
         this.activo = false;
         this.puntosExtra = 0;
-        this.urlImagen = "/images/avatars/user.png";
+        this.urlImagen = "https://res.cloudinary.com/w1zhmtmj/image/upload/v1790791819/user.png";
     }
 
     public Long getId() { return id; }
@@ -38,7 +38,8 @@ public class Usuario {
     public void setPresupuesto(int presupuesto) { this.presupuesto = presupuesto; }
     public boolean isEsAdmin() { return esAdmin; }
     public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
-    public boolean isActivo() { return activo; }
+    public boolean isActivo() { return isActivo(); } // o activo
+    public boolean isActivoField() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
     public int getPuntosExtra() { return puntosExtra; }
     public void setPuntosExtra(int puntosExtra) { this.puntosExtra = puntosExtra; }

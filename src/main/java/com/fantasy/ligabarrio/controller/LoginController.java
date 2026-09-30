@@ -22,44 +22,50 @@ public class LoginController {
 
     @PostMapping("/registro")
     public String registrarUsuario(@RequestBody Usuario datos) {
-        String msj;
+        String resultado;
+
         if (usuarioRepository.findByNombre(datos.getNombre()) != null) {
-            return "❌ El nombre ya existe.";
-        }
-
-        boolean esPrimero = false;
-        if (usuarioRepository.count() == 0) {
-            esPrimero = true;
-        }
-
-        Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, esPrimero);
-        nuevo.setActivo(esPrimero);
-        usuarioRepository.save(nuevo);
-
-        if (esPrimero) {
-            noticiaRepository.save(new Noticia(datos.getNombre() + " ha inaugurado la liga como Admin."));
-            msj = "✅ ¡Liga inaugurada! Eres el Admin.";
+            resultado = "❌ El nombre ya existe.";
         } else {
-            msj = "✅ Solicitud enviada. Contacta con el creador de la app por Whatsapp para que te acepte y luego pulsa el botón 'Entrar'.";
+            boolean esPrimero = false;
+            if (usuarioRepository.count() == 0) {
+                esPrimero = true;
+            }
+
+            Usuario nuevo = new Usuario(datos.getNombre(), datos.getPassword(), 100_000_000, esPrimero);
+            nuevo.setActivo(esPrimero);
+            usuarioRepository.save(nuevo);
+
+            if (esPrimero) {
+                noticiaRepository.save(new Noticia(datos.getNombre() + " ha inaugurado la liga como Admin."));
+                resultado = "✅ ¡Liga inaugurada! Eres el Admin.";
+            } else {
+                resultado = "✅ Solicitud enviada. Contacta con el creador de la app por Whatsapp para que te acepte y luego pulsa el botón 'Entrar'.";
+            }
         }
-        return msj;
+
+        return resultado;
     }
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Usuario datos) {
+        Map<String, Object> resultado;
         Usuario user = usuarioRepository.findByNombre(datos.getNombre());
+
         if (user == null || !user.getPassword().equals(datos.getPassword())) {
-            return Map.of("error", "Credenciales incorrectas.");
+            resultado = Map.of("error", "Credenciales incorrectas.");
+        } else if (!user.isActivo()) {
+            resultado = Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
+        } else {
+            resultado = Map.of(
+                    "id", user.getId(),
+                    "nombre", user.getNombre(),
+                    "esAdmin", user.isEsAdmin(),
+                    "presupuesto", user.getPresupuesto(),
+                    "urlImagen", user.getUrlImagen()
+            );
         }
-        if (!user.isActivo()) {
-            return Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
-        }
-        return Map.of(
-                "id", user.getId(),
-                "nombre", user.getNombre(),
-                "esAdmin", user.isEsAdmin(),
-                "presupuesto", user.getPresupuesto(),
-                "urlImagen", user.getUrlImagen()
-        );
+
+        return resultado;
     }
 }

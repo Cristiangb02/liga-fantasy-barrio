@@ -50,7 +50,7 @@ public class Jugador {
         double factorEdad = 1.0;
 
         if (edad < 27) {
-            //Joven: +16% por año
+            //Menos de 27 años: +16% por año
             factorEdad += (27 - edad) * 0.16;
         } else if (edad <= 40) {
             //Entre 27 y 40 años: -1.2% suave por cada año.
@@ -62,7 +62,6 @@ public class Jugador {
             factorEdad -= (bajadaSuave + bajadaFuerte);
         }
 
-        //Suelo para veteranos con alta media
         if (factorEdad < 0.25) {
             factorEdad = 0.24;
         }

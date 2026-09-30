@@ -1,5 +1,5 @@
 
-//Comprobar si ya hay sesión iniciada
+//Comprobamos si ya hay una sesión iniciada
 if (localStorage.getItem('usuarioId')) {
     window.location.replace('fantasy.html');
 }

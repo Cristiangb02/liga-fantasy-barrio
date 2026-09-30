@@ -4,7 +4,7 @@
 const usuarioId = localStorage.getItem('usuarioId');
 const esAdmin = (localStorage.getItem('esAdmin') === 'true');
 
-//Formateador de moneda compartido
+//Formateador de moneda
 const formatoDinero = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',

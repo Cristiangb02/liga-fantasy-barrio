@@ -62,17 +62,16 @@ public class FantasyController {
         List<Jugador> todosLosJugadores = jugadorRepository.findAll(); // O jR.findAll()
 
         for (Jugador j : todosLosJugadores) {
-            // 1. Declaramos DENTRO del bucle para que cada jugador empiece de cero
             long segundosRestantes = 0;
             boolean blindado = false;
 
-            // Calculamos el blindaje de forma segura
+            //Calculamos el blindaje
             if (j.getFechaFinBlindaje() != null && j.getFechaFinBlindaje().isAfter(ahora)) {
                 blindado = true;
                 segundosRestantes = ChronoUnit.SECONDS.between(ahora, j.getFechaFinBlindaje());
             }
 
-            // 2. Cortamos el bucle SQL enviando solo el ID y Nombre del dueño
+            //Cortamos enviando solo el ID y Nombre del dueño
             Object propietarioObj = null;
             if (j.getPropietario() != null) {
                 Map<String, Object> propMap = new HashMap<>();
@@ -103,7 +102,7 @@ public class FantasyController {
     public List<Jugador> getMercadoDiario() {
         List<Jugador> resultado = new ArrayList<>();
 
-        //Fecha actual, la semilla y todos los jugadores
+        //Fecha actual, semilla y todos los jugadores
         LocalDate hoy = LocalDate.now(ZoneId.of("Europe/Madrid"));
         long seed = hoy.toEpochDay() + fantasyService.getDesplazamiento();
         List<Jugador> todos = jugadorRepository.findAll();
@@ -281,7 +280,7 @@ public class FantasyController {
                     listaB = grupos.get(colorB);
 
                 } else if (colores.size() == 1) {
-                    //Si  todos tienen el mismo color o son null, se parten exactamente por la mitad para dibujar 1 arriba y otro abajo
+                    //Si todos tienen el mismo color o son null, se parten exactamente por la mitad para dibujar 1 arriba y otro abajo
                     colorA = colores.get(0) + " 1";
                     colorB = colores.get(0) + " 2";
 

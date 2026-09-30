@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Intentar leer la jornada de la URL si vienes desde otra página (ej: historial)
+    //Intentamos leer la jornada de la URL si vienes desde otra página (ej: historial)
     const urlParams = new URLSearchParams(window.location.search);
     const jornadaUrl = urlParams.get('jornada');
 
@@ -7,20 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('numJornada').value = jornadaUrl;
         cargarTodo();
     } else {
-        // SOLUCIÓN JORNADA: Preguntamos al backend cuál es la actual y le restamos 1
         fetch('/jornada/actual')
             .then(res => res.text())
             .then(num => {
                 if (num && !isNaN(num)) {
                     let jornadaTerminada = parseInt(num) - 1;
-                    if (jornadaTerminada < 1) jornadaTerminada = 1; // Para que no ponga jornada 0
+                    if (jornadaTerminada < 1) jornadaTerminada = 1;
                     document.getElementById('numJornada').value = jornadaTerminada;
                 }
                 cargarTodo();
             })
             .catch(err => {
-                console.error("Error obteniendo jornada actual:", err);
-                cargarTodo(); // Fallback a lo que haya en el input si falla
+                console.error("Error obteniendo la jornada actual:", err);
+                cargarTodo();
             });
     }
 });
@@ -59,7 +58,7 @@ function cargarTodo() {
             marcador.innerText = "Error de conexión con el servidor";
         });
 
-    // 2. Cargar datos de la lista de mánagers
+    //Cargamos los datos de la lista de mánagers
     fetch(`/jornada/${numeroJornada}/resumen-managers`)
         .then(res => res.json())
         .then(managers => {
@@ -93,8 +92,6 @@ function cargarTodo() {
 
 function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
     contenedor.innerHTML = '';
-
-    // FORZAR EL TAMAÑO: Cada área ocupa el 50% de la altura para no pisar al otro equipo
     contenedor.style.display = 'flex';
     contenedor.style.flexDirection = 'column';
     contenedor.style.justifyContent = 'space-evenly';
@@ -108,7 +105,6 @@ function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
         contenedor.style.bottom = '0'; // Pegado a la portería de abajo
     }
 
-    // Agrupar jugadores por posiciones
     const lineas = {
         'POR': [],
         'DEF': [],
@@ -117,7 +113,6 @@ function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
     };
 
     jugadores.forEach(j => {
-        // SOLUCIÓN TEXTO: Buscamos la subcadena sin importar cómo esté escrito en la base de datos
         const posStr = (j.posicion || 'MED').trim().toUpperCase();
         let posKey = 'MED'; // Por defecto
 
@@ -129,12 +124,10 @@ function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
         lineas[posKey].push(j);
     });
 
-    // El equipo de arriba dibuja Portero arriba (primero), el de abajo dibuja Delantero primero (para que quede en el centro)
     const ordenPosiciones = posicionCampo === 'top'
         ? ['POR', 'DEF', 'MED', 'DEL']
         : ['DEL', 'MED', 'DEF', 'POR'];
 
-    // Dibujar las líneas
     ordenPosiciones.forEach(pos => {
         if (lineas[pos].length > 0) {
             const divLinea = document.createElement('div');
@@ -148,11 +141,10 @@ function dibujarEquipoEnCampo(jugadores, contenedor, posicionCampo) {
             lineas[pos].forEach(j => {
                 const img = j.imagen ? j.imagen : '/images/avatars/user.png';
 
-                // Colores correctos
                 let colorPuntos;
-                if (j.puntos > 0) colorPuntos = '#2e7d32'; // Verde
-                else if (j.puntos === 0) colorPuntos = '#f57c00'; // Naranja
-                else colorPuntos = '#d32f2f'; // Rojo
+                if (j.puntos > 0) colorPuntos = '#2e7d32'; //Verde
+                else if (j.puntos === 0) colorPuntos = '#f57c00'; //Naranja
+                else colorPuntos = '#d32f2f'; //Rojo
 
                 const mvpEstilo = j.mvp ? 'border: 3px solid gold; box-shadow: 0 0 15px gold;' : 'border: 2px solid white;';
 

@@ -3,6 +3,11 @@ let listaUsuariosOnline = [];
 let modalCallback = null;
 let miPuestoActual = "--º";
 
+document.getElementById('btn-modal-ok').onclick = () => { if(modalCallback) modalCallback(); };
+document.getElementById('btn-modal-cancel').onclick = cerrarModal;
+
+if (!usuarioId) window.location.href = 'login.html';
+
 function mostrarModal(titulo, mensaje, tipo, callback) {
     document.getElementById('modal-content-wrapper').classList.remove('oculto');
     document.getElementById('modal-jugador-detalle').classList.add('oculto');
@@ -64,9 +69,11 @@ function mostrarModal(titulo, mensaje, tipo, callback) {
     }
 
     modalCallback = () => {
-        if (tipo === 'confirm' || tipo === 'vender') callback();
-        else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') callback(input.value);
-        else if (tipo === 'oferta') {
+        if (tipo === 'confirm' || tipo === 'vender') {
+            callback();
+        } else if (tipo === 'input' || tipo === 'blindar' || tipo === 'danger') {
+            callback(input.value);
+        } else if (tipo === 'oferta') {
             let valLimpio = input.value.replace(/\./g, '');
             callback(valLimpio);
         }
@@ -104,11 +111,19 @@ function verDetalleJugador(id, nombre, img, posicion) {
         } else {
             let suma = 0;
             stats.forEach(s => suma += s.puntos);
-            let media = (suma / stats.length).toFixed(2);
+            let media = (suma / stats.length).toFixed(2); //Dos decimales
 
             divMedia.innerText = `MEDIA: ${media}`;
             content.innerHTML = stats.map(s => {
-                let colorClass = s.puntos > 0 ? 'bg-green' : (s.puntos < 0 ? 'bg-red' : 'bg-orange');
+                let colorClass;
+                if (s.puntos > 0) {
+                    colorClass = 'bg-green';
+                } else if (s.puntos < 0) {
+                    colorClass = 'bg-red';
+                } else {
+                    colorClass = 'bg-orange';
+                }
+
                 return `
                     <div class="stat-row">
                         <span>Jornada ${s.jornada}</span>
@@ -129,14 +144,11 @@ function cerrarModal() {
     document.getElementById('btn-modal-cancel').innerText = "Cancelar";
     document.getElementById('btn-modal-ok').classList.remove('oculto');
 }
-document.getElementById('btn-modal-ok').onclick = () => { if(modalCallback) modalCallback(); };
-document.getElementById('btn-modal-cancel').onclick = cerrarModal;
-
-if (!usuarioId) window.location.href = 'login.html';
 
 window.onload = function() {
     document.getElementById('titulo-web').innerText = localStorage.getItem('usuarioNombre');
     actualizarPresupuestoUI();
+
     if (esAdmin) {
         document.getElementById('tab-admin').classList.remove('oculto');
         cargarUsuariosAdmin();
@@ -144,6 +156,7 @@ window.onload = function() {
         actualizarBotonBloqueo();
         pintarSelectsAdminJugadores();
     }
+
     cargarTodo();
     cargarOfertas();
     cargarNoticias();
@@ -155,13 +168,13 @@ window.onload = function() {
 function iniciarContadorMercado() {
     function actualizar() {
         const now = new Date();
-        const minutosDia = now.getHours() * 60 + now.getMinutes();
-        const cerradoNoche = 1290;
-        const cerradoMadrugada = 600;
+        const minutosDia = now.getHours() * 60 + now.getMinutes(); //Para comparaciones
+        const cerradoNoche = 1290; //21h*60 + 30 = 1290
+        const cerradoMadrugada = 600; //10h*60 = 600
         const msgCerrado = document.getElementById('msg-mercado-cerrado');
 
         if (minutosDia >= cerradoNoche || minutosDia < cerradoMadrugada) {
-            msgCerrado.classList.remove('oculto');
+            msgCerrado.classList.remove('oculto'); //Visible
         } else {
             msgCerrado.classList.add('oculto');
         }
@@ -169,65 +182,70 @@ function iniciarContadorMercado() {
         const fechaMadridStr = now.toLocaleString("en-US", {timeZone: "Europe/Madrid"});
         const nowMadrid = new Date(fechaMadridStr);
         const midnightMadrid = new Date(nowMadrid);
-        midnightMadrid.setHours(24, 0, 0, 0);
-        const diferencia = midnightMadrid - nowMadrid;
+        midnightMadrid.setHours(24, 0, 0, 0); //Para la actualización del mercado
+        const diferencia = midnightMadrid - nowMadrid; //Medido en milisegundos
 
         if (diferencia > 0) {
+        //Fórmulas para dividir y convertir los ms en horas, min y segundos.
             const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+
+            //Convertimos los números a texto (con siempre 2 cifras mínimo)
             document.getElementById('market-countdown').innerText =
                 `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         }
     }
-    actualizar(); setInterval(actualizar, 1000);
+    actualizar();
+    setInterval(actualizar, 1000); //La ejecutamos cada segundo
 }
 
 function iniciarRelojesBlindaje() {
-    setInterval(() => {
-        document.querySelectorAll('.timer-blindaje').forEach(el => {
+    setInterval(() => { //Para que se ejecute siempre
+        document.querySelectorAll('.timer-blindaje').forEach(el => { //Todos los elementos con "timer-blindaje"
             let segs = parseInt(el.getAttribute('data-segundos'));
-            if (!isNaN(segs) && segs > 0) {
+
+            if (!isNaN(segs) && segs > 0) { //Comprobamos que haya sido un número y que sea > 0
                 segs--;
                 el.setAttribute('data-segundos', segs);
                 let d = Math.floor(segs / (3600 * 24));
                 let h = Math.floor((segs % (3600 * 24)) / 3600);
                 let m = Math.floor((segs % 3600) / 60);
                 let s = segs % 60;
-                el.innerText = `${d}d ${h}h ${m}m ${s}s`;
+                el.innerText = `${d}d ${h}h ${m}m ${s}s`; //Escribe en la carta el tiempo calculado que queda
             } else {
-                el.innerText = "Expirado";
+                el.innerText = "Sin blindaje";
                 el.style.color = "#d32f2f";
             }
         });
-    }, 1000);
+    }, 1000); //Cada segundo
 }
 
 function cargarTodo() {
-    fetch('/jornada/actual').then(r=>r.json()).then(n => {
+    fetch('/jornada/actual').then(r=>r.json()).then(n => { //Petición para ver en qué jornada estamos
         document.getElementById('badge-jornada').innerText = "J-" + n;
         document.getElementById('num-jornada-alineacion').innerText = n;
     });
 
-    fetch('/jugadores').then(r=>r.json()).then(jugadores => {
+    fetch('/jugadores').then(r=>r.json()).then(jugadores => { //Petición de todos los jugadores que hay en la BD
         window.todosLosJugadores = jugadores;
-        pintarPlantilla(jugadores);
+        pintarPlantilla(jugadores); //Para solo pintar los que sean del usuario
         pintarRanking(jugadores);
 
-        fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => {
+        fetch(`/alineacion/${usuarioId}`).then(r => r.json()).then(alineados => { //Para ver qué jugadores están alineeados
             const idsAlineados = new Set(alineados.map(a => a.id));
             pintarAlineacion(jugadores, idsAlineados);
         });
     });
 
-    fetch('/mercado-diario?t=' + new Date().getTime())
-        .then(r=>r.json())
-        .then(mercado => {
+ //Para la lista de los jugadores libres de mercado (?t añade la hora exacta al final de la URL para que el navegador descargue los datos nuevos.
+    fetch('/mercado-diario?t=' + new Date().getTime()).then(r=>r.json()).then(mercado => {
             pintarMercado(mercado);
         });
 
-    fetch('/usuarios').then(r=>r.json()).then(usuarios => {
+    fetch('/usuarios').then(r=>r.json()).then(usuarios => { //Pide la lista de todos los usuarios
         pintarRivales(usuarios);
+
         const yo = usuarios.find(u => u.id == usuarioId);
 
         if (!yo) {
@@ -241,61 +259,88 @@ function cargarTodo() {
             localStorage.setItem('presupuesto', presupuesto);
             actualizarPresupuestoUI();
 
-            let miAvatar = yo.urlImagen && yo.urlImagen !== "null" ? yo.urlImagen : '/images/avatars/user.png';
+            let miAvatar;
+            if (yo.urlImagen && yo.urlImagen !== "null") {
+                miAvatar = yo.urlImagen;
+            } else {
+                miAvatar = '/images/avatars/user.png';
+            }
+
             document.getElementById('dashboard-avatar').src = miAvatar;
             sessionStorage.setItem("urlImagen", miAvatar);
         }
     });
 
-    fetch('/clasificacion').then(r=>r.json()).then(data => {
-            const miNombre = localStorage.getItem('usuarioNombre');
-            const miIndex = data.findIndex(userMap => userMap.nombre === miNombre);
-            if (miIndex !== -1) {
-                miPuestoActual = (miIndex + 1) + "º";
-            } else {
-                miPuestoActual = "--º";
-            }
-                    let html = data.map((fila, i) => {
-                        let img = fila.urlImagen && fila.urlImagen !== "null" ? fila.urlImagen : '/images/avatars/user.png';
-                        let puesto = i + 1; // Calculamos el puesto
+    fetch('/clasificacion').then(r=>r.json()).then(data => { //Petición de los datos de la tabla de clasificación ordenados por puntos y valor de plantilla
+        const miNombre = localStorage.getItem('usuarioNombre');
+        const miIndex = data.findIndex(userMap => userMap.nombre === miNombre);
 
-                        return `
-                        <div class="fila-clasif" style="cursor:pointer; transition: 0.2s;" onclick="verFichaManager('${fila.nombre}', '${img}', ${puesto})" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
-                            <div class="clasif-user" style="display:flex; align-items:center;">
-                                <span class="pos-num" style="width:30px;">${puesto}º</span>
-                                <img src="${img}" style="width:35px; height:35px; object-fit:cover; border-radius:50%; border:2px solid #ccc; margin:0 10px;">
-                                <strong>${fila.nombre}</strong>
-                            </div>
-                            <div style="text-align:right;">
-                                <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
-                                <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
-                            </div>
-                        </div>`;
-                    }).join('');
-                    document.getElementById('lista-clasificacion').innerHTML = html;
-        });
+        if (miIndex !== -1) {
+            miPuestoActual = (miIndex + 1) + "º";
+        } else {
+            miPuestoActual = "--º";
+        }
+
+        let html = data.map((fila, i) => { //Transforma cada mánager en un bloque HTML
+            let img;
+            if (fila.urlImagen && fila.urlImagen !== "null") {
+                img = fila.urlImagen;
+            } else {
+                img = '/images/avatars/user.png';
+            }
+
+            let puesto = i + 1;
+
+            //Creamos el bloque HTML de la fila del mánager con puesto, imagen, nombre, puntos y valor de equipo y añade el evento para que al clicar se abra su ficha modal.
+            return `
+            <div class="fila-clasif" style="cursor:pointer; transition: 0.2s;" onclick="verFichaManager('${fila.nombre}', '${img}', ${puesto})" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                <div class="clasif-user" style="display:flex; align-items:center;">
+                    <span class="pos-num" style="width:30px;">${puesto}º</span>
+                    <img src="${img}" style="width:35px; height:35px; object-fit:cover; border-radius:50%; border:2px solid #ccc; margin:0 10px;">
+                    <strong>${fila.nombre}</strong>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:bold; color:#1a237e;">${fila.puntos} pts</div>
+                    <div style="font-size:0.85em; color:#666;">💰 ${formatoDinero.format(fila.valorPlantilla)}</div>
+                </div>
+            </div>`;
+        }).join('');
+        document.getElementById('lista-clasificacion').innerHTML = html;
+    });
 
     cargarHistorial();
     cargarNoticias();
 }
 
 function pintarRanking(jugadores) {
-    let lista = [...jugadores];
+    let lista = [...jugadores]; //Crea una copia exacta de la lista original con "..."
     lista.sort((a, b) => {
         if (b.puntosAcumulados !== a.puntosAcumulados) {
-            return b.puntosAcumulados - a.puntosAcumulados;
+            return b.puntosAcumulados - a.puntosAcumulados; //Se ordena de mayor a menor. JS sabe quién va primero al restar b-a
         }
-        return a.nombre.localeCompare(b.nombre);
+        return a.nombre.localeCompare(b.nombre); //Si hay empate, el nombre decide el desempate
     });
 
-    let html = lista.map((j, i) => {
+    let html = lista.map((j, i) => { //Para recorrer crear el HTML de la lista anterior
         let extraClass = '';
-        let icon = `#${i+1}`;
-        if (i === 0) { extraClass = 'top-1'; icon = '🥇'; }
-        else if (i === 1) { extraClass = 'top-2'; icon = '🥈'; }
-        else if (i === 2) { extraClass = 'top-3'; icon = '🥉'; }
+        let icon = `#${i+1}`; //Texto para la pos
+        if (i === 0) {
+            extraClass = 'top-1';
+            icon = '🥇';
+        } else if (i === 1) {
+            extraClass = 'top-2';
+            icon = '🥈';
+        } else if (i === 2) {
+            extraClass = 'top-3';
+            icon = '🥉';
+        }
 
-        let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
+        let img = 'https://via.placeholder.com/150'; //Imagen por defecto si no tiene foto
+        if (j.urlImagen && j.urlImagen.startsWith('/')) {
+            img = j.urlImagen;
+        } else if (j.urlImagen) {
+            img = j.urlImagen;
+        }
 
         return `
         <div class="fila-ranking ${extraClass}">
@@ -317,16 +362,27 @@ function pintarRanking(jugadores) {
 }
 
 function cargarHistorial() {
-    fetch('/historial/' + usuarioId).then(r=>r.json()).then(historial => {
+    fetch('/historial/' + usuarioId).then(r=>r.json()).then(historial => { //Petición con la ID del usuario para ver sus jornadas
         const div = document.getElementById('lista-historial');
+
         if (historial.length === 0) {
             div.innerHTML = '<p>No hay jornadas registradas.</p>';
             return;
         }
+
         div.innerHTML = historial.map(h => {
             let jugadoresHtml = h.jugadores.map(j => {
-                let colorClass = j.puntos > 0 ? 'text-green' : (j.puntos < 0 ? 'text-red' : 'text-orange');
-                return `
+                let colorClass;
+
+                if (j.puntos > 0) {
+                    colorClass = 'text-green';
+                } else if (j.puntos < 0) {
+                    colorClass = 'text-red';
+                } else {
+                    colorClass = 'text-orange';
+                }
+
+                return ` //Creamos la mini-carta de cada jugador
                 <div class="player-mini">
                     <div style="display:flex; justify-content:space-between;">
                         <strong>${j.nombre}</strong>
@@ -351,14 +407,28 @@ function cargarHistorial() {
 }
 
 function cargarNoticias() {
-    fetch('/noticias').then(r=>r.json()).then(noticias => {
-        let html = noticias.map(n => `<div class="noticia-item ${n.mensaje.includes("CLAUSULAZO") || n.mensaje.includes("ADMIN") ? 'noticia-robo':''}"><span class="noticia-fecha">${n.fechaBonita}</span><span class="noticia-texto">${n.mensaje}</span></div>`).join('');
+    fetch('/noticias').then(r=>r.json()).then(noticias => { //Petición para descargar las noticias más recientes y pasarlas a JSON
+        let html = noticias.map(n => { //Para recorrer cada noticia
+            let extraClass = '';
+
+            if (n.mensaje.includes("CLAUSULAZO") || n.mensaje.includes("ADMIN")) {
+                extraClass = 'noticia-robo';
+            }
+
+            return `<div class="noticia-item ${extraClass}"><span class="noticia-fecha">${n.fechaBonita}</span><span class="noticia-texto">${n.mensaje}</span></div>`;
+        }).join('');
+
         const container = document.getElementById('lista-noticias');
-        if (container.innerHTML !== html) container.innerHTML = html || '<p>No hay noticias.</p>';
+
+        if (container.innerHTML !== html) { //Solo pinta las noticias si no estaban ya pintadas las mismas
+            container.innerHTML = html || '<p>No hay noticias.</p>';
+        }
     });
 
-    fetch('/premios-pendientes/' + usuarioId).then(r=>r.json()).then(premios => {
+    fetch('/premios-pendientes/' + usuarioId).then(r=>r.json()).then(premios => { //Petición para ver si el usuario tiene
+    //MVP para reclamar
         const zonaPremios = document.getElementById('zona-premios');
+
         if (premios.length > 0) {
             let htmlPremios = premios.map(p => {
                 let htmlMvp = '';
@@ -373,7 +443,7 @@ function cargarNoticias() {
                                </div>`;
                 }
 
-                return `
+                return ` //Tarjeta de reclamación dinero
                 <div class="bloque-premios" style="${claseExtra}">
                     <div>
                         <strong>🏁 JORNADA ${p.jornada}</strong><br>
@@ -385,45 +455,67 @@ function cargarNoticias() {
             `;
             }).join('');
             zonaPremios.innerHTML = htmlPremios;
-        } else { zonaPremios.innerHTML = ''; }
+        }  else {
+            zonaPremios.innerHTML = '';
+            }
     });
 }
 
-function reclamar(idEquipo) { post(`/reclamar-premio/${idEquipo}`, {}); }
+function reclamar(idEquipo) {
+    post(`/reclamar-premio/${idEquipo}`, {});
+}
 
 function cargarUsuariosAdmin() {
-    fetch('/admin/usuarios-gestion').then(r => r.json()).then(usuarios => {
-        document.getElementById('admin-lista-usuarios').innerHTML = usuarios.map(u => `
+    fetch('/admin/usuarios-gestion').then(r => r.json()).then(usuarios => { //Petición de todos los usuarios activos
+        document.getElementById('admin-lista-usuarios').innerHTML = usuarios.map(u => {
+            let adminTexto = "";
+
+            if (u.esAdmin) {
+                adminTexto = "(ADMIN)";
+            }
+
+            let btnEliminar = "";
+
+            if (!u.esAdmin || u.nombre === 'Cristian') {
+                btnEliminar = `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>`;
+            }
+
+            return `
             <div class="user-row">
                 <div style="overflow:hidden; text-overflow:ellipsis;">
-                    <strong>${u.nombre}</strong> ${u.esAdmin ? '(ADMIN)' : ''}<br>
+                    <strong>${u.nombre}</strong> ${adminTexto}<br>
                     <small style="color:#666;">Pass: ${u.password}</small>
                 </div>
                 <div style="flex-shrink:0;">
                     <button class="btn-edit-user" onclick="editarUsuario(${u.id}, '${u.nombre}')">✏️</button>
-                    ${(!u.esAdmin || u.nombre === 'Cristian') ? `<button class="btn-delete-user" onclick="expulsarUsuario(${u.id}, '${u.nombre}')">Expulsar</button>` : ''}                    </div>
+                    ${btnEliminar}
+                </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
-        const selectPuntos = document.getElementById('admin-usuario-puntos');
+        const selectPuntos = document.getElementById('admin-usuario-puntos'); //
+
         if (selectPuntos) {
             selectPuntos.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
         }
 
         const selectSaldo = document.getElementById('admin-usuario-saldo');
+
         if (selectSaldo) {
-            selectSaldo.innerHTML = `<option value="0">🌍 TODOS LOS MÁNAGERS</option>` +
-                                    usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+            selectSaldo.innerHTML = `<option value="0">🌍 TODOS LOS MÁNAGERS</option>` + usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
         }
 
         const selectAvatar = document.getElementById('admin-usuario-avatar');
+
         if (selectAvatar) {
             selectAvatar.innerHTML = usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
         }
     });
 
-    fetch('/admin/pendientes').then(r => r.json()).then(pendientes => {
+    fetch('/admin/pendientes').then(r => r.json()).then(pendientes => { //Petición para ver si hay solicitudes pendientes
         const div = document.getElementById('admin-lista-pendientes');
+
         if(pendientes.length === 0) {
             div.innerHTML = '<small>No hay solicitudes.</small>';
         } else {
@@ -441,25 +533,54 @@ function cargarUsuariosAdmin() {
 }
 
 function gestionarUsuario(id, accion) {
-    let method = accion === 'aprobar' ? 'POST' : 'DELETE';
-    fetch(`/admin/${accion}/${id}`, { method: method })
-    .then(r => r.text())
-    .then(msg => {
+    let metodo = 'DELETE';
+
+    if (accion === 'aprobar') {
+        metodo = 'POST';
+    }
+
+    fetch(`/admin/${accion}/${id}`, { method: metodo }) //Crea la orden al servidor con la ruta exacta
+    .then(r => r.text()) //Envía la respuesta al servidor y la transforma en texto plano
+    .then(msg => { //Coge ese mensaje y ejecuta el siguiente bloque
         mostrarModal("Gestión", msg, 'confirm', () => cargarUsuariosAdmin());
     });
 }
 
-function crearCarta(j, tipo, alineado = false) {
-    let img = j.urlImagen && j.urlImagen.startsWith('/') ? j.urlImagen : (j.urlImagen || 'https://via.placeholder.com/150');
+function crearCarta(j, tipo, alineado = false) { //Tipo es para qué pestaña va la carta (alinear, fichar, robar o gestión)
+    let img = 'https://via.placeholder.com/150';
     let precio = formatoDinero.format(j.valor);
     let clausula = formatoDinero.format(j.clausula);
     let contenido = '';
-    let extraClass = alineado ? 'alineado' : '';
-    let checked = alineado ? 'checked' : '';
+    let extraClass = '';
+    let checked = '';
     let overlay = '';
+    let colorTriangulo = 'triangle-pos';
+    let posClass = 'pos-' + j.posicion.toLowerCase();
+
+    //Variables para el estado
+    let iconoEstado = '✅';
+    let colorEstado = '#2e7d32';
+    let textoEstado = 'DISPONIBLE';
+    let badgeEstado;
+    let accionDetalle;
+    let contenidoSuperior = "";
+    let contenidoInferior = "";
+
+    if (j.urlImagen && j.urlImagen.startsWith('/')) { //Si el jugador ya tiene foto en la BD
+        img = j.urlImagen;
+    } else if (j.urlImagen) {
+        img = j.urlImagen;
+    }
+
+    accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}', '${j.posicion}')"`;
+
+    if (alineado) {
+        extraClass = 'alineado'; //CSS
+        checked = 'checked';
+    }
 
     if (j.blindado) {
-        if(tipo === 'robar') {
+        if (tipo === 'robar') {
             overlay = `<div class="blindado-overlay">
                             <div class="candado-icon">🔒</div>
                             <div class="timer-blindaje" data-segundos="${j.segundosBlindaje}">Calculando...</div>
@@ -467,30 +588,33 @@ function crearCarta(j, tipo, alineado = false) {
         }
     }
 
-    let colorTriangulo = 'triangle-pos';
-    if (j.puntosAcumulados < 0) colorTriangulo = 'triangle-neg';
-    else if (j.puntosAcumulados === 0) colorTriangulo = 'triangle-neu';
+    if (j.puntosAcumulados < 0) {
+        colorTriangulo = 'triangle-neg'; //(<0 puntos)
+    } else if (j.puntosAcumulados === 0) {
+        colorTriangulo = 'triangle-neu'; //neutro (0 puntos)
+    }
 
+    //Botones según la pestaña
     if (tipo === 'alinear') {
         contenido = `<div class="alineacion-overlay"><input type="checkbox" class="check-alinear" value="${j.id}" ${checked} onclick="actualizarContador(this)"></div>`;
-    }
-    else if (tipo === 'fichar') {
+    } else if (tipo === 'fichar') {
         contenido = `<button class="btn-card btn-fichar" onclick="fichar(${j.id}, ${j.valor})">Fichar (${precio})</button>`;
-    }
-    else if (tipo === 'robar') {
+    } else if (tipo === 'robar') {
         let btnRobar = `<button class="btn-card btn-robar" onclick="robar(${j.id}, ${j.clausula})">Fichar: ${clausula}</button>`;
         let btnOferta = `<button class="btn-card btn-ofertar" onclick="hacerOferta(${j.id}, '${j.nombre}')">🤝 Negociar</button>`;
 
-        if (j.blindado) btnRobar = '';
+        if (j.blindado) {
+            btnRobar = '';
+        }
 
         contenido = `
             <div class="card-coste" style="margin-bottom:5px;">Valor: ${precio}</div>
             ${btnRobar}
             ${btnOferta}
         `;
-    }
-    else if (tipo === 'gestion') {
+    } else if (tipo === 'gestion') {
         let htmlBlindaje = '';
+
         if (j.blindado) {
             htmlBlindaje = `<div class="timer-blindaje timer-mini" data-segundos="${j.segundosBlindaje}">⏳ Calculando...</div>`;
         }
@@ -500,17 +624,15 @@ function crearCarta(j, tipo, alineado = false) {
             <div class="card-clausula">Cláusula 🔒: ${clausula}</div>
             ${htmlBlindaje}
             <div style="display:flex; gap:5px; margin-top:auto; width:100%;">
-                <button class="btn-card btn-vender" style="flex:1;" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender jugador</button>
+                <button class="btn-card btn-vender" style="flex:1;" onclick="vender(${j.id}, ${j.valor}, ${j.clausula})">Vender</button>
                 <button class="btn-card btn-blindar" style="flex:1;" onclick="blindar(${j.id})">Subir cláusula 🔒</button>
             </div>`;
     }
 
-    let accionDetalle = `onclick="verDetalleJugador(${j.id}, '${j.nombre}', '${img}', '${j.posicion}')"`;
-    let posClass = 'pos-' + j.posicion.toLowerCase();
-
-    let iconoEstado = '✅';
-    let colorEstado = '#2e7d32';
-    let textoEstado = j.estado || 'DISPONIBLE';
+    //Estado de lesión/disponibilidad
+    if (j.estado) {
+        textoEstado = j.estado;
+    }
 
     if (textoEstado === 'DUDOSO') {
         iconoEstado = '⚠️';
@@ -523,12 +645,21 @@ function crearCarta(j, tipo, alineado = false) {
         colorEstado = '#c62828';
     }
 
-    let badgeEstado = `<div style="font-size: 0.75em; font-weight: 900; color: ${colorEstado}; margin-top: 4px;">${iconoEstado} ${textoEstado}</div>`;
+    badgeEstado = `<div style="font-size: 0.75em; font-weight: 900; color: ${colorEstado}; margin-top: 4px;">${iconoEstado} ${textoEstado}</div>`;
 
+    if (tipo === 'alinear') {
+        contenidoSuperior = contenido;
+    }
+
+    if (tipo !== 'alinear') {
+        contenidoInferior = contenido;
+    }
+
+//HTML de la carta ya montada
     return `<div class="card ${extraClass}" id="card-${j.id}">
         <div class="puntos-triangle ${colorTriangulo}"></div>
         <div class="puntos-val">${j.puntosAcumulados}</div>
-        ${tipo === 'alinear' ? contenido : ''}
+        ${contenidoSuperior}
         <div class="card-img-container" ${accionDetalle}><img src="${img}" class="card-img">${overlay}</div>
         <div class="card-body">
             <div ${accionDetalle}>
@@ -536,27 +667,57 @@ function crearCarta(j, tipo, alineado = false) {
                 <div class="card-pos-badge ${posClass}">${j.posicion}</div>
                 ${badgeEstado}
             </div>
-            ${tipo !== 'alinear' ? contenido : ''}
+            ${contenidoInferior}
         </div>
     </div>`;
 }
 
-function pintarPlantilla(jugadores) { document.getElementById('grid-mi-plantilla').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>'; }
-function pintarAlineacion(jugadores, idsAlineados) {
-    const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId);
-    misJugadores.sort((a, b) => {
-        const aAlineado = idsAlineados.has(a.id) ? 1 : 0;
-        const bAlineado = idsAlineados.has(b.id) ? 1 : 0;
-        return bAlineado - aAlineado;
-    });
-    document.getElementById('grid-alineacion').innerHTML = misJugadores.map(j => crearCarta(j, 'alinear', idsAlineados.has(j.id))).join('') || '<p>Sin jugadores.</p>';
-    actualizarContador();
+function pintarPlantilla(jugadores) {
+    document.getElementById('grid-mi-plantilla').innerHTML = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId).map(j => crearCarta(j, 'gestion')).join('') || '<p>Sin jugadores.</p>';
 }
-function pintarMercado(jugadores) { document.getElementById('grid-mercado').innerHTML = jugadores.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado cerrado o vacío.</p>'; }
-function pintarRivales(usuarios) { document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join(''); }
+
+function pintarAlineacion(jugadores, idsAlineados) {
+    const misJugadores = jugadores.filter(j => j.propietario && j.propietario.id == usuarioId); //Los del usuario
+
+    misJugadores.sort((a, b) => {
+        let aAlineado = 0;
+
+        if (idsAlineados.has(a.id)) {
+            aAlineado = 1;
+        }
+
+        let bAlineado = 0;
+
+        if (idsAlineados.has(b.id)) {
+            bAlineado = 1;
+        }
+
+        return bAlineado - aAlineado; //Para que los alineados salgan más arriba que los que no lo están
+    });
+
+    document.getElementById('grid-alineacion').innerHTML = misJugadores.map(j => {
+        let estaAlineado = false;
+
+        if (idsAlineados.has(j.id)) {
+            estaAlineado = true;
+        }
+
+        return crearCarta(j, 'alinear', estaAlineado);
+    }).join('') || '<p>Sin jugadores.</p>';
+
+    actualizarContador(); //Para que actualice cuántos jugadores están aineados
+}
+
+function pintarMercado(jugadores) {
+    document.getElementById('grid-mercado').innerHTML = jugadores.map(j => crearCarta(j, 'fichar')).join('') || '<p>Mercado cerrado o vacío.</p>';
+}
+
+function pintarRivales(usuarios) {
+    document.getElementById('lista-rivales').innerHTML = usuarios.filter(u => u.id != usuarioId).map(u => `<div style="background:white; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; display:flex; justify-content:space-between;" onclick="espiar(${u.id}, '${u.nombre}')"><span>⚽ ${u.nombre}</span> <span>🔍</span></div>`).join('');
+}
 
 function espiar(id, nombre) {
-    document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
+    document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto')); //Oculta todas las pestañas para hacer un cambio de vista
     const seccionEspia = document.getElementById('sec-detalle-rival');
     seccionEspia.classList.remove('oculto');
 
@@ -565,29 +726,38 @@ function espiar(id, nombre) {
 }
 
 function actualizarContador(checkbox) {
+
     if(checkbox) {
         const card = document.getElementById('card-' + checkbox.value);
-        if(checkbox.checked) card.classList.add('alineado'); else card.classList.remove('alineado');
+
+        if(checkbox.checked) {
+            card.classList.add('alineado');
+        } else {
+            card.classList.remove('alineado');
+        }
     }
+    //Buscamos cuántos checkboxes de esa clase están marcados
     document.getElementById('contador-alineados').innerText = document.querySelectorAll('.check-alinear:checked').length;
 }
 
-function fichar(id, p) { mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p)); }
-function robar(id, p) { mostrarModal("Fichar por Cláusula", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p)); }
+function fichar(id, p) {  //idJugador y precio p
+    mostrarModal("Fichar Jugador", `¿Fichar por ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/comprar/${id}/${usuarioId}`, {}, p));
+}
+function robar(id, p) { //idJugador y precio p
+    mostrarModal("Fichar por Cláusula", `¿Pagar cláusula de ${formatoDinero.format(p)}?`, 'confirm', () => post(`/mercado/robar/${id}/${usuarioId}`, {}, p));
+}
 
 function vender(id, valor, clausula) {
     let ingreso = valor;
 
-    mostrarModal(
-        "Vender al Mercado",
-        `⚠️ ATENCIÓN: Al vender al mercado SOLO recuperas el valor de mercado actual del jugador. Se perderá todo el dinero que hayas invertido en subir su cláusula.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`,
-        'vender',
-        () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso)
-    );
+    mostrarModal("Vender al Mercado", `⚠️ ATENCIÓN: Al vender al mercado SOLO recuperas el valor de mercado actual del jugador. Se perderá todo el dinero que hayas invertido en subir su cláusula.\n\n💰 Recibirás: ${formatoDinero.format(ingreso)}\n\n¿Confirmar venta?`,
+        'vender', () => post(`/mercado/vender/${id}/${usuarioId}`, {}, -ingreso));
 }
+
 function blindar(id) {
     mostrarModal("Subir Cláusula 🔒", "Introduce cantidad a invertir.", 'blindar', (cant) => {
         let valor = parseInt(cant);
+
         if (!isNaN(valor) && valor > 0) {
             post(`/jugador/subir-clausula/${id}/${valor}`, {}, valor);
         } else {
@@ -598,6 +768,7 @@ function blindar(id) {
 
 function hacerOferta(idJugador, nombreJugador) {
     mostrarModal("Oferta por " + nombreJugador, "Introduce cantidad:", 'oferta', (cant) => {
+
         if(cant > 0) {
             const data = { idJugador: idJugador, idComprador: usuarioId, cantidad: cant };
             post('/ofertas/crear', data);
@@ -606,14 +777,18 @@ function hacerOferta(idJugador, nombreJugador) {
 }
 
 function cargarOfertas() {
-    fetch(`/ofertas/mis-ofertas/${usuarioId}`).then(r=>r.json()).then(data => {
+    fetch(`/ofertas/mis-ofertas/${usuarioId}`).then(r=>r.json()).then(data => { //Petición para obtener ofertas recibidas y enviadas
+
         const divRecibidas = document.getElementById('lista-ofertas-recibidas');
         const divEnviadas = document.getElementById('lista-ofertas-enviadas');
         const tabButton = document.getElementById('tab-ofertas');
         const notifBadge = document.getElementById('notif-ofertas');
 
-        if(data.recibidas.length > 0) { tabButton.classList.add('notif-active'); }
-        else { tabButton.classList.remove('notif-active'); }
+        if (data.recibidas.length > 0) {
+            tabButton.classList.add('notif-active');
+        } else {
+            tabButton.classList.remove('notif-active');
+        }
 
         if(data.recibidas.length === 0) {
             divRecibidas.innerHTML = '<p style="font-size:0.9em; color:#888;">No tienes ofertas pendientes.</p>';
@@ -648,15 +823,23 @@ function cargarOfertas() {
     });
 }
 
-function responderOferta(idOferta, accion) { post(`/ofertas/responder/${idOferta}/${accion}`, {}); }
-function expulsarUsuario(id, nombre) { mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => { fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => { mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); }); }); }); }
+function responderOferta(idOferta, accion) {
+    post(`/ofertas/responder/${idOferta}/${accion}`, {});
+}
+
+function expulsarUsuario(id, nombre) {
+    mostrarModal("Expulsar", `¿Echar a ${nombre}?`, 'confirm', () => {
+        fetch(`/admin/eliminar-usuario/${id}`, { method: 'DELETE' }).then(r=>r.text()).then(msg => {
+            mostrarModal("Info", msg, 'confirm', ()=>{ cargarUsuariosAdmin(); cargarTodo(); });
+        });
+    });
+}
 
 function resetearLiga() {
     mostrarModal("⚠️ PELIGRO: RESET", "Escribe RESET para borrar todo:", 'danger', (t) => {
+
         if(t==="RESET") {
-            fetch('/admin/reset-liga', { method: 'POST' })
-            .then(r => r.text())
-            .then(msg => {
+            fetch('/admin/reset-liga', { method: 'POST' }).then(r => r.text()).then(msg => {
                 mostrarModal("Info", msg, 'confirm', () => { location.reload(); });
             });
         } else {
@@ -669,13 +852,14 @@ function editarUsuario(id, nombreActual) {
     mostrarModal("Cambiar Nombre", "Introduce el nuevo nombre para " + nombreActual + ":", 'input', (nuevoNombre) => {
         if (nuevoNombre && nuevoNombre.trim() !== "") {
             post(`/admin/editar-usuario/${id}`, { nombre: nuevoNombre.trim() });
-            setTimeout(cargarUsuariosAdmin, 1000);
+            setTimeout(cargarUsuariosAdmin, 1000); //Esperar 1 segundo para recargar la lista de usuarios
         }
     });
 }
 
 function guardarAlineacion() {
     const ids = Array.from(document.querySelectorAll('.check-alinear:checked')).map(cb => parseInt(cb.value));
+
     if(ids.length > 7) {
         mostrarModal("Alineación", "Máximo 7 jugadores.", 'confirm', ()=>{});
         return;
@@ -686,20 +870,30 @@ function guardarAlineacion() {
 function post(url, data, coste = 0) {
     fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
     .then(r => r.text()).then(msg => {
-        let titulo = msg.includes("❌") || msg.includes("⛔") ? "Info" : "✅ Éxito";
+
+        let titulo = "✅ Éxito";
+        if (msg.includes("❌") || msg.includes("⛔")) {
+            titulo = "Info";
+        }
+
         mostrarModal(titulo, msg, 'confirm', () => {
+
             if(!msg.includes("❌") && !msg.includes("⛔")) {
+
                 if(coste !== 0) {
-                    presupuesto -= coste;
+                    presupuesto = presupuesto - coste;
                     localStorage.setItem('presupuesto', presupuesto);
                     actualizarPresupuestoUI();
                 }
+
                 if (presupuesto < 0) {
-                    mostrarModal("⚠️ AVISO DE SALDO", "¡Estás en números rojos!\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
+                    mostrarModal("⚠️ AVISO DE SALDO", "Estás en números rojos\n\nAsegúrate de tener saldo positivo antes de que empiece la siguiente jornada para poder puntuar.", "confirm", ()=>{});
                 }
                 cargarTodo();
                 cargarOfertas();
-                if(esAdmin) cargarUsuariosAdmin();
+                if(esAdmin) {
+                    cargarUsuariosAdmin();
+                }
             }
         });
     });
@@ -708,8 +902,12 @@ function post(url, data, coste = 0) {
 function pintarSelectAdmin() {
     fetch('/admin/jugadores-pendientes').then(r=>r.json()).then(jugadores => {
         const select = document.getElementById('admin-jugador');
-        if (jugadores.length === 0) { select.innerHTML = '<option>Todos puntuados</option>'; }
-        else { select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join(''); }
+
+        if (jugadores.length === 0) {
+            select.innerHTML = '<option>Todos puntuados</option>';
+        } else {
+            select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
+        }
     });
     cargarJugadoresPuntuados();
 }
@@ -717,8 +915,12 @@ function pintarSelectAdmin() {
 function cargarJugadoresPuntuados() {
     fetch('/admin/jugadores-puntuados').then(r=>r.json()).then(jugadores => {
         const select = document.getElementById('admin-jugador-reset');
-        if (jugadores.length === 0) { select.innerHTML = '<option>Nadie ha puntuado aún</option>'; }
-        else { select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join(''); }
+
+        if (jugadores.length === 0) {
+            select.innerHTML = '<option>Nadie ha puntuado aún</option>';
+        } else {
+            select.innerHTML = jugadores.map(j => `<option value="${j.id}">${j.nombre} (${j.posicion})</option>`).join('');
+        }
     });
 }
 
@@ -750,14 +952,20 @@ function registrarActa() {
     setTimeout(pintarSelectAdmin, 500);
 }
 
-function cerrarJornada() { mostrarModal("Cerrar Jornada", "¿Repartir puntos y dinero?", 'confirm', () => post('/admin/cerrar-jornada', {})); }
+function cerrarJornada() {
+    mostrarModal("Cerrar Jornada", "¿Repartir puntos y dinero?", 'confirm', () => post('/admin/cerrar-jornada', {}));
+}
 
 function cambiarPestaña(tab) {
     document.querySelectorAll('.seccion').forEach(s => s.classList.add('oculto'));
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
     document.getElementById('sec-' + tab).classList.remove('oculto');
     document.getElementById('tab-' + tab).classList.add('active');
-    if(tab === 'ofertas') cargarOfertas();
+
+    if(tab === 'ofertas') {
+        cargarOfertas();
+    }
+
     if(tab === 'admin') {
         cargarUsuariosAdmin();
         actualizarBotonBloqueo();
@@ -770,6 +978,7 @@ function cambiarPestaña(tab) {
 function actualizarPresupuestoUI() {
     const el = document.getElementById('presupuesto-display');
     el.innerText = formatoDinero.format(presupuesto);
+
     if(presupuesto < 0) {
         el.classList.add('presupuesto-negativo');
         document.getElementById('aviso-saldo').classList.remove('oculto');
@@ -780,7 +989,9 @@ function actualizarPresupuestoUI() {
 }
 
 function pingOnline() {
+
     if(!usuarioId) return;
+
     fetch(`/usuarios/ping/${usuarioId}`, { method: 'POST' })
         .then(r => r.json())
         .then(nombres => {
@@ -790,7 +1001,9 @@ function pingOnline() {
 }
 
 function verQuienEstaOnline() {
+
     if(listaUsuariosOnline.length === 0) return;
+
     mostrarModal("Usuarios en línea 🟢", "", 'info', ()=>{});
     let listaHTML = listaUsuariosOnline.map(n => `<li style="margin-bottom:5px;">👤 ${n}</li>`).join('');
     document.getElementById('modal-mensaje').innerHTML = `<ul style="list-style:none; padding:0; font-size:1.1em; text-align:left;">${listaHTML}</ul>`;
@@ -814,9 +1027,14 @@ function toggleBloqueo() {
 }
 
 function actualizarBotonBloqueo() {
-    if (!esAdmin) return;
+
+    if (!esAdmin) {
+        return;
+    }
     const btn = document.getElementById('btn-bloqueo');
-    if (!btn) return;
+    if (!btn) {
+        return;
+    }
 
     fetch('/admin/estado-bloqueo')
         .then(r => r.json())
@@ -843,9 +1061,13 @@ function pintarSelectEliminar() {
         if (jugadores.length === 0) {
             opcionesHTML = '<option>No hay jugadores</option>';
         } else {
-            opcionesHTML = jugadores.map(j =>
-                `<option value="${j.id}">${j.nombre} (${j.posicion}) - ${j.propietario && j.propietario.nombre ? j.propietario.nombre : 'Libre'}</option>`
-            ).join('');
+            opcionesHTML = jugadores.map(j => {
+                let propTexto = 'Libre';
+                if (j.propietario && j.propietario.nombre) {
+                    propTexto = j.propietario.nombre;
+                }
+                return `<option value="${j.id}">${j.nombre} (${j.posicion}) - ${propTexto}</option>`;
+            }).join('');
         }
 
         document.getElementById('select-eliminar-jugador').innerHTML = opcionesHTML;
@@ -862,7 +1084,9 @@ function eliminarJugadorSeleccionado() {
     const idJugador = select.value;
     const nombreJugador = select.options[select.selectedIndex].text;
 
-    if (!idJugador) return;
+    if (!idJugador) {
+        return;
+    }
 
     mostrarModal("Eliminar Jugador", `¿Estás seguro de que quieres eliminar a:\n\n👉 ${nombreJugador}?\n\nEsta acción es irreversible.`, 'confirm', () => {
         post(`/admin/eliminar-jugador/${idJugador}`, {});
@@ -876,7 +1100,10 @@ function eliminarJugadorSeleccionado() {
 function ejecutarQuitar() {
     const jor = document.getElementById('edit-num-jornada').value;
     const idJugador = document.getElementById('edit-jugador-quitar').value;
-    if(!jor || !idJugador) return alert("Rellena el número de jornada.");
+
+    if(!jor || !idJugador) {
+        return alert("Rellena el número de jornada.");
+    }
 
     mostrarModal("Corregir Jornada", "¿Seguro que quieres borrar la actuación de este jugador en la jornada " + jor + "?", 'confirm', () => {
         post(`/admin/reset-puntos-jornada/${idJugador}/${jor}`, {});
@@ -889,7 +1116,9 @@ function ejecutarPoner() {
     const pts = document.getElementById('edit-puntos-poner').value;
     const color = document.getElementById('edit-color-poner').value;
 
-    if(!jor || !idJugador || !pts) return alert("Rellena la jornada y los puntos.");
+    if(!jor || !idJugador || !pts) {
+        return alert("Rellena la jornada y los puntos.");
+    }
 
     mostrarModal("Añadir a Jornada", `¿Seguro que quieres sumar ${pts} puntos a este jugador en la jornada ${jor} con el equipo ${color}?`, 'confirm', () => {
         post(`/admin/add-puntos-jornada/${idJugador}/${jor}/${pts}/${color}`, {});
@@ -905,7 +1134,11 @@ function modificarPuntosManager() {
         return;
     }
 
-    const accion = puntos >= 0 ? "sumar" : "restar";
+    let accion = "restar";
+    if (puntos >= 0) {
+        accion = "sumar";
+    }
+
     mostrarModal("Compensar Puntos", `¿Seguro que quieres ${accion} ${Math.abs(puntos)} puntos a este mánager en la clasificación general?`, "confirm", () => {
         post(`/admin/modificar-puntos-extra/${idUsuario}/${puntos}`, {});
         document.getElementById('input-puntos-extra').value = '';
@@ -929,8 +1162,21 @@ function pintarSelectsAdminJugadores() {
                 htmlFoto += `<optgroup label="${pos}">`;
 
                 filtrados.forEach(j => {
-                    let estadoActual = j.estado || 'DISPONIBLE';
-                    let icon = estadoActual === 'DISPONIBLE' ? '✅' : (estadoActual === 'DUDOSO' ? '⚠️' : (estadoActual === 'LESIONADO' ? '🚑' : '❌'));
+                    let estadoActual = 'DISPONIBLE';
+                    if (j.estado) {
+                        estadoActual = j.estado;
+                    }
+
+                    let icon;
+                    if (estadoActual === 'DISPONIBLE') {
+                        icon = '✅';
+                    } else if (estadoActual === 'DUDOSO') {
+                        icon = '⚠️';
+                    } else if (estadoActual === 'LESIONADO') {
+                        icon = '🚑';
+                    } else {
+                        icon = '❌';
+                    }
 
                     htmlEstado += `<option value="${j.id}">${j.nombre} (${icon} ${estadoActual})</option>`;
                     htmlFoto += `<option value="${j.id}">${j.nombre}</option>`; // Sin iconos para la foto
@@ -991,8 +1237,16 @@ function modificarSaldoManager(tipo) {
         cantidad = -cantidad;
     }
 
-    const accionTxt = tipo === 'ingresar' ? 'INGRESAR' : 'RETIRAR MULTA DE';
-    const targetTxt = idUsuario === '0' ? 'a TODOS los mánagers' : 'al mánager seleccionado';
+    let accionTxt = 'RETIRAR MULTA DE';
+    if (tipo === 'ingresar') {
+        accionTxt = 'INGRESAR';
+    }
+
+    let targetTxt = 'al mánager seleccionado';
+
+    if (idUsuario === '0') {
+        targetTxt = 'a TODOS los mánagers';
+    }
 
     mostrarModal("Gestión de Saldo", `¿Seguro que quieres ${accionTxt} ${formatoDinero.format(Math.abs(cantidad))} ${targetTxt}?`, "confirm", () => {
         post(`/admin/modificar-saldo/${idUsuario}/${cantidad}`, {});
@@ -1021,7 +1275,10 @@ function actualizarAvatarManager() {
             if (idUsuario === sessionStorage.getItem("usuarioId")) {
                 sessionStorage.setItem("urlImagen", nuevaUrl);
                 const avatarDiv = document.getElementById('dashboard-avatar');
-                if (avatarDiv) avatarDiv.src = nuevaUrl;
+
+                if (avatarDiv) {
+                    avatarDiv.src = nuevaUrl;
+                }
             }
 
             cargarTodo();
@@ -1030,7 +1287,11 @@ function actualizarAvatarManager() {
 }
 
 function verFichaManager(nombre, urlImagen, puesto) {
-    let imagen = (!urlImagen || urlImagen === "null" || urlImagen === "undefined") ? '/images/avatars/user.png' : urlImagen;
+    let imagen = urlImagen;
+
+    if (!urlImagen || urlImagen === "null" || urlImagen === "undefined") {
+        imagen = '/images/avatars/user.png';
+    }
 
     document.getElementById('modal-perfil-imagen').src = imagen;
     document.getElementById('modal-perfil-nombre').innerText = nombre;
@@ -1042,7 +1303,13 @@ function verMiFichaPerfil() {
     let imagen = sessionStorage.getItem("urlImagen");
     let nombre = localStorage.getItem("usuarioNombre");
     let puestoNum = miPuestoActual.replace("º", "");
-    verFichaManager(nombre ? nombre : "Mánager", imagen, puestoNum);
+
+    let nombreFinal = "Mánager";
+    if (nombre) {
+        nombreFinal = nombre;
+    }
+
+    verFichaManager(nombreFinal, imagen, puestoNum);
 }
 
 function cerrarModalPerfil() {
