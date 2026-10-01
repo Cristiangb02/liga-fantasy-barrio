@@ -382,7 +382,7 @@ function cargarHistorial() {
                     colorClass = 'text-orange';
                 }
 
-                return ` //Creamos la mini-carta de cada jugador
+                return `
                 <div class="player-mini">
                     <div style="display:flex; justify-content:space-between;">
                         <strong>${j.nombre}</strong>
