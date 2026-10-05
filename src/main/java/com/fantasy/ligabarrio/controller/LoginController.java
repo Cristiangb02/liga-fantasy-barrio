@@ -5,6 +5,8 @@ import com.fantasy.ligabarrio.repository.NoticiaRepository;
 import com.fantasy.ligabarrio.model.Usuario;
 import com.fantasy.ligabarrio.repository.UsuarioRepository;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -57,13 +59,17 @@ public class LoginController {
         } else if (!user.isActivo()) {
             resultado = Map.of("error", "⛔ Tu cuenta aún no ha sido aprobada por el Admin.");
         } else {
-            resultado = Map.of(
-                    "id", user.getId(),
-                    "nombre", user.getNombre(),
-                    "esAdmin", user.isEsAdmin(),
-                    "presupuesto", user.getPresupuesto(),
-                    "urlImagen", user.getUrlImagen()
-            );
+            resultado = new HashMap<>();
+            resultado.put("id", user.getId());
+            resultado.put("nombre", user.getNombre());
+            resultado.put("esAdmin", user.isEsAdmin());
+            resultado.put("presupuesto", user.getPresupuesto());
+
+            if (user.getUrlImagen() != null) {
+                resultado.put("urlImagen", user.getUrlImagen());
+            } else {
+                resultado.put("urlImagen", "");
+            }
         }
 
         return resultado;
